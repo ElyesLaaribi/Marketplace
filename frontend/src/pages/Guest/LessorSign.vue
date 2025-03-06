@@ -3,6 +3,10 @@ import GuestLayout from "../../components/GuestLayout.vue";
 import {ref} from "vue";
 import axiosClient from "../../axios.js";
 import router from "../../router.js";
+import { useRoute } from "vue-router";
+
+
+const route = useRoute();
 
 const data = ref({
   name: '',
@@ -35,7 +39,29 @@ function submit() {
 
 <template>
   <GuestLayout>
-    <h2 class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">Create new lessor account</h2>
+    <div class="border-b border-gray-200 mb-8">
+        <nav class="-mb-px flex space-x-8 justify-center" aria-label="Tabs">
+          <router-link
+            :to="{ name: 'Signup' }"
+            :class="route.name === 'Signup' 
+              ? 'border-indigo-500 text-indigo-600' 
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+          >
+            Customer
+          </router-link>
+          <router-link
+            :to="{ name: 'Signuplessor' }"
+            :class="route.name === 'Signuplessor' 
+              ? 'border-indigo-500 text-indigo-600' 
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+          >
+            Lessor
+          </router-link>
+        </nav>
+      </div>
+    <h2 class="mt-1 text-center text-2xl/9 font-bold tracking-tight text-gray-900">Create new lessor account</h2>
 
     <div class="mt-4 sm:mx-auto sm:w-full sm:max-w-sm">
       <form @submit.prevent="submit" class="space-y-4">
@@ -78,11 +104,6 @@ function submit() {
           <button type="submit" class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Create an account</button>
         </div>
       </form>
-      <p class="mt-10 text-center text-sm/6 text-gray-500">
-        Create an account as a client 
-        {{ ' ' }}
-      <router-link :to="{name: 'Signup'}" class="font-semibold text-indigo-600 hover:text-indigo-500">Click here</router-link>
-      </p>
       <p class="mt-5 text-center text-sm/6 text-gray-500">
         Alreay have an account? 
         {{ ' ' }}
