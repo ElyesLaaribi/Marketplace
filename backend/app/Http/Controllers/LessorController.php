@@ -10,13 +10,19 @@ class LessorController extends Controller
      * Handle the incoming request.
      */
     public function __invoke(Request $request)
-    {
-        if ($request->user()->role !== 'lessor') {
-            return response()->json(['message' => 'Forbidden, only lessors can access this resource'], 403);
-        }
+{
+    $user = $request->user();
 
-        // Proceed with your logic for lessors
-        return response()->json();
+    if (!$user) {
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
+
+    if ($user->role !== 'lessor') {
+        return response()->json(['message' => 'Forbidden, only lessors can access this resource'], 403);
+    }
+
+    return response()->json();
+}
+
     
 }

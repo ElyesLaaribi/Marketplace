@@ -22,8 +22,8 @@ class RegisterController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'message' => $validator->errors()->first()
-            ], 401);
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         $user = User::create([
@@ -32,6 +32,7 @@ class RegisterController extends Controller
             'password' => $request->password, // No need for bcrypt()
             'role' => $request->role,
         ]);
+        
 
         $tokenResult = $user->createToken('Personal Access Token');
         $token = $tokenResult->plainTextToken;

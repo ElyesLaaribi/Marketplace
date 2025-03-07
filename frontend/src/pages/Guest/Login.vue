@@ -1,8 +1,8 @@
 <script setup>
 import { ref } from "vue";
 import GuestLayout from "../../components/GuestLayout.vue";
-import axiosClient from "../../axios.js";
 import router from "../../router.js";
+import api from "../../axios.js";
 
 const data = ref({
   email: '',
@@ -14,11 +14,11 @@ const error = ref('')
 const errorMessage = ref('')
 
 function submit() {
-  axiosClient.get('/sanctum/csrf-cookie').then(() => {
-    axiosClient.post('/api/login', data.value)
+  api.get('/sanctum/csrf-cookie').then(() => {
+    api.post('/api/login', data.value)
       .then(response => {
         localStorage.setItem('auth_token', response.data.token);
-        axiosClient.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
         const role = response.data.user.role; 
 
         if (role === 'client') {

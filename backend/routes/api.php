@@ -27,10 +27,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::middleware('auth:sanctum')->get('/lessor', LessorController::class);
 
+Route::post('/logout', LogoutController::class)->middleware('auth:sanctum');
 
-Route::post('login', LoginController::class);
-Route::post('register', RegisterController::class);
-Route::post('logout', LogoutController::class)->middleware('auth:sanctum');
+
+Route::post('/login', LoginController::class);
+Route::post('/register', RegisterController::class);
 Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
 
 

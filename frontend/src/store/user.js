@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import axiosClient from "../axios";
+import api from "../axios";
 
 const useUserStore = defineStore('user', {
   state: () => ({
@@ -9,7 +9,7 @@ const useUserStore = defineStore('user', {
   actions: {
     fetchUser() {
       this.loading = true;
-      return axiosClient.get('/api/user')
+      return api.get('/api/user')
         .then(({data}) => {
           this.user = data;
         })

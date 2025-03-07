@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import axiosClient from "../axios";
+import api from "../axios";
 
 const useLessorStore = defineStore("lessor", {
   state: () => ({
@@ -7,7 +7,7 @@ const useLessorStore = defineStore("lessor", {
   }),
   actions: {
     fetchLessor() {
-      return axiosClient
+      return api
         .get("/api/lessor") 
         .then(({ data }) => {
           console.log(data);

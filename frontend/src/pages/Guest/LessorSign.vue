@@ -1,7 +1,7 @@
 <script setup>
 import GuestLayout from "../../components/GuestLayout.vue";
 import {ref} from "vue";
-import axiosClient from "../../axios.js";
+import api from "../../axios.js";
 import router from "../../router.js";
 import { useRoute } from "vue-router";
 
@@ -25,16 +25,38 @@ const errors = ref({
 
 
 function submit() { 
-  axiosClient.get('/sanctum/csrf-cookie').then(response => {
-    axiosClient.post('/api/register', data.value) 
-    .then(response => {
-      router.push({name: 'Login'})
-    })
-    .catch(error => {
-      console.log(error.response.data)
-      errors.value = error.response.data.errors;
-    })
-});
+
+api.get('/sanctum/csrf-cookie')
+  .then(() => {
+    return api.post('/api/register', data.value);
+  })
+  .then(response => {
+    console.log("Response from server:", response);
+
+    if (response.data && response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+      
+      router.push({ name: 'LessorHome' }); 
+    } else {
+      console.error("Token not found in response");
+    }
+  })
+  .catch(error => {
+    console.log("Error response:", error.response); 
+
+    if (error.response) {
+      if (error.response.status === 422) {
+        errors.value = error.response.data.errors; 
+      } else if (error.response.status === 401) {
+        console.error("Unauthorized - Possible Sanctum issue");
+      } else {
+        console.error("Other error:", error.response.data);
+      }
+    } else {
+      console.error("Request failed without a response", error);
+    }
+  });
 }
 </script>
 
