@@ -14,16 +14,24 @@ const error = ref('')
 const errorMessage = ref('')
 
 function submit() {
-  axiosClient.get('/sanctum/csrf-cookie').then(response => {
-    axiosClient.post('/login', data.value)
-    .then(response => {
-      router.push({name: 'Home'})
-    })
-    .catch(error => {
-      console.log(error.response)
-      errorMessage.value = error.response.data.message;
-    })
-});
+  axiosClient.get('/sanctum/csrf-cookie').then(() => {
+    axiosClient.post('/api/login', data.value)
+      .then(response => {
+        localStorage.setItem('auth_token', response.data.token);
+        axiosClient.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        const role = response.data.user.role; 
+
+        if (role === 'client') {
+          router.push({ name: 'Home' }); 
+        } else if (role === 'lessor') {
+          router.push({ name: 'LessorHome' });
+        }
+      })
+      .catch(error => {
+        console.log(error.response);
+        errorMessage.value = error.response.data.message;
+      });
+  });
 }
 
 </script>
@@ -59,11 +67,7 @@ function submit() {
         </div>
       </form>
 
-      <p class="mt-10 text-center text-sm/6 text-gray-500">
-         Login as a lessor
-        {{ ' ' }}
-      <router-link :to="{name: 'Lesslogin'}" class="font-semibold text-indigo-600 hover:text-indigo-500">Click here</router-link>
-      </p>
+      
       <p class="mt-4 text-center text-sm/6 text-gray-500">
         Not a member?
         {{ ' ' }}

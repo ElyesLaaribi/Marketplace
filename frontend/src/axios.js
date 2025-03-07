@@ -1,14 +1,15 @@
 import axios from "axios";
 import router from "./router.js";
+axios.defaults.withCredentials = true;
 
-const axiosClient = axios.create({
+const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: true,
-  withXSRFToken: true
+  // withCredentials: true,
+  // withXSRFToken: true
 });
 
 
-axiosClient.interceptors.response.use((response) => {
+api.interceptors.response.use((response) => {
     return response;
   }, error => {
     if (error.response && error.response.status === 401) {
@@ -17,5 +18,6 @@ axiosClient.interceptors.response.use((response) => {
   
     throw error;
   })
+
   
-  export default axiosClient
+  export default api

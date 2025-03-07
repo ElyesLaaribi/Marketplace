@@ -1,7 +1,7 @@
 <script setup>
 import GuestLayout from "../../components/GuestLayout.vue";
 import {ref} from "vue";
-import axiosClient from "../../axios.js";
+import api from "../../axios.js";
 import router from "../../router.js";
 import { useRoute } from "vue-router";
 
@@ -12,6 +12,7 @@ const data = ref({
   email: '',
   password: '',
   password_confirmation: '',
+  role: 'client'
 });
 
 
@@ -21,9 +22,13 @@ const errors = ref({
   password: [],
 })
 
+function setRole(role) {
+  data.value.role = role;
+}
+
 function submit() { 
-  axiosClient.get('/sanctum/csrf-cookie').then(response => {
-    axiosClient.post('/register', data.value) 
+  api.get('/sanctum/csrf-cookie').then(response => {
+    api.post('/api/register', data.value) 
     .then(response => {
       router.push({name: 'Home'})
     })

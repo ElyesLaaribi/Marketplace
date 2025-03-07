@@ -1,27 +1,34 @@
 <script setup>
-import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
-import { Bars3Icon, XMarkIcon, BellIcon } from '@heroicons/vue/24/outline';
-import axiosClient from '../axios.js';
+import { Bars3Icon, XMarkIcon, BellIcon } from '@heroicons/vue/24/solid';  
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'; 
+import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
+import api from '../axios.js';
 import router from '../router.js';
-import useUserStore from '../store/user.js';
 import { computed } from 'vue';
+import useLessorStore from '../store/lessor.js';
 
-const userStore = useUserStore();
+const userStore = useLessorStore();
 const user = computed(() => userStore.user);
 
 function logout() {
-  axiosClient.post('/logout').then(() => {
-    userStore.user = null;
-    router.push({ name: 'Login' }).then(() => {
-      window.location.reload();
+  api.post('/api/logout')
+    .then(() => {
+      userStore.user = null;
+      localStorage.removeItem('auth_token'); 
+      delete api.defaults.headers.common['Authorization'];
+      router.push({ name: 'Login' }).then(() => {
+        window.location.reload();
+      });
+    })
+    .catch(error => {
+      console.error('Logout failed:', error);
     });
-  });
-
 }
 </script>
 
 <template>
   <div>
+    
   <Disclosure as="nav" class="bg-gray-800" v-slot="{ open }">
     <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
       <div class="relative flex h-16 items-center justify-between">
@@ -53,7 +60,7 @@ function logout() {
                 <span class="absolute -inset-1.5" />
                 <span class="sr-only">Open user menu</span>
                 <img class="size-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" />
-                <span class="mt-1 text-white ml-3">{{user.name}}</span>
+                <span v-if="user" class="mt-1 text-white ml-3">{{user.name}}</span>
               </MenuButton>
             </div>
             <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">

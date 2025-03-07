@@ -9,7 +9,6 @@ import Admin from "./pages/Admin/Admin.vue";
 import LessorHome from "./pages/Lessor/LessorHome.vue";
 import LessorDash from "./pages/Lessor/LessorDash.vue";
 import useUserStore from "./store/user";
-import Lesslogin from "./pages/Guest/Lesslogin.vue";
 import LessorProfile from "./pages/Lessor/LessorProfile.vue";
 import useLessorStore from "./store/lessor";
 
@@ -95,11 +94,6 @@ const routes = [
         name: 'Lessdash',
         component: LessorDash,
         beforeEnter: lessorAuthGuard
-    },
-    {
-        path: '/lesslogin',
-        name: 'Lesslogin',
-        component: Lesslogin
     },
     {
         path: '/lessorprofile',
