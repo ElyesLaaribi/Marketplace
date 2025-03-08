@@ -21,16 +21,21 @@ class LoginController extends Controller
     
         if ($validator->fails()) {
             return response()->json([
-                'message' => $validator->errors()->first()
-            ], 401);
+                'message' => 'Validation failed',
+                'errors' => $validator->errors() 
+            ], 422); 
         }
     
         $user = User::where('email', $request->email)->first();
     
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
-                'message' => 'Unauthorized, check your login credentials'
-            ], 401);
+                'message' => 'Unauthorized, check your login credentials',
+                'errors' => [
+                    'email' => ['The provided email does not match our records.'],
+                    'password' => ['The provided password is incorrect.']
+                ]
+            ], 401); 
         }
     
         $tokenResult = $user->createToken('Personal Access Token');

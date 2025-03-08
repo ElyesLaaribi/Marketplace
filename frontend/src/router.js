@@ -10,6 +10,9 @@ import LessorDash from "./pages/Lessor/LessorDash.vue";
 import LessorProfile from "./pages/Lessor/LessorProfile.vue";
 import { useUserStore } from "./store/user";
 import useLessorStore from "./store/lessor";
+import ForgetPassword from "./pages/Guest/ForgetPassword.vue";
+import ResetPassword from "./pages/Guest/ResetPassword.vue";
+
 
 
 const clientGuard = async (to, from, next) => {
@@ -46,6 +49,8 @@ const routes = [
     { path: "/login", name: "Login", component: Login },
     { path: "/signup", name: "Signup", component: Signup },
     { path: "/signuplessor", name: "Signuplessor", component: LessorSign },
+    { path: "/forget-password", name: "ForgetPassword", component: ForgetPassword },
+    { path: "/reset-password", name: "ResetPassword", component: ResetPassword },
 
     // client
     { path: "/home", name: "Home", component: Home, beforeEnter: clientGuard },

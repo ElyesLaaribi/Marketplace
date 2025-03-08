@@ -15,6 +15,8 @@ const data = ref({
   role: 'client'
 });
 
+const errorMessage = ref("");
+const loading = ref(false);
 
 const errors = ref({
   name: [],
@@ -22,12 +24,13 @@ const errors = ref({
   password: [],
 })
 
-function setRole(role) {
-  data.value.role = role;
-}
+// function setRole(role) {
+//   data.value.role = role;
+// }
 
 function submit() { 
-
+  loading.value = true;
+  errors.value = { name: [], email: [], password: [] };
   api.get('/sanctum/csrf-cookie')
     .then(() => {
       return api.post('/api/register', data.value);
@@ -58,7 +61,10 @@ function submit() {
       } else {
         console.error("Request failed without a response", error);
       }
-    });
+    }
+  ).finally(() => {
+      loading.value = false;  
+    });;
 }
 </script>
   
@@ -129,7 +135,18 @@ function submit() {
           </div>
         </div>
         <div>
-          <button type="submit" class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Create an account</button>
+          <button
+            type="submit"
+            :disabled="loading"
+            class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg v-if="loading" class="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <span v-if="loading">Creating...</span>
+            <span v-else>Create an account</span>
+          </button>
         </div>
       </form>
       <p class="mt-5 text-center text-sm/6 text-gray-500">
