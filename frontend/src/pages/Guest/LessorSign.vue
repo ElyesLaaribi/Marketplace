@@ -37,7 +37,7 @@ api.get('/sanctum/csrf-cookie')
       localStorage.setItem('token', response.data.token);
       api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
       
-      router.push({ name: 'LessorHome' }); 
+      router.push({ name: 'Login' }); 
     } else {
       console.error("Token not found in response");
     }

@@ -39,7 +39,7 @@ class LoginController extends Controller
         return response()->json([
             'token' => $token,
             'user' => $user,
-            // 'role' => $user->role
+            'role' => $user->role
         ]);
     }
 }

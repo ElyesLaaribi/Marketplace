@@ -2,38 +2,42 @@
 import { ref } from "vue";
 import GuestLayout from "../../components/GuestLayout.vue";
 import router from "../../router.js";
-import api from "../../axios.js";
+import api from "../../axios.js"; 
+import { useUserStore } from "../../store/user"; 
+
 
 const data = ref({
   email: '',
   password: ''
-})
+});
 
-const error = ref('')
-
-const errorMessage = ref('')
+const errorMessage = ref('');
 
 function submit() {
-  api.get('/sanctum/csrf-cookie').then(() => {
-    api.post('/api/login', data.value)
-      .then(response => {
-        localStorage.setItem('auth_token', response.data.token);
-        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-        const role = response.data.user.role; 
+  api.get('/sanctum/csrf-cookie') 
+    .then(() => {
+      api.post('/api/login', data.value) 
+        .then((response) => {
+          const token = response.data.token;
+          localStorage.setItem('auth_token', token);
 
-        if (role === 'client') {
-          router.push({ name: 'Home' }); 
-        } else if (role === 'lessor') {
-          router.push({ name: 'LessorHome' });
-        }
-      })
-      .catch(error => {
-        console.log(error.response);
-        errorMessage.value = error.response.data.message;
-      });
-  });
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+          useUserStore().setToken(token);
+
+          const role = response.data.user.role;
+          if (role === 'client') {
+            router.push({ name: 'Home' });
+          } else if (role === 'lessor') {
+            router.push({ name: 'LessorHome' });
+          }
+        })
+        .catch((error) => {
+          console.error(error.response);
+          errorMessage.value = error.response.data.message;
+        });
+    });
 }
-
 </script>
 
 <template>

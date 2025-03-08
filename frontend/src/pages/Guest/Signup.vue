@@ -39,7 +39,7 @@ function submit() {
         localStorage.setItem('token', response.data.token);
         api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
         
-        router.push({ name: 'Home' }); 
+        router.push({ name: 'Login' }); 
       } else {
         console.error("Token not found in response");
       }
