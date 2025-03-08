@@ -26,7 +26,7 @@ const homeRoute = computed(() => {
   } else if (lessorStore.lessor) {
     return "/lessorhome"; 
   } else {
-    return "/landing"; 
+    return "/"; 
   }
 });
 
