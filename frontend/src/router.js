@@ -47,10 +47,10 @@ const routes = [
     { path: "/signup", name: "Signup", component: Signup },
     { path: "/signuplessor", name: "Signuplessor", component: LessorSign },
 
-
+    // client
     { path: "/home", name: "Home", component: Home, beforeEnter: clientGuard },
 
-    
+    // lessor
     { path: "/lessorhome", name: "LessorHome", component: LessorHome, beforeEnter: lessorGuard },
     { path: "/lessordash", name: "Lessdash", component: LessorDash, beforeEnter: lessorGuard },
     { path: "/lessorprofile", name: "Lessprofile", component: LessorProfile, beforeEnter: lessorGuard },
