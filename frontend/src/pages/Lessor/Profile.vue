@@ -6,8 +6,8 @@ import LessorLayout from '../../components/LessorLayout.vue';
 
 <template>
     <LessorLayout>
-        <div class="p-8">
-            Lessor Dashboard
+        <div>
+            Lessor Profile
         </div>
     </LessorLayout>
 </template>
