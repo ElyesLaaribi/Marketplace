@@ -20,10 +20,9 @@ const submitForgotPassword = async () => {
 
     message.value = response.data.message;
 
-    // Redirect to reset password page with email as query parameter
     setTimeout(() => {
       router.push({ name: "ResetPassword", query: { email: email.value } });
-    }, 1500); // Delay for message display
+    }, 1500); 
   } catch (err) {
     error.value = err.response?.data?.message || "Email not found.";
   }finally {

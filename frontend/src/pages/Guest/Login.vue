@@ -10,38 +10,31 @@ const data = ref({
   password: ""
 });
 
-// Store field-specific validation errors
 const errors = ref({
   email: [],
   password: []
 });
 
-// A general error message (for non-validation errors)
 const errorMessage = ref("");
 
-// Loading state to disable the button during submission
 const loading = ref(false);
 
 async function submit() {
-  // Step 1: Initialize or reset errors and error messages
-  errors.value = { email: [], password: [] }; // Clear previous errors
-  errorMessage.value = "";  // Reset general error message
+ 
+  errors.value = { email: [], password: [] }; 
+  errorMessage.value = "";  
   loading.value = true;
 
   try {
-    // Step 2: Get CSRF cookie for security
     await api.get("/sanctum/csrf-cookie");
 
-    // Step 3: Send login request with user data
     const response = await api.post("/api/login", data.value);
 
-    // Step 4: On successful login, store token and user data
     const token = response.data.token;
     localStorage.setItem("auth_token", token);
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     useUserStore().setToken(token);
 
-    // Step 5: Redirect based on user role
     const role = response.data.user.role;
     if (role === "client") {
       router.push({ name: "Home" });
@@ -53,25 +46,19 @@ async function submit() {
     if (error.response) {
       console.error("Error response:", error.response);
 
-      // Step 6: Handle validation errors (422)
       if (error.response.status === 422 && error.response.data.errors) {
-        // Ensure errors are correctly assigned
         errors.value = error.response.data.errors || { email: [], password: [] };
       }
-      // Step 7: Handle unauthorized error (401)
       else if (error.response.status === 401) {
-        errorMessage.value = "Invalid credentials, please try again."; // Specific message for wrong credentials
+        errorMessage.value = "Invalid credentials, please try again."; 
       } 
-      // Step 8: Handle other errors (e.g., server issues)
       else {
         errorMessage.value = error.response.data.message || "Login failed. Please try again.";
       }
     } else {
-      // Step 9: Handle network errors (e.g., no internet connection)
-      errorMessage.value = "Invalid credentials, please try again."; // Catch network error
+      errorMessage.value = "Invalid credentials, please try again."; 
     }
   } finally {
-    // Step 10: Stop loading once the request is complete
     loading.value = false;
   }
 }
@@ -86,14 +73,12 @@ async function submit() {
       Welcome back client
     </h2>
 
-    <!-- General error message (e.g., wrong credentials) -->
     <div v-if="errorMessage" class="mt-4 text-center text-sm text-red-600">
       {{ errorMessage }}
     </div>
 
     <div class="mt-4 sm:mx-auto sm:w-full sm:max-w-sm">
       <form @submit.prevent="submit" class="space-y-6">
-        <!-- Email Field -->
         <div>
           <label for="email" class="block text-sm font-medium text-gray-900">
             Email address
@@ -108,11 +93,8 @@ async function submit() {
               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border border-gray-300 placeholder-gray-400 focus:outline-indigo-600"
             />
           </div>
-          <!-- Display first error for email if it exists -->
           <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email[0] }}</p>
         </div>
-
-        <!-- Password Field -->
         <div>
           <div class="flex items-center justify-between">
             <label for="password" class="block text-sm font-medium text-gray-900">
@@ -134,11 +116,8 @@ async function submit() {
               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border border-gray-300 placeholder-gray-400 focus:outline-indigo-600"
             />
           </div>
-          <!-- Display first error for password if it exists -->
           <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password[0] }}</p>
         </div>
-
-        <!-- Submit Button with Loading Animation -->
         <div>
           <button
             type="submit"
@@ -167,5 +146,5 @@ async function submit() {
 
 
 <style scoped>
-/* Optional: Add additional styling if needed */
+
 </style>

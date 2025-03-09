@@ -35,7 +35,6 @@ const submitResetPassword = async () => {
 
     message.value = response.data.message;
 
-    // Redirect to login after successful reset
     setTimeout(() => {
       router.push({ name: "Login" });
     }, 2000);

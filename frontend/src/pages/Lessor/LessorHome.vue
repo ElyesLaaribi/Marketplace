@@ -6,7 +6,7 @@ import LessorLayout from '../../components/LessorLayout.vue';
 
 <template>
     <LessorLayout>
-        <div class="p-8">
+        <div>
             Lessor Home
         </div>
     </LessorLayout>
