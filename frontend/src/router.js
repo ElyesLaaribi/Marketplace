@@ -12,11 +12,13 @@ import ForgetPassword from "./pages/Guest/ForgetPassword.vue";
 import ResetPassword from "./pages/Guest/ResetPassword.vue";
 import Listings from "./pages/Lessor/Listings.vue";
 import AddListings from "./pages/Lessor/AddListings.vue";
-
+import { useAdminStore } from "./store/admin"; 
 import Messages from "./pages/Lessor/Messages.vue";
 import Profile from "./pages/Lessor/Profile.vue";
 import Reservations from "./pages/Lessor/Reservations.vue";
 import ClientProfile from "./pages/Client/ClientProfile.vue";
+import AdminLogin from "./pages/Admin/AdminLogin.vue";
+import Admin from "./pages/Admin/Admin.vue";
 
 
 
@@ -50,6 +52,23 @@ const lessorGuard = async (to, from, next) => {
     }
 };
 
+
+const adminGuard = async (to, from, next) => {
+    const adminStore = useAdminStore(); 
+
+    if (!adminStore.token) {
+        next("/admin"); 
+    } else {
+        await adminStore.fetchUser(); 
+
+        if (adminStore.admin?.role === "admin") {
+            next(); 
+        } else {
+            next("/notFound"); 
+        }
+    }
+};
+
 const routes = [
     { path: "/", name: "Landing", component: Landing },
     { path: "/login", name: "Login", component: Login },
@@ -70,7 +89,9 @@ const routes = [
     { path: "/lessor-profile", name: "Profile", component: Profile, beforeEnter: lessorGuard },
     { path: "/reservations", name: "Reservations" , component: Reservations, beforeEnter: lessorGuard },
 
-
+    // admin
+    { path: "/admin", name: "AdminLogin" , component: AdminLogin},
+    { path: "/admin-home", name: "AdminHome" , component: Admin, beforeEnter: adminGuard},
     
     { path: "/:pathMatch(.*)*", name: "NotFound", component: NotFound }
 ];

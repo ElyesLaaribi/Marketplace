@@ -45,6 +45,6 @@ Route::post('/reset', [ResetPassController::class, 'reset']);
 Route::post('/admin/login', AdminLoginController::class);
 Route::middleware('auth:sanctum')->post('/admin/logout', AdminLogoutController::class);
 
-Route::middleware('admin')->get('/admin/dashboard', function () {
-    return response()->json(['message' => 'Welcome to the admin dashboard']);
+Route::middleware('auth:admin')->get('/admin', function (Request $request) {
+    return $request->user(); 
 });

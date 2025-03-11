@@ -6,7 +6,7 @@ import AdminLayout from '../../components/AdminLayout.vue';
 <template>
   <AdminLayout>
     <div class="p-8">
-        admin from component
+        admin vue
     </div>
   </AdminLayout>
 </template>

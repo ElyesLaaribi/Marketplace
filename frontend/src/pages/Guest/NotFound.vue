@@ -3,28 +3,37 @@ import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "../../store/user";
 import useLessorStore from "../../store/lessor";
+import { useAdminStore } from "../../store/admin";
 
 const router = useRouter();
 const userStore = useUserStore();
 const lessorStore = useLessorStore();
+const adminStore = useAdminStore(); 
 
-onMounted(() => {
+onMounted(async () => {
   console.log("User Store:", userStore.user);
   console.log("Lessor Store:", lessorStore.lessor);
-  
+
   if (userStore.token) {
-    userStore.fetchUser();
+    await userStore.fetchUser(); 
   }
+
   if (lessorStore.token) {
-    lessorStore.fetchLessor();
+    await lessorStore.fetchLessor(); 
+  }
+
+  if (adminStore.token) {
+    await adminStore.fetchUser(); 
   }
 });
 
 const homeRoute = computed(() => {
   if (userStore.user && userStore.user.role === "client") {
-    return "/home"; 
+    return "/home";
   } else if (lessorStore.lessor) {
-    return "/lessorhome"; 
+    return "/lessorhome";
+  } else if (adminStore.admin && adminStore.admin.role === "admin") {
+    return "/admin-home";
   } else {
     return "/"; 
   }
