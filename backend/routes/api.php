@@ -8,6 +8,7 @@ use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ResetPassController;
 use App\Http\Controllers\Admin\AdminLoginController;
+use App\Http\Controllers\Admin\AdminLogoutController;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 
 
@@ -42,6 +43,7 @@ Route::post('/reset', [ResetPassController::class, 'reset']);
 
 // admin
 Route::post('/admin/login', AdminLoginController::class);
+Route::middleware('auth:sanctum')->post('/admin/logout', AdminLogoutController::class);
 
 Route::middleware('admin')->get('/admin/dashboard', function () {
     return response()->json(['message' => 'Welcome to the admin dashboard']);
