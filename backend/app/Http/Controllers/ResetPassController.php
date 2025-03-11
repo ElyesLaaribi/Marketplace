@@ -98,6 +98,14 @@ class ResetPassController extends Controller
             ], 400);
         }
 
+        if ($resetRequest->created_at->addMinutes(2)->isPast()) {
+            $resetRequest->delete(); // Delete expired token
+            return response()->json([
+                'error'   => 'Token expired',
+                'message' => 'The reset token has expired. Please request a new one.'
+            ], 400);
+        }
+
         // Update the user's password
         $user->fill([
             'password' => Hash::make($attributes['password']),
