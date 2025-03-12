@@ -1,10 +1,10 @@
 <script setup>
 import api from '../axios.js';
-import { useRouter } from 'vue-router';  // Import useRouter here
+import { useRouter } from 'vue-router';  
 import { computed, ref } from 'vue';
 import { useAdminStore } from '../store/admin.js';
 
-// Get the router instance using useRouter
+
 const router = useRouter();
 
 const adminStore = useAdminStore();
@@ -17,7 +17,7 @@ const toggleMenu = () => {
   localStorage.setItem("is_expanded", isExpanded.value);
 };
 
-// Define the menu items for navigation
+
 const menuItems = [
   { name: 'Dashboard', icon: 'home', route: '/lessorhome' },
   { name: 'Admins', icon: 'fa-regular fa-rectangle-list', route: '/listings' },
@@ -25,16 +25,15 @@ const menuItems = [
 ];
 
 function logout() {
-  // Ensure you send the token in the request header for authentication
   api.post('/api/admin/logout', {}, {
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`  // Ensure you are passing the token here
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`  
     }
   })
   .then(() => {
     adminStore.admin = null; 
     localStorage.removeItem('auth_token');
-    delete api.defaults.headers.common['Authorization']; // Remove the token from defaults
+    delete api.defaults.headers.common['Authorization']; 
     router.push({ name: 'AdminLogin' }).then(() => {
       window.location.reload();
     });

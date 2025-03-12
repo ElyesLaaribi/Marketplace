@@ -70,7 +70,7 @@ async function submit() {
 <template>
   <GuestLayout>
     <h2 class="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900">
-      Welcome back client
+      Welcome back
     </h2>
 
     <div v-if="errorMessage" class="mt-4 text-center text-sm text-red-600">

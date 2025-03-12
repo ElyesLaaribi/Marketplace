@@ -7,6 +7,8 @@ use App\Http\Controllers\LessorController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ResetPassController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminLogoutController;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
@@ -24,11 +26,10 @@ use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 |
 */
 
+// clients and lessors 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
-
 
 Route::middleware('auth:sanctum')->get('/lessor', LessorController::class);
 
@@ -48,3 +49,6 @@ Route::middleware('auth:sanctum')->post('/admin/logout', AdminLogoutController::
 Route::middleware('auth:admin')->get('/admin', function (Request $request) {
     return $request->user(); 
 });
+
+Route::middleware('auth:admin')->apiResource('/users', UsersController::class);
+Route::middleware('auth:admin')->apiResource('/admins', AdminController::class); 
