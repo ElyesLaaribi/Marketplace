@@ -1,6 +1,7 @@
 <script setup>
-import { defineProps, computed, ref } from 'vue';
+import { defineProps, computed, ref, defineEmits } from 'vue';
 import SearchForm from './SearchForm.vue';
+import api from '../axios';
 
 const props = defineProps({
   items: {
@@ -10,10 +11,7 @@ const props = defineProps({
 });
 
 const searchFilter = ref('');
-
-const deleteUser = (id) => {
-  console.log(`Deleting user with ID: ${id}`);
-};
+const isDeleting = ref(false);
 
 const getRoleBadgeClass = (role) => {
   switch (role.toLowerCase()) {
@@ -30,7 +28,8 @@ const filteredItems = computed( () => {
   if (searchFilter.value != '') {
     return props.items.filter(item =>
       String(item.id).toLowerCase().includes(searchFilter.value) || 
-      item.Name.includes(searchFilter.value) || item.Role.includes(searchFilter.value)
+      item.Name.includes(searchFilter.value) || 
+      item.Role.includes(searchFilter.value)
   );
   }
   return props.items;
@@ -39,6 +38,22 @@ const filteredItems = computed( () => {
 const handleSearch = (search) => {
   searchFilter.value = search;
 };
+
+const deleteUser = async (id) => {
+  try {
+    isDeleting.value = true;
+    await api.delete(`/api/users/${id}`);
+    emit('userDeleted', id);
+    alert('User deleted successfully');
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    alert('Failed to delete user. Please try again.');
+  } finally {
+    isDeleting.value = false;
+  }
+};
+
+const emit = defineEmits(['userDeleted']);
 
 </script>
 
