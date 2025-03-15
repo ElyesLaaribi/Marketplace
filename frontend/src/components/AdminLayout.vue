@@ -21,7 +21,7 @@ const toggleMenu = () => {
 const menuItems = [
   { name: 'Dashboard', icon: 'home', route: '/lessorhome' },
   { name: 'Admins', icon: 'fa-regular fa-rectangle-list', route: '/listings' },
-  { name: 'Users', icon: 'plus', route: '/add-listings' },
+  { name: 'Users', icon: 'plus', route: '/users' },
 ];
 
 function logout() {
@@ -76,7 +76,7 @@ function logout() {
             <a href="#" class="flex items-center gap-x-2">
               <img 
                 class="object-cover rounded-full h-7 w-7" 
-                :src="lessor?.avatar || 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&h=634&q=80'" 
+                :src="admin?.avatar || 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&h=634&q=80'" 
                 alt="avatar" 
               />
               <span class="text-sm font-medium text-gray-700 dark:text-gray-200">
