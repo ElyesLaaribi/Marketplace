@@ -33,7 +33,7 @@ const homeRoute = computed(() => {
   } else if (lessorStore.lessor) {
     return "/lessorhome";
   } else if (adminStore.admin && adminStore.admin.role === "admin") {
-    return "/admin-home";
+    return "/AdminHome";
   } else {
     return "/"; 
   }

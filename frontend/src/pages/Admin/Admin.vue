@@ -5,7 +5,7 @@ import AdminLayout from '../../components/AdminLayout.vue';
 <template>
   <AdminLayout>
     <div class="p-8">
-        admin vue
+        admin dashboard
     </div>
   </AdminLayout>
 </template>

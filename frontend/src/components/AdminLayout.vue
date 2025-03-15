@@ -19,9 +19,9 @@ const toggleMenu = () => {
 
 
 const menuItems = [
-  { name: 'Dashboard', icon: 'home', route: '/lessorhome' },
-  { name: 'Admins', icon: 'fa-regular fa-rectangle-list', route: '/listings' },
-  { name: 'Users', icon: 'plus', route: '/users' },
+  { name: 'Dashboard', icon: 'home', route: '/AdminHome' },
+  { name: 'Admins', icon: 'fas fa-user-shield', route: '/admins-list' },
+  { name: 'Users', icon: 'fas fa-users', route: '/users' },
 ];
 
 function logout() {
@@ -47,8 +47,8 @@ function logout() {
 <template>
   <div class="flex">
     <!-- Sidebar Section -->
-    <aside class="flex flex-col w-64 h-screen px-5 py-8 overflow-y-auto bg-white border-r rtl:border-r-0 rtl:border-l dark:bg-gray-900 dark:border-gray-700">
-      <!-- Logo -->
+    <aside class="fixed flex flex-col justify-between left-0 top-0 h-screen w-64 px-5 py-8 overflow-y-auto bg-white border-r dark:bg-gray-900 dark:border-gray-700">
+
       <a href="#">
         <img class="w-auto h-7" src="https://merakiui.com/images/logo.svg" alt="logo" />
       </a>
@@ -84,7 +84,7 @@ function logout() {
               </span>
             </a>
             
-            <a href="#" @click="logout" class="text-gray-500 transition-colors duration-200 rotate-180 dark:text-gray-400 rtl:rotate-0 hover:text-blue-500 dark:hover:text-blue-400">
+            <a href="#" @click="logout" class="text-gray-500 transition-colors duration-200 rotate-180 dark:text-red-400 rtl:rotate-0 hover:text-red-500 dark:hover:text-red-400">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
               </svg>
@@ -93,9 +93,9 @@ function logout() {
         </div>
       </div>
     </aside>
-
     <!-- Main Content Area (Dynamic Content via Slot) -->
-    <main class="flex-1 p-6">
+    <main class="flex-1 p-6 ml-64 h-screen overflow-y-auto">
+
       <slot></slot>
     </main>
   </div>

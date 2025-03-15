@@ -18,4 +18,11 @@ class AdminController extends Controller
     {
         return AdminResource::make($admin);
     }
+    
+    public function destroy(Admin $admin)
+    {
+        $admin->delete();
+
+        return response()->noContent();
+    }
 }
