@@ -86,7 +86,7 @@ class ResetPassController extends Controller
             ], 400);
         }
 
-        if ($resetRequest->created_at->addMinutes(2)->isPast()) {
+        if ($resetRequest->created_at->addMinutes(10)->isPast()) {
             $resetRequest->delete(); 
             return response()->json([
                 'error'   => 'Token expired',

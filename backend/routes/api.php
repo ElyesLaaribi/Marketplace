@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LessorController;
 use App\Http\Controllers\LogoutController;
@@ -27,11 +28,8 @@ use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 |
 */
 
-// clients and lessors 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
 
+Route::middleware('auth:sanctum')->get('/user', UserController::class);
 Route::middleware('auth:sanctum')->get('/lessor', LessorController::class);
 
 Route::post('/login', LoginController::class);
