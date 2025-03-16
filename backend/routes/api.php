@@ -9,6 +9,7 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ResetPassController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Admin\AdminAddController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminLogoutController;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
@@ -52,3 +53,4 @@ Route::middleware('auth:admin')->get('/admin', function (Request $request) {
 
 Route::middleware('auth:admin')->apiResource('/users', UsersController::class);
 Route::middleware('auth:admin')->apiResource('/admins', AdminController::class); 
+Route::middleware('auth:admin')->post('/add-admin', AdminAddController::class);
