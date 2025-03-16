@@ -18,7 +18,6 @@ const isDeleting = ref(false);
 const loading = ref(false);
 const errors = ref({ name: [], email: [], password: [] });
 
-// Ajout de la propriété password_confirmation
 const data = ref({
   name: "",
   email: "",
@@ -71,7 +70,7 @@ const submit = async () => {
   errors.value = { name: [], email: [], password: [] };
   try {
     await api.get("/sanctum/csrf-cookie");
-    console.log("Sending payload:", data.value); // Debug the payload
+    console.log("Sending payload:", data.value);
     const response = await api.post("/api/add-admin", data.value);
     console.log("Response from server:", response);
     alert("Admin account added successfully!");
@@ -108,7 +107,6 @@ const submit = async () => {
       </button>
     </div>
 
-    <!-- Modal for Adding Admin -->
     <teleport to="body">
       <div
         v-if="isOpen"
@@ -228,7 +226,6 @@ const submit = async () => {
       </div>
     </teleport>
 
-    <!-- Data Table -->
     <table class="min-w-full divide-y divide-gray-200">
       <thead class="bg-gray-100">
         <tr>
@@ -286,7 +283,7 @@ const submit = async () => {
             <div class="text-sm text-gray-900">{{ item.Email }}</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">{{ item["User since"] }}</div>
+            <div class="text-sm text-gray-900">{{ item["Admin since"] }}</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
             <span

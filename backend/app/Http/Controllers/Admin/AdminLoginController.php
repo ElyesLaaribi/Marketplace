@@ -11,7 +11,6 @@ class AdminLoginController extends Controller
 {
     public function __invoke(Request $request)
     {
-        // Validate the login request
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string|min:6'
@@ -24,7 +23,7 @@ class AdminLoginController extends Controller
             ], 422); 
         }
     
-        // Check if the admin exists and if the password matches
+
         $admin = Admin::where('email', $request->email)->first();
     
         if (!$admin || !Hash::check($request->password, $admin->password)) {
@@ -37,7 +36,6 @@ class AdminLoginController extends Controller
             ], 401); 
         }
   
-        // Create and return a token for the admin
         $tokenResult = $admin->createToken('Admin Personal Access Token');
         $token = $tokenResult->plainTextToken;
     
