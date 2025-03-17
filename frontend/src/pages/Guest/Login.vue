@@ -89,6 +89,7 @@ async function submit() {
               id="email"
               autocomplete="email"
               v-model="data.email"
+              placeholder="you@example.com"
               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border border-gray-300 placeholder-gray-400 focus:outline-indigo-600"
             />
           </div>
@@ -120,6 +121,7 @@ async function submit() {
               id="password"
               autocomplete="current-password"
               v-model="data.password"
+              placeholder="*************"
               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border border-gray-300 placeholder-gray-400 focus:outline-indigo-600"
             />
           </div>
