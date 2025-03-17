@@ -218,7 +218,7 @@ const submit = async () => {
                 type="submit"
                 class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               >
-                Add new admin
+                Create
               </button>
             </div>
           </form>
