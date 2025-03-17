@@ -116,13 +116,13 @@ function submit() {
       Create new client account
     </h2>
 
-    <div class="mt-4 sm:mx-auto sm:w-full sm:max-w-sm">
+    <div class="mt-1 sm:mx-auto sm:w-full sm:max-w-sm">
       <form @submit.prevent="submit" class="space-y-4">
         <div>
           <label for="name" class="block text-sm/6 font-medium text-gray-900"
             >Full name</label
           >
-          <div class="mt-2">
+          <div class="mt-1">
             <input
               type="text"
               name="name"
@@ -139,7 +139,7 @@ function submit() {
           <label for="email" class="block text-sm/6 font-medium text-gray-900"
             >Email address</label
           >
-          <div class="mt-2">
+          <div class="mt-1">
             <input
               type="email"
               name="email"
@@ -158,7 +158,7 @@ function submit() {
           <label for="country" class="block text-sm/6 font-medium text-gray-900"
             >Country</label
           >
-          <div class="mt-2">
+          <div class="mt-1">
             <input
               type="text"
               name="country"
@@ -176,7 +176,7 @@ function submit() {
           <label for="city" class="block text-sm/6 font-medium text-gray-900"
             >City</label
           >
-          <div class="mt-2">
+          <div class="mt-1">
             <input
               type="text"
               name="city"
@@ -194,7 +194,7 @@ function submit() {
           <label for="id" class="block text-sm/6 font-medium text-gray-900"
             >ID card number</label
           >
-          <div class="mt-2">
+          <div class="mt-1">
             <input
               type="number"
               name="id"
@@ -235,7 +235,7 @@ function submit() {
               >New password</label
             >
           </div>
-          <div class="mt-2">
+          <div class="mt-1">
             <input
               type="password"
               name="password"
@@ -256,7 +256,7 @@ function submit() {
               >Password confirmation</label
             >
           </div>
-          <div class="mt-2">
+          <div class="mt-1">
             <input
               type="password"
               name="password"
