@@ -20,8 +20,8 @@ class RegisterController extends Controller
             'role' => 'required|in:client,lessor',
             'country' => 'required|string',
             'city' => 'required|string',
-            'cin' => 'required|digits:8',
-            'phone' => 'required|string'
+            'cin' => 'required|digits:8|unique:users',
+            'phone' => 'required|string|unique:users'
         ]);
 
         if ($validator->fails()) {
