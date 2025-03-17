@@ -18,6 +18,10 @@ class RegisterController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|string|confirmed|min:6',
             'role' => 'required|in:client,lessor',
+            'country' => 'required|string',
+            'city' => 'required|string',
+            'cin' => 'required|digits:8',
+            'phone' => 'required|string'
         ]);
 
         if ($validator->fails()) {
@@ -31,6 +35,10 @@ class RegisterController extends Controller
             'email' => $request->email,
             'password' => $request->password, 
             'role' => $request->role,
+            'country'  => $request->country,
+            'city'     => $request->city,
+            'cin'      => $request->cin,
+            'phone'    => $request->phone,
         ]);
         
 
