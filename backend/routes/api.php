@@ -35,6 +35,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::middleware('auth:sanctum')->get('/lessor', LessorController::class);
 Route::middleware('auth:sanctum')->get('/profile', [ProfileController::class, 'profile']);
+Route::middleware('auth:sanctum')->post('/change-password', [ProfileController::class, 'changePassword']);
+
 
 Route::post('/login', LoginController::class);
 Route::post('/register', RegisterController::class);
