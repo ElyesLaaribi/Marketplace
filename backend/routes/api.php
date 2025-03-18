@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LessorController;
 use App\Http\Controllers\LogoutController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ResetPassController;
 use App\Http\Controllers\Admin\AdminController;
@@ -33,6 +34,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::middleware('auth:sanctum')->get('/lessor', LessorController::class);
+Route::middleware('auth:sanctum')->get('/profile', [ProfileController::class, 'profile']);
 
 Route::post('/login', LoginController::class);
 Route::post('/register', RegisterController::class);
