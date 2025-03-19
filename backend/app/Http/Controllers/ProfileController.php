@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\ProfileResource;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Requests\ChangePasswordRequest;
 
 class ProfileController extends Controller
@@ -31,5 +32,22 @@ class ProfileController extends Controller
         return response()->json([
             'message' => 'Password updated successfully'
         ], 200);
+    }
+
+    public function updateProfile(UpdateProfileRequest $request)
+    {
+        $user = $request->user();
+
+        $data = array_filter($request->only(['name','email','phone','cin','country','city']));
+        if (empty($data)) {
+            return response()->json(['message' => 'No changes provided'], 400);
+        }
+
+        $user->update($data);
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => $user,    
+        ]);
     }
 }
