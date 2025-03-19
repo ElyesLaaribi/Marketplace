@@ -3,7 +3,10 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use App\Models\Admin;
+use App\Models\Listing;
+use App\Models\Category;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -15,5 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         Admin::factory(10)->create();
         User::factory(10)->create();
+        Category::factory(10)->create();
+        Listing::factory(10)->create();
     }
 }

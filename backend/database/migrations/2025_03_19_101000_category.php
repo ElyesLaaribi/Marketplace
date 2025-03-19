@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('password_resets', function (Blueprint $table) {
+        Schema::create('categories', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
-            $table->string('email')->unique();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
+            $table->string('cat_title');
+            $table->timestamps();
         });
     }
 
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('password_resets');
+        Schema::dropIfExists('categories');
     }
 };

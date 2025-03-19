@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\AdminAddController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminLogoutController;
+use App\Http\Controllers\Category\CategoryController;
+use App\Http\Controllers\Listings\ListingsController;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 
 
@@ -38,6 +40,11 @@ Route::middleware('auth:sanctum')->get('/profile', [ProfileController::class, 'p
 Route::middleware('auth:sanctum')->post('/change-password', [ProfileController::class, 'changePassword']);
 Route::middleware('auth:sanctum')->post('/update-profile', [ProfileController::class, 'updateProfile']);
 
+// listings 
+Route::apiResource('/listings', ListingsController::class);
+
+// Category
+Route::apiResource('/categories', CategoryController::class);
 
 Route::post('/login', LoginController::class);
 Route::post('/register', RegisterController::class);
