@@ -21,6 +21,7 @@ import AdminLogin from "./pages/Admin/AdminLogin.vue";
 import Admin from "./pages/Admin/Admin.vue";
 import Users from "./pages/Admin/Users.vue";
 import AdminsList from "./pages/Admin/AdminsList.vue";
+import Category from "./pages/Admin/Category.vue";
 
 
 
@@ -97,6 +98,7 @@ const routes = [
     { path: "/AdminHome", name: "AdminHome" , component: Admin, beforeEnter: adminGuard},
     { path: "/users", name: "Users" , component: Users, beforeEnter: adminGuard},
     { path: "/admins-list", name: "admins" , component: AdminsList, beforeEnter: adminGuard},
+    { path: "/category", name: "category" , component: Category, beforeEnter: adminGuard},
     
     { path: "/:pathMatch(.*)*", name: "NotFound", component: NotFound }
 ];
