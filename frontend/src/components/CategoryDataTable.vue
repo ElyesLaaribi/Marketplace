@@ -10,9 +10,10 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["categoryDeleted"]);
+const emit = defineEmits(["categoryDeleted", "categoryEdited"]);
 
 const isOpen = ref(false);
+const isEditMode = ref(false);
 const searchFilter = ref("");
 const isDeleting = ref(false);
 const loading = ref(false);
@@ -47,6 +48,7 @@ const deleteCategory = async (id) => {
     await api.delete(`/api/categories/${id}`);
     emit("categoryDeleted", id);
     alert("Category deleted successfully");
+    window.location.reload();
   } catch (error) {
     console.error("Error deleting category:", error);
     alert("Failed to delete category. Please try again.");
@@ -55,16 +57,38 @@ const deleteCategory = async (id) => {
   }
 };
 
+const editCategory = (item) => {
+  data.value = { ...item };
+  isEditMode.value = true;
+  isOpen.value = true;
+};
+
 const submit = async () => {
   loading.value = true;
   errors.value = { cat_title: [] };
   try {
     await api.get("/sanctum/csrf-cookie");
     console.log("Sending payload:", data.value);
-    const response = await api.post("/api/categories", data.value);
+
+    let response;
+    if (isEditMode.value) {
+      response = await api.put(`/api/categories/${data.value.id}`, data.value);
+      emit("categoryEdited", data.value);
+      alert("Category updated successfully!");
+    } else {
+      response = await api.post("/api/categories", data.value);
+      alert("Category added successfully!");
+    }
+
     console.log("Response from server:", response);
-    alert("Category added successfully!");
     isOpen.value = false;
+    data.value = {
+      id: "",
+      cat_title: "",
+      created_at: "",
+    };
+    isEditMode.value = false;
+    window.location.reload();
   } catch (error) {
     console.log("Error response:", error.response);
     if (error.response) {
@@ -83,6 +107,16 @@ const submit = async () => {
     loading.value = false;
   }
 };
+
+const openNewCategoryForm = () => {
+  data.value = {
+    id: "",
+    cat_title: "",
+    created_at: "",
+  };
+  isEditMode.value = false;
+  isOpen.value = true;
+};
 </script>
 
 <template>
@@ -91,7 +125,7 @@ const submit = async () => {
       <SearchForm @search="handleSearch" />
       <button
         class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500 transition"
-        @click="isOpen = true"
+        @click="openNewCategoryForm"
       >
         Add category
       </button>
@@ -107,10 +141,14 @@ const submit = async () => {
             <div class="space-y-6">
               <div>
                 <h2 class="text-lg font-semibold text-gray-900">
-                  Add new category
+                  {{ isEditMode ? "Edit category" : "Add new category" }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-600">
-                  This will create a new category.
+                  {{
+                    isEditMode
+                      ? "This will update the category."
+                      : "This will create a new category."
+                  }}
                 </p>
               </div>
 
@@ -153,7 +191,7 @@ const submit = async () => {
                 type="submit"
                 class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               >
-                Create
+                {{ isEditMode ? "Update" : "Create" }}
               </button>
             </div>
           </form>
@@ -188,7 +226,7 @@ const submit = async () => {
             scope="col"
             class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider"
           >
-            Delete Category
+            Actions
           </th>
         </tr>
       </thead>
@@ -213,28 +251,52 @@ const submit = async () => {
           </td>
 
           <td class="px-6 py-4 whitespace-nowrap text-center">
-            <button
-              @click="deleteCategory(item.id)"
-              class="bg-red-500 text-white p-1 rounded-full hover:bg-red-900 transition"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+            <div class="flex justify-center space-x-2">
+              <button
+                @click="editCategory(item)"
+                class="bg-blue-500 text-white p-1 rounded-full hover:bg-blue-700 transition"
               >
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path
-                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-                ></path>
-                <line x1="10" y1="11" x2="10" y2="17"></line>
-                <line x1="14" y1="11" x2="14" y2="17"></line>
-              </svg>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                  ></path>
+                  <path
+                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                  ></path>
+                </svg>
+              </button>
+              <button
+                @click="deleteCategory(item.id)"
+                class="bg-red-500 text-white p-1 rounded-full hover:bg-red-900 transition"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path
+                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                  ></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>

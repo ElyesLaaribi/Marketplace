@@ -44,7 +44,7 @@ Route::middleware('auth:sanctum')->post('/update-profile', [ProfileController::c
 Route::apiResource('/listings', ListingsController::class);
 
 // Category
-Route::apiResource('/categories', CategoryController::class);
+Route::middleware('auth:admin')->apiResource('/categories', CategoryController::class);
 
 Route::post('/login', LoginController::class);
 Route::post('/register', RegisterController::class);

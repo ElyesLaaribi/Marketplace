@@ -57,7 +57,10 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        //
+        $category->cat_title = $request->cat_title;
+        $category->save();
+
+        return CategoryResource::make($category);
     }
 
     /**
@@ -65,6 +68,15 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        //
+        $category->delete();
+
+        return response()->noContent();
+
+        // if ($category->listings()->exists()) {
+        //     return response()->json(['error' => 'Cannot delete category with active listings'], 400);
+        // }
+        
+        // $category->delete();
+        // return response()->json(['message' => 'Category deleted successfully']);
     }
 }
