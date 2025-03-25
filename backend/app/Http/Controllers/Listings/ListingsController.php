@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Listings;
 use App\Models\Listing;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ListingResource;
+use App\Http\Requests\StoreListingRequest;
 
 
 class ListingsController extends Controller
@@ -14,7 +16,7 @@ class ListingsController extends Controller
      */
     public function index()
     {
-        return Listing::all();
+        return ListingResource::collection(Listing::all());
     }
 
     /**
@@ -28,9 +30,20 @@ class ListingsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreListingRequest $request)
     {
-        //
+        $imagePath = $request->hasFile('image') 
+            ? $request->file('image')->store('listings', 'public') 
+            : null;
+
+        $listing = Listing::create(
+            array_merge(
+                $request->validated(), 
+                ['image' => $imagePath]
+            )
+        );
+
+        return ListingResource::make($listing);
     }
 
     /**
@@ -38,7 +51,7 @@ class ListingsController extends Controller
      */
     public function show(Listing $listing)
     {
-        //
+        return ListingResource::make($listing);
     }
 
     /**
