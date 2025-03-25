@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ListingResource;
 use App\Http\Requests\StoreListingRequest;
+use App\Http\Requests\UpdateListingRequest;
 
 
 class ListingsController extends Controller
@@ -54,20 +55,24 @@ class ListingsController extends Controller
         return ListingResource::make($listing);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Listing $listing)
-    {
-        //
-    }
+
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Listing $listing)
+    public function update(UpdateListingRequest $request, Listing $listing)
     {
-        //
+        
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('listings', 'public');
+            $data['image'] = $imagePath;
+        }
+    
+        $listing->update($data);
+    
+        return ListingResource::make($listing);
     }
 
     /**
@@ -75,6 +80,7 @@ class ListingsController extends Controller
      */
     public function destroy(Listing $listing)
     {
-        //
+        $listing->delete();
+        return response()->noContent();
     }
 }

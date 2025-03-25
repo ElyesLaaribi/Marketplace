@@ -10,7 +10,7 @@ class Listing extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'price', 'description', 'category_id', 'image', 'status'];
+    protected $fillable = ['name', 'price', 'description', 'image', 'category_id',  'status'];
 
     public function category()
     {
