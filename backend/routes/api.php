@@ -41,7 +41,7 @@ Route::middleware('auth:sanctum')->post('/change-password', [ProfileController::
 Route::middleware('auth:sanctum')->post('/update-profile', [ProfileController::class, 'updateProfile']);
 
 // listings 
-Route::apiResource('/listings', ListingsController::class);
+Route::middleware('auth:sanctum')->apiResource('/listings', ListingsController::class);
 
 // Category
 Route::middleware('auth:admin')->apiResource('/categories', CategoryController::class);
