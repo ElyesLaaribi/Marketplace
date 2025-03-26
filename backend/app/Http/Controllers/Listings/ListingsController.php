@@ -12,12 +12,30 @@ use App\Http\Requests\UpdateListingRequest;
 
 class ListingsController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Listing::class); 
+    }
     /**
      * Display a listing of the resource.
      */
+    // public function index()
+    // {
+    //     $listings = Listing::where('user_id', auth()->id())
+    //         ->with('category')
+    //         ->latest()
+    //         ->get();
+    //     return ListingResource::collection($listings);
+    //     // return ListingResource::collection(Listing::with('category')->get());
+    // }
     public function index()
     {
-        return ListingResource::collection(Listing::with('category')->get());
+        $listings = Listing::where('user_id', auth()->id())
+            ->with('category')
+            ->latest()
+            ->get();
+
+        return ListingResource::collection($listings);
     }
 
     /**
@@ -32,7 +50,10 @@ class ListingsController extends Controller
         $listing = Listing::create(
             array_merge(
                 $request->validated(), 
-                ['image' => $imagePath]
+                [
+                    'user_id' => auth()->id(),
+                    'image' => $imagePath
+                ]
             )
         );
 
@@ -44,7 +65,6 @@ class ListingsController extends Controller
      */
     public function show(Listing $listing)
     {
-        $this->authorize('view', $listing);
         return ListingResource::make($listing->load('category'));
     }
 
