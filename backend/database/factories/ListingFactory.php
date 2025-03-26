@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -23,6 +24,7 @@ class ListingFactory extends Factory
             'description' => substr($this->faker->paragraph(), 0, 250),
             'image' => $this->faker->imageUrl(),
             'category_id' => Category::inRandomOrder()->value('id') ?? 1,
+            'user_id' => User::inRandomOrder()->value('id') ?? 1,
             'status' => $this->faker->boolean(), 
         ];
     }

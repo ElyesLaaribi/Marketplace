@@ -88,7 +88,6 @@ const routes = [
     // lessor
     { path: "/lessorhome", name: "LessorHome", component: LessorHome, beforeEnter: lessorGuard },
     { path: "/listings", name: "Listings", component: Listings, beforeEnter: lessorGuard },
-    { path: "/add-listings" , name: "AddListings", component: AddListings, beforeEnter: lessorGuard },
     { path: "/dms", name: "DMs", component: Messages, beforeEnter: lessorGuard },
     { path: "/lessor-profile", name: "Profile", component: Profile, beforeEnter: lessorGuard },
     { path: "/reservations", name: "Reservations" , component: Reservations, beforeEnter: lessorGuard },

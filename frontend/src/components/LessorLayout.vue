@@ -21,7 +21,6 @@ const menuItems = [
     icon: "fa-regular fa-rectangle-list",
     route: "/listings",
   },
-  { name: "Add listing", icon: "plus", route: "/add-listings" },
   { name: "DMs", icon: "envelope", route: "/DMS" },
   { name: "Reservations", icon: "clipboard-list", route: "/reservations" },
   { name: "Reporting", icon: "fa-solid fa-chart-line", route: "/reporting" },
