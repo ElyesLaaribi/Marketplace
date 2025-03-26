@@ -44,6 +44,7 @@ class ListingsController extends Controller
      */
     public function show(Listing $listing)
     {
+        $this->authorize('view', $listing);
         return ListingResource::make($listing->load('category'));
     }
 
