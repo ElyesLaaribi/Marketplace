@@ -21,6 +21,7 @@ class ListingResource extends JsonResource
             'description' => $this->description,
             'image' => $this->image ? asset('storage/' . $this->image) : null,
             'category_id' => $this->category_id,
+            'cat_title' => optional($this->category)->cat_title,
         ];
     }
 }

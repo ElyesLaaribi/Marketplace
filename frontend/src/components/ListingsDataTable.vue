@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, computed, ref, defineEmits } from "vue";
+import { defineProps, computed, ref, defineEmits, onMounted } from "vue";
 import SearchForm from "./SearchForm.vue";
 import api from "../axios";
 
@@ -19,16 +19,44 @@ const isDeleting = ref(false);
 const loading = ref(false);
 const errors = ref({});
 const imagePreview = ref(null);
+const categories = ref([]);
 
 const data = ref({
   id: "",
   name: "",
   price: "",
   image: null,
-  category_id: "",
+  description: "",
 });
 
 const imageFile = ref(null);
+
+const fetchCategories = async () => {
+  try {
+    const response = await api.get("/api/categories");
+    if (response.data.data && Array.isArray(response.data.data)) {
+      categories.value = response.data.data;
+      console.log("Categories loaded successfully:", categories.value);
+
+      if (categories.value.length > 0) {
+        data.value.category_id = categories.value[0].id;
+      }
+    } else {
+      console.error("Invalid categories data structure:", response.data);
+      alert("Unexpected data format when fetching categories.");
+    }
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    if (error.response) {
+      console.error("Error details:", error.response.data);
+      alert(`Failed to fetch categories: ${error.response.data.message}`);
+    } else {
+      alert("Network error fetching categories. Please try again.");
+    }
+  }
+};
+
+onMounted(fetchCategories);
 
 const filteredItems = computed(() => {
   if (searchFilter.value !== "") {
@@ -52,7 +80,6 @@ const handleImageChange = (event) => {
   if (file) {
     imageFile.value = file;
 
-    // Create image preview
     const reader = new FileReader();
     reader.onload = (e) => {
       imagePreview.value = e.target.result;
@@ -77,7 +104,7 @@ const deleteListing = async (id) => {
 };
 
 const editCategory = (item) => {
-  data.value = { ...item };
+  data.value = { ...item, category_id: item.category_id };
   imagePreview.value = item.image;
   isEditMode.value = true;
   isOpen.value = true;
@@ -89,24 +116,20 @@ const submit = async () => {
 
   try {
     await api.get("/sanctum/csrf-cookie");
-
-    // Create FormData for file upload
     const formData = new FormData();
 
-    // Append other form fields
     formData.append("name", data.value.name);
     formData.append("price", data.value.price);
     formData.append("category_id", data.value.category_id);
+    formData.append("description", data.value.description);
 
-    // Append image if a new file is selected
     if (imageFile.value) {
       formData.append("image", imageFile.value);
     }
 
     let response;
     if (isEditMode.value) {
-      // For update, add the ID to the FormData
-      formData.append("_method", "PUT"); // Laravel method spoofing for PUT request
+      formData.append("_method", "PUT");
       response = await api.post(`/api/listings/${data.value.id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -126,13 +149,14 @@ const submit = async () => {
     console.log("Response from server:", response);
     isOpen.value = false;
 
-    // Reset form
     data.value = {
       id: "",
       name: "",
       price: "",
       image: null,
+      cat_title: "",
       category_id: "",
+      description: "",
     };
     imageFile.value = null;
     imagePreview.value = null;
@@ -164,12 +188,18 @@ const openNewListingForm = () => {
     price: "",
     image: null,
     category_id: "",
+    cat_title: "",
+    description: "",
   };
   imageFile.value = null;
   imagePreview.value = null;
   isEditMode.value = false;
   isOpen.value = true;
 };
+
+defineExpose({
+  categories,
+});
 </script>
 
 <template>
@@ -283,7 +313,7 @@ const openNewListingForm = () => {
                           />
                         </div>
                         <p v-if="!imagePreview" class="text-xs text-gray-500">
-                          PNG, JPG, GIF up to 10MB
+                          PNG, JPG, GIF
                         </p>
                         <button
                           v-if="imagePreview"
@@ -305,22 +335,51 @@ const openNewListingForm = () => {
 
                   <div>
                     <label
-                      for="category_id"
+                      for="cat_title"
                       class="block text-sm font-medium text-gray-900"
-                      >Category ID</label
+                      >Category</label
                     >
-                    <input
-                      type="number"
+                    <select
                       v-model="data.category_id"
                       id="category_id"
                       name="category_id"
                       class="bg-white mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 placeholder-gray-400 focus:border-indigo-600 focus:ring-indigo-600 sm:text-sm"
-                    />
+                    >
+                      <option value="" disabled>Select a Category</option>
+                      <option
+                        v-for="category in categories"
+                        :key="category.id"
+                        :value="category.id"
+                      >
+                        {{ category.cat_title }}
+                      </option>
+                    </select>
                     <p
-                      v-if="errors.category_id"
+                      v-if="errors.cat_title"
                       class="text-red-500 text-xs mt-1"
                     >
-                      {{ errors.category_id[0] }}
+                      {{ errors.cat_title[0] }}
+                    </p>
+                  </div>
+                  <div class="sm:col-span-2">
+                    <label
+                      for="description"
+                      class="block text-sm font-medium text-gray-900"
+                    >
+                      Description
+                    </label>
+                    <textarea
+                      v-model="data.description"
+                      id="description"
+                      name="description"
+                      rows="3"
+                      class="bg-white mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 placeholder-gray-400 focus:border-indigo-600 focus:ring-indigo-600 sm:text-sm"
+                    ></textarea>
+                    <p
+                      v-if="errors.description"
+                      class="text-red-500 text-xs mt-1"
+                    >
+                      {{ errors.description[0] }}
                     </p>
                   </div>
                 </div>
@@ -377,7 +436,7 @@ const openNewListingForm = () => {
             scope="col"
             class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
           >
-            Category ID
+            Category
           </th>
           <th
             scope="col"
@@ -409,11 +468,11 @@ const openNewListingForm = () => {
             </div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">${{ item.price }}</div>
+            <div class="text-sm text-gray-900">{{ item.price }} TND</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
             <div class="text-sm text-gray-900">
-              {{ item.category_id }}
+              {{ item.cat_title }}
             </div>
           </td>
 

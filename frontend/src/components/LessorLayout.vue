@@ -94,7 +94,7 @@ function logout() {
             <a
               href="#"
               @click="logout"
-              class="text-gray-500 transition-colors duration-200 rotate-180 dark:text-gray-400 rtl:rotate-0 hover:text-blue-500 dark:hover:text-blue-400"
+              class="text-gray-500 transition-colors duration-200 rotate-180 dark:text-gray-400 rtl:rotate-0 hover:text-red-700 dark:hover:text-red-400"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

@@ -17,15 +17,7 @@ class ListingsController extends Controller
      */
     public function index()
     {
-        return ListingResource::collection(Listing::all());
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return ListingResource::collection(Listing::with('category')->get());
     }
 
     /**
@@ -44,7 +36,7 @@ class ListingsController extends Controller
             )
         );
 
-        return ListingResource::make($listing);
+        return ListingResource::make($listing->load('category'));
     }
 
     /**
@@ -52,17 +44,14 @@ class ListingsController extends Controller
      */
     public function show(Listing $listing)
     {
-        return ListingResource::make($listing);
+        return ListingResource::make($listing->load('category'));
     }
-
-
 
     /**
      * Update the specified resource in storage.
      */
     public function update(UpdateListingRequest $request, Listing $listing)
     {
-        
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
@@ -72,7 +61,7 @@ class ListingsController extends Controller
     
         $listing->update($data);
     
-        return ListingResource::make($listing);
+        return ListingResource::make($listing->load('category'));
     }
 
     /**
