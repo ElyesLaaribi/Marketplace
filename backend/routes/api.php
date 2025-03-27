@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\AdminLogoutController;
 use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Listings\ListingsController;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
+use App\Http\Controllers\Listings\RetrieveListingsController;
 
 
 
@@ -42,6 +43,7 @@ Route::middleware('auth:sanctum')->post('/update-profile', [ProfileController::c
 
 // listings 
 Route::middleware('auth:sanctum')->apiResource('/listings', ListingsController::class);
+Route::apiResource('/public-listings', RetrieveListingsController::class);
 
 // Category
 Route::apiResource('/categories', CategoryController::class);
