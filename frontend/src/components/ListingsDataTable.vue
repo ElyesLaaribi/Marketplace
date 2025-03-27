@@ -1,8 +1,16 @@
 <script setup>
 import { defineProps, computed, ref, defineEmits, onMounted } from "vue";
+import {
+  Listbox,
+  ListboxButton,
+  ListboxLabel,
+  ListboxOption,
+  ListboxOptions,
+} from "@headlessui/vue";
+import { ChevronUpDownIcon } from "@heroicons/vue/16/solid";
+import { CheckIcon } from "@heroicons/vue/20/solid";
 import SearchForm from "./SearchForm.vue";
 import api from "../axios";
-
 const props = defineProps({
   items: {
     type: Array,
@@ -275,92 +283,96 @@ defineExpose({
                     </p>
                   </div>
 
-                  <div class="sm:col-span-2">
-                    <label
-                      for="image"
-                      class="block text-sm font-medium text-gray-900"
-                      >Image Upload</label
+                  <div>
+                    <Listbox
+                      v-model="data.category_id"
+                      as="div"
+                      class="sm:col-span-2"
                     >
-                    <div
-                      class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md"
-                    >
-                      <div class="space-y-1 text-center">
-                        <div
-                          v-if="!imagePreview"
-                          class="flex text-sm text-gray-600"
+                      <ListboxLabel
+                        class="block text-sm font-medium text-gray-900 mb-1"
+                      >
+                        Category
+                      </ListboxLabel>
+                      <div class="relative mt-2">
+                        <ListboxButton
+                          class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-md ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                         >
-                          <label
-                            for="file-upload"
-                            class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                          <span class="block truncate">
+                            {{
+                              categories.find(
+                                (cat) => cat.id === data.category_id
+                              )?.cat_title || "Select a category"
+                            }}
+                          </span>
+                          <span
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"
                           >
-                            <span>Upload a file</span>
-                            <input
-                              id="file-upload"
-                              name="file-upload"
-                              type="file"
-                              class="sr-only"
-                              @change="handleImageChange"
-                              accept="image/*"
+                            <ChevronUpDownIcon
+                              class="h-5 w-5 text-gray-400"
+                              aria-hidden="true"
                             />
-                          </label>
-                          <p class="pl-1">or drag and drop</p>
-                        </div>
-                        <div v-if="imagePreview" class="flex justify-center">
-                          <img
-                            :src="imagePreview"
-                            alt="Preview"
-                            class="h-44 w-auto object-contain"
-                          />
-                        </div>
-                        <p v-if="!imagePreview" class="text-xs text-gray-500">
-                          PNG, JPG, GIF
-                        </p>
-                        <button
-                          v-if="imagePreview"
-                          type="button"
-                          @click="
-                            imagePreview = null;
-                            imageFile = null;
-                          "
-                          class="mt-2 text-sm text-red-600 hover:text-red-800"
+                          </span>
+                        </ListboxButton>
+
+                        <transition
+                          leave-active-class="transition ease-in duration-100"
+                          leave-from-class="opacity-100"
+                          leave-to-class="opacity-0"
                         >
-                          Remove Image
-                        </button>
+                          <ListboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                          >
+                            <ListboxOption
+                              v-for="category in categories"
+                              :key="category.id"
+                              :value="category.id"
+                              v-slot="{ active, selected }"
+                              as="template"
+                            >
+                              <li
+                                :class="[
+                                  active
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'text-gray-900',
+                                  'relative cursor-default select-none py-2 pl-3 pr-9',
+                                ]"
+                              >
+                                <span
+                                  :class="[
+                                    selected ? 'font-semibold' : 'font-normal',
+                                    'block truncate',
+                                  ]"
+                                >
+                                  {{ category.cat_title }}
+                                </span>
+
+                                <span
+                                  v-if="selected"
+                                  :class="[
+                                    active ? 'text-white' : 'text-indigo-600',
+                                    'absolute inset-y-0 right-0 flex items-center pr-4',
+                                  ]"
+                                >
+                                  <CheckIcon
+                                    class="h-5 w-5"
+                                    aria-hidden="true"
+                                  />
+                                </span>
+                              </li>
+                            </ListboxOption>
+                          </ListboxOptions>
+                        </transition>
                       </div>
-                    </div>
-                    <p v-if="errors.image" class="text-red-500 text-xs mt-1">
-                      {{ errors.image[0] }}
+                    </Listbox>
+                    <p
+                      v-if="errors.category_id"
+                      class="text-red-500 text-xs mt-1"
+                    >
+                      {{ errors.category_id[0] }}
                     </p>
                   </div>
 
-                  <div>
-                    <label
-                      for="cat_title"
-                      class="block text-sm font-medium text-gray-900"
-                      >Category</label
-                    >
-                    <select
-                      v-model="data.category_id"
-                      id="category_id"
-                      name="category_id"
-                      class="bg-white mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 placeholder-gray-400 focus:border-indigo-600 focus:ring-indigo-600 sm:text-sm"
-                    >
-                      <option value="" disabled>Select a Category</option>
-                      <option
-                        v-for="category in categories"
-                        :key="category.id"
-                        :value="category.id"
-                      >
-                        {{ category.cat_title }}
-                      </option>
-                    </select>
-                    <p
-                      v-if="errors.cat_title"
-                      class="text-red-500 text-xs mt-1"
-                    >
-                      {{ errors.cat_title[0] }}
-                    </p>
-                  </div>
                   <div class="sm:col-span-2">
                     <label
                       for="description"
