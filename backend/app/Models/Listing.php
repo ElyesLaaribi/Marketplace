@@ -2,10 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\User;
-use App\Models\Category;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Listing extends Model
 {
@@ -15,11 +13,23 @@ class Listing extends Model
         'name', 
         'price', 
         'description', 
-        'image', 
+        'images',  
         'category_id', 
         'user_id', 
         'status'
     ];
+
+    public function setImagesAttribute($value)
+    {
+        $this->attributes['images'] = is_array($value) 
+            ? json_encode($value) 
+            : $value;
+    }
+
+    public function getImagesAttribute($value)
+    {
+        return json_decode($value, true) ?? [];
+    }
 
     public function category()
     {

@@ -7,11 +7,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ListingResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
@@ -19,7 +14,8 @@ class ListingResource extends JsonResource
             'name' => $this->name,
             'price' => $this->price,
             'description' => $this->description,
-            'image' => $this->image ? asset('storage/' . $this->image) : null,
+            'images' => collect($this->images ?? [])->map(fn($image) => asset('storage/' . $image))->filter(),
+            'image_paths' => $this->images, 
             'category_id' => $this->category_id,
             'user_id' => $this->user_id,
             'cat_title' => optional($this->category)->cat_title,

@@ -25,7 +25,8 @@ class StoreListingRequest extends FormRequest
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'images' => 'required|array|min:1',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif',
             'category_id' => 'required|exists:categories,id',
             'status' => 'boolean'
         ];

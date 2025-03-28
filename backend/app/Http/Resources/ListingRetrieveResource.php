@@ -18,7 +18,9 @@ class ListingRetrieveResource extends JsonResource
             'name' => $this->name,
             'price' => $this->price,
             'description' => $this->description,
-            'image' => $this->image ? asset('storage/' . $this->image) : null,
+            'images' => collect($this->images ?? [])->map(function ($image) {
+                return $image ? asset('storage/' . $image) : null;
+            })->filter(),
         ];
     }
 }

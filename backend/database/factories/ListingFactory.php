@@ -22,7 +22,10 @@ class ListingFactory extends Factory
             'name' => $this->faker->sentence(),
             'price' => $this->faker->numberBetween(20, 300),
             'description' => substr($this->faker->paragraph(), 0, 250),
-            'image' => $this->faker->imageUrl(),
+            'images' => json_encode([
+                'https://via.placeholder.com/640x480.png/003399?text=image1',
+                'https://via.placeholder.com/640x480.png/003399?text=image2'
+            ]),
             'category_id' => Category::inRandomOrder()->value('id') ?? 1,
             'user_id' => User::inRandomOrder()->value('id') ?? 1,
             'status' => $this->faker->boolean(), 
