@@ -6,6 +6,7 @@ import api from "../axios.js";
 import router from "../router.js";
 import { computed } from "vue";
 import useLessorStore from "../store/lessor.js";
+import SearchForm from "./SearchForm.vue";
 
 const userStore = useLessorStore();
 const user = computed(() => userStore.user);
@@ -53,6 +54,7 @@ function logout() {
                 alt="Your Company"
               />
             </div>
+            <SearchForm @search="handleSearch" />
           </div>
           <div
             class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0"

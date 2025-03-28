@@ -1,9 +1,20 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import DefaultLayout from "../../components/DefaultLayout.vue";
 import api from "../../axios";
+import CategoryBar from "../../components/CategoryBar.vue";
 
 const products = ref([]);
+const selectedCategory = ref(null);
+
+const filteredProducts = computed(() => {
+  if (!selectedCategory.value) return products.value;
+
+  // Implement category filtering logic
+  return products.value.filter(
+    (product) => product.category === selectedCategory.value
+  );
+});
 
 onMounted(() => {
   api.get("/api/public-listings").then((response) => {
@@ -15,11 +26,14 @@ onMounted(() => {
           product.images && product.images.length
             ? product.images[0]
             : "fallback-image.jpg",
-        imageAlt: product.name || "Product image",
       };
     });
   });
 });
+
+const handleCategorySelect = (category) => {
+  selectedCategory.value = category;
+};
 </script>
 
 <template>
@@ -31,7 +45,9 @@ onMounted(() => {
         </h1>
       </div>
     </header>
-
+    <div class="mx-auto max-w-7xl">
+      <CategoryBar @category-selected="handleCategorySelect" />
+    </div>
     <div class="bg-white">
       <div
         class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8"
@@ -49,7 +65,6 @@ onMounted(() => {
           >
             <img
               :src="product.imageSrc"
-              :alt="product.imageAlt"
               class="aspect-square w-full rounded-lg bg-gray-200 object-cover group-hover:opacity-75 xl:aspect-7/8"
             />
             <h3 class="mt-4 text-lg font-medium text-gray-900">
