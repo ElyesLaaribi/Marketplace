@@ -18,7 +18,7 @@ class UpdateListingRequest extends FormRequest
             'price' => 'sometimes|numeric|min:0',
             'description' => 'sometimes|string',
             'images' => 'sometimes|array|min:1',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp,svg',
             'deleted_images' => 'sometimes|array',
             'deleted_images.*' => 'string',
             'category_id' => 'sometimes|exists:categories,id',
