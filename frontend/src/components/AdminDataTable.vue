@@ -110,7 +110,7 @@ const submit = async () => {
     <teleport to="body">
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       >
         <div class="bg-gray-100 rounded-lg shadow-lg max-w-3xl w-full p-6">
           <form @submit.prevent="submit">
@@ -296,7 +296,8 @@ const submit = async () => {
           <td class="px-6 py-4 whitespace-nowrap text-center">
             <button
               @click="deleteUser(item.id)"
-              class="bg-red-500 text-white p-1 rounded-full hover:bg-red-900 transition"
+              c
+              class="text-red-600 hover:text-red-900"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

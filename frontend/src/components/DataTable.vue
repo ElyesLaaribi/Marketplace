@@ -133,7 +133,7 @@ const emit = defineEmits(["userDeleted"]);
           <td class="px-6 py-4 whitespace-nowrap text-center">
             <button
               @click="deleteUser(item.id)"
-              class="bg-red-500 text-white p-1 rounded-full hover:bg-red-900 transition"
+              class="text-red-600 hover:text-red-900"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
