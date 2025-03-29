@@ -127,7 +127,6 @@ onMounted(fetchCategories);
 </template>
 
 <style scoped>
-/* Hide scrollbar for Chrome, Safari and Opera */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }

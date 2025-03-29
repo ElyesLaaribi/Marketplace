@@ -1,15 +1,32 @@
 <script setup>
-import { Bars3Icon, XMarkIcon, BellIcon } from "@heroicons/vue/24/solid";
+import {
+  Bars3Icon,
+  XMarkIcon,
+  BellIcon,
+  UserIcon,
+} from "@heroicons/vue/24/solid";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/vue";
 import api from "../axios.js";
 import router from "../router.js";
-import { computed } from "vue";
-import useLessorStore from "../store/lessor.js";
-import SearchForm from "./SearchForm.vue";
+import { computed, ref, onMounted } from "vue";
+import { useUserStore } from "../store/user.js";
 
-const userStore = useLessorStore();
+const userStore = useUserStore();
 const user = computed(() => userStore.user);
+const unreadNotifications = ref(0);
+const navigation = ref([
+  { name: "Browse", href: "/home", current: true },
+  { name: "My Rentals", href: "/rentals", current: false },
+]);
+
+onMounted(() => {
+  const currentPath = window.location.pathname;
+  navigation.value.forEach((item) => {
+    item.current =
+      currentPath === item.href || currentPath.startsWith(item.href);
+  });
+});
 
 function logout() {
   api
@@ -29,63 +46,138 @@ function logout() {
 </script>
 
 <template>
-  <div>
-    <Disclosure as="nav" class="bg-blue-200" v-slot="{ open }">
-      <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-        <div class="relative flex h-16 items-center justify-between">
+  <div class="min-h-screen flex flex-col bg-gray-50">
+    <Disclosure as="nav" class="bg-gray-800" v-slot="{ open }">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="relative flex items-center justify-between h-16">
+          <!-- Mobile menu button -->
           <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-            <!-- Mobile menu button-->
             <DisclosureButton
-              class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-none focus:ring-inset"
+              class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+              aria-controls="mobile-menu"
+              aria-expanded="false"
             >
-              <span class="absolute -inset-0.5" />
-              <span class="sr-only">Open main menu</span>
-              <Bars3Icon v-if="!open" class="block size-6" aria-hidden="true" />
-              <XMarkIcon v-else class="block size-6" aria-hidden="true" />
+              <span class="sr-only">{{
+                open ? "Close main menu" : "Open main menu"
+              }}</span>
+              <Bars3Icon
+                v-if="!open"
+                class="block h-6 w-6"
+                aria-hidden="true"
+              />
+              <XMarkIcon v-else class="block h-6 w-6" aria-hidden="true" />
             </DisclosureButton>
           </div>
+
+          <!-- Logo and navigation -->
           <div
-            class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start"
+            class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start"
           >
-            <div class="flex shrink-0 items-center">
-              <img
-                class="h-8 w-auto"
-                src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
-                alt="Your Company"
-              />
+            <div class="flex-shrink-0 flex items-center">
+              <router-link to="/" class="flex items-center">
+                <img
+                  class="h-8 w-auto"
+                  src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
+                  alt="Company Logo"
+                />
+                <span
+                  class="ml-2 text-white font-semibold text-lg hidden sm:block"
+                  >RentApp</span
+                >
+              </router-link>
             </div>
-            <SearchForm @search="handleSearch" />
+
+            <!-- Desktop navigation -->
+            <div class="hidden sm:ml-6 sm:flex sm:space-x-4">
+              <router-link
+                v-for="item in navigation"
+                :key="item.name"
+                :to="item.href"
+                :class="[
+                  item.current
+                    ? 'bg-gray-900 text-white'
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                  'px-3 py-2 rounded-md text-sm font-medium',
+                ]"
+                :aria-current="item.current ? 'page' : undefined"
+              >
+                {{ item.name }}
+              </router-link>
+            </div>
           </div>
+
+          <!-- Right side: notifications and profile -->
           <div
             class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0"
           >
+            <!-- Notifications -->
             <button
               type="button"
-              class="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-none"
+              class="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+              aria-label="View notifications"
             >
-              <span class="absolute -inset-1.5" />
-              <span class="sr-only">View notifications</span>
-              <BellIcon class="size-6" aria-hidden="true" />
+              <BellIcon class="h-6 w-6" aria-hidden="true" />
+              <span
+                v-if="unreadNotifications > 0"
+                class="absolute top-0 right-0 block h-4 w-4 rounded-full bg-red-500 text-xs text-white text-center"
+              >
+                {{ unreadNotifications }}
+              </span>
             </button>
 
             <!-- Profile dropdown -->
-            <Menu as="div" class="relative ml-3">
+            <Menu as="div" class="ml-3 relative">
               <div>
                 <MenuButton
-                  class="relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-none"
+                  class="flex items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                 >
-                  <span class="absolute -inset-1.5" />
                   <span class="sr-only">Open user menu</span>
-                  <img
-                    class="size-8 rounded-full"
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                    alt=""
-                  />
-                  <span v-if="user" class="mt-1 text-white ml-3">{{
-                    user.name
-                  }}</span>
+                  <div v-if="user" class="flex items-center">
+                    <img
+                      v-if="user.avatar"
+                      class="h-8 w-8 rounded-full object-cover"
+                      :src="user.avatar"
+                      :alt="`${user.name}'s avatar`"
+                    />
+                    <div
+                      v-else
+                      class="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center"
+                    >
+                      <UserIcon class="h-5 w-5 text-white" aria-hidden="true" />
+                    </div>
+                    <span class="ml-2 text-white text-sm hidden md:block">{{
+                      user.name
+                    }}</span>
+                    <svg
+                      class="ml-1 h-4 w-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div v-else class="flex items-center">
+                    <div
+                      class="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center"
+                    >
+                      <UserIcon
+                        class="h-5 w-5 text-gray-300"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <span class="ml-2 text-gray-300 text-sm hidden md:block"
+                      >Login</span
+                    >
+                  </div>
                 </MenuButton>
               </div>
+
               <transition
                 enter-active-class="transition ease-out duration-100"
                 enter-from-class="transform opacity-0 scale-95"
@@ -95,28 +187,72 @@ function logout() {
                 leave-to-class="transform opacity-0 scale-95"
               >
                 <MenuItems
-                  class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 ring-1 shadow-lg ring-black/5 focus:outline-none"
+                  class="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
                 >
-                  <MenuItem v-slot="{ active }">
+                  <MenuItem v-if="user" v-slot="{ active }">
                     <router-link
                       :to="{ name: 'client-profile' }"
                       :class="[
-                        active ? 'bg-gray-100 outline-hidden' : '',
-                        'block px-4 py-2 text-sm text-gray-700',
+                        active ? 'bg-gray-100' : '',
+                        'flex items-center px-4 py-2 text-sm text-gray-700',
                       ]"
-                      >Your Profile</router-link
                     >
+                      <UserIcon
+                        class="mr-3 h-5 w-5 text-gray-400"
+                        aria-hidden="true"
+                      />
+                      Your Profile
+                    </router-link>
                   </MenuItem>
-                  <MenuItem v-slot="{ active }">
-                    <a
-                      href="#"
+
+                  <MenuItem v-if="user" v-slot="{ active }">
+                    <button
                       @click="logout"
                       :class="[
-                        active ? 'bg-gray-100 outline-hidden' : '',
-                        'block px-4 py-2 text-sm text-gray-700',
+                        active ? 'bg-gray-100' : '',
+                        'flex items-center w-full text-left px-4 py-2 text-sm text-gray-700',
                       ]"
-                      >Sign out</a
                     >
+                      <svg
+                        class="mr-3 h-5 w-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        />
+                      </svg>
+                      Sign out
+                    </button>
+                  </MenuItem>
+
+                  <MenuItem v-if="!user" v-slot="{ active }">
+                    <router-link
+                      :to="{ name: 'Login' }"
+                      :class="[
+                        active ? 'bg-gray-100' : '',
+                        'flex items-center px-4 py-2 text-sm text-gray-700',
+                      ]"
+                    >
+                      <svg
+                        class="mr-3 h-5 w-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                        />
+                      </svg>
+                      Login
+                    </router-link>
                   </MenuItem>
                 </MenuItems>
               </transition>
@@ -124,10 +260,79 @@ function logout() {
           </div>
         </div>
       </div>
+
+      <!-- Mobile menu -->
+      <DisclosurePanel class="sm:hidden" id="mobile-menu">
+        <div class="px-2 pt-2 pb-3 space-y-1">
+          <DisclosureButton
+            v-for="item in navigation"
+            :key="item.name"
+            as="a"
+            :href="item.href"
+            :class="[
+              item.current
+                ? 'bg-gray-900 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+              'block px-3 py-2 rounded-md text-base font-medium',
+            ]"
+            :aria-current="item.current ? 'page' : undefined"
+          >
+            {{ item.name }}
+          </DisclosureButton>
+        </div>
+      </DisclosurePanel>
     </Disclosure>
 
-    <slot></slot>
+    <!-- Page content -->
+    <main class="flex-grow">
+      <slot></slot>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="mb-4 md:mb-0">
+            <img
+              class="h-6 w-auto"
+              src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
+              alt="Company Logo"
+            />
+            <p class="mt-2 text-sm text-gray-400">
+              &copy; 2025 RentApp. All rights reserved.
+            </p>
+          </div>
+
+          <div class="flex space-x-6">
+            <a href="#" class="text-gray-400 hover:text-white">
+              <span class="sr-only">Terms</span>
+              Terms
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white">
+              <span class="sr-only">Privacy</span>
+              Privacy
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white">
+              <span class="sr-only">Contact</span>
+              Contact
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* Smooth transitions */
+.router-link-active {
+  transition: all 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .md\:flex-row {
+    flex-direction: column;
+  }
+}
+</style>
