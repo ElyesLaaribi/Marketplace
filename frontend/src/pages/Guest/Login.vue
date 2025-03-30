@@ -21,13 +21,6 @@ const errorMessage = ref("");
 const loading = ref(false);
 const showPassword = ref(false);
 
-// Validate email on the fly
-const emailValid = computed(() => {
-  if (!data.value.email) return true;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(data.value.email);
-});
-
 const passwordInputType = computed(() => {
   return showPassword.value ? "text" : "password";
 });
@@ -39,66 +32,43 @@ const togglePasswordVisibility = () => {
 async function submit() {
   errors.value = { email: [], password: [] };
   errorMessage.value = "";
-
-  // Basic client-side validation
-  if (!data.value.email) {
-    errors.value.email = ["Email is required"];
-    return;
-  }
-
-  if (!emailValid.value) {
-    errors.value.email = ["Please enter a valid email address"];
-    return;
-  }
-
-  if (!data.value.password) {
-    errors.value.password = ["Password is required"];
-    return;
-  }
-
   loading.value = true;
 
   try {
     await api.get("/sanctum/csrf-cookie");
-
     const response = await api.post("/api/login", data.value);
-
     const token = response.data.token;
 
-    // Store token based on remember me preference
-    if (data.value.rememberMe) {
-      localStorage.setItem("auth_token", token);
-    } else {
-      sessionStorage.setItem("auth_token", token);
-    }
+    const storage = data.value.rememberMe ? localStorage : sessionStorage;
+    storage.setItem("auth_token", token);
 
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     useUserStore().setToken(token);
 
-    const role = response.data.user.role;
-    if (role === "client") {
-      router.push({ name: "Home" });
-    } else if (role === "lessor") {
-      router.push({ name: "LessorHome" });
-    }
+    const redirectRoute =
+      response.data.user.role === "client"
+        ? { name: "Home" }
+        : { name: "LessorHome" };
+    router.push(redirectRoute);
   } catch (error) {
     if (error.response) {
-      console.error("Error response:", error.response);
-
-      if (error.response.status === 422 && error.response.data.errors) {
-        errors.value = error.response.data.errors || {
-          email: [],
-          password: [],
+      if (error.response.status === 422) {
+        errors.value = {
+          email: error.response.data.errors?.email || [],
+          password: error.response.data.errors?.password || [],
         };
       } else if (error.response.status === 401) {
-        errorMessage.value = "Invalid credentials, please try again.";
+        errors.value = {
+          email: error.response.data.errors?.email || [],
+          password: error.response.data.errors?.password || [],
+        };
       } else {
         errorMessage.value =
           error.response.data.message || "Login failed. Please try again.";
       }
-    } else {
+    } else if (error.request) {
       errorMessage.value =
-        "Connection error. Please check your internet connection and try again.";
+        "No response from server. Check your internet connection.";
     }
   } finally {
     loading.value = false;
@@ -148,14 +118,14 @@ async function submit() {
       <div
         class="bg-white py-8 px-6 shadow rounded-lg sm:px-10 border border-gray-100"
       >
-        <form @submit.prevent="submit" class="space-y-6">
+        <form @submit.prevent="submit" class="space-y-6" novalidate>
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700">
               Email address
             </label>
             <div class="mt-1">
               <input
-                type="email"
+                type="text"
                 name="email"
                 id="email"
                 autocomplete="email"
@@ -163,17 +133,14 @@ async function submit() {
                 placeholder="you@example.com"
                 :class="[
                   'block w-full rounded-md px-3 py-2 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-indigo-600 focus:border-transparent sm:text-sm border',
-                  emailValid
-                    ? 'border-gray-300'
-                    : 'border-red-300 focus:ring-red-500',
+                  errors.email.length
+                    ? 'border-red-300 focus:ring-red-500'
+                    : 'border-gray-300',
                 ]"
               />
             </div>
             <p v-if="errors.email.length" class="mt-1 text-sm text-red-600">
               {{ errors.email[0] }}
-            </p>
-            <p v-else-if="!emailValid" class="mt-1 text-sm text-red-600">
-              Please enter a valid email address
             </p>
           </div>
 
@@ -202,7 +169,12 @@ async function submit() {
                 autocomplete="current-password"
                 v-model="data.password"
                 placeholder="Your password"
-                class="block w-full rounded-md px-3 py-2 text-gray-900 border border-gray-300 placeholder-gray-400 focus:ring-2 focus:ring-indigo-600 focus:border-transparent sm:text-sm pr-10"
+                :class="[
+                  'block w-full rounded-md px-3 py-2 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-indigo-600 focus:border-transparent sm:text-sm border pr-10',
+                  errors.password.length
+                    ? 'border-red-300 focus:ring-red-500'
+                    : 'border-gray-300',
+                ]"
               />
               <button
                 type="button"
