@@ -54,13 +54,7 @@ function logout() {
     <aside
       class="fixed flex flex-col justify-between left-0 top-0 h-screen w-64 px-5 py-8 overflow-y-auto bg-white border-r dark:bg-gray-900 dark:border-gray-700"
     >
-      <a href="#">
-        <img
-          class="w-auto h-7"
-          src="https://merakiui.com/images/logo.svg"
-          alt="logo"
-        />
-      </a>
+      <div class="text-lg text-white">Admin dashboard</div>
 
       <div class="flex flex-col justify-between flex-1 mt-6">
         <!-- Navigation Menu -->
