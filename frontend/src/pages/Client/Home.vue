@@ -28,7 +28,6 @@ const fetchProducts = async (filters = {}) => {
         product.images && product.images.length
           ? product.images[0]
           : "/images/fallback-image.jpg",
-      formattedPrice: product.price,
     }));
 
     if (allProducts.length > 0) {
@@ -36,7 +35,6 @@ const fetchProducts = async (filters = {}) => {
       priceRange.value.min = Math.floor(Math.min(...prices));
       priceRange.value.max = Math.ceil(Math.max(...prices));
 
-      // update price filter only when no filters are applied
       if (!filters.category) {
         priceRange.value.current = [priceRange.value.min, priceRange.value.max];
       }
@@ -44,7 +42,7 @@ const fetchProducts = async (filters = {}) => {
 
     if (filters.category) {
       products.value = allProducts.filter(
-        (product) => product.category === filters.category
+        (product) => product.cat_title === filters.category
       );
     } else {
       products.value = allProducts;
@@ -106,10 +104,6 @@ const statusMessage = computed(() => {
   }
   return null;
 });
-
-const formatPrice = (price) => {
-  return price;
-};
 
 const handleCategorySelect = (category) => {
   selectedCategory.value = category;
@@ -195,8 +189,8 @@ const resetFilters = () => {
               />
             </div>
             <div class="flex justify-between mt-2 text-sm text-gray-600">
-              <span>{{ formatPrice(priceRange.current[0]) }} TND</span>
-              <span>{{ formatPrice(priceRange.current[1]) }} TND</span>
+              <span>{{ priceRange.current[0] }} TND</span>
+              <span>{{ priceRange.current[1] }} TND</span>
             </div>
           </div>
 
@@ -248,8 +242,8 @@ const resetFilters = () => {
               class="rounded-full bg-indigo-100 px-3 py-1 flex items-center"
             >
               <span class="text-indigo-800"
-                >Price: {{ formatPrice(priceRange.current[0]) }} -
-                {{ formatPrice(priceRange.current[1]) }} TND</span
+                >Price: {{ priceRange.current[0] }} -
+                {{ priceRange.current[1] }} TND</span
               >
               <button
                 @click="priceRange.current = [priceRange.min, priceRange.max]"

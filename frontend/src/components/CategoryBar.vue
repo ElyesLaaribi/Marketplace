@@ -30,12 +30,7 @@ const fetchCategories = async () => {
 
     categories.value = categoryData.map((category) => {
       return {
-        title:
-          category.cat_title ||
-          category.title ||
-          category.name ||
-          category.label ||
-          String(category),
+        title: category.cat_title,
       };
     });
   } catch (err) {
