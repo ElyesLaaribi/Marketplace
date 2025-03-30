@@ -28,14 +28,18 @@ const fetchProducts = async (filters = {}) => {
         product.images && product.images.length
           ? product.images[0]
           : "/images/fallback-image.jpg",
-      formattedPrice: formatPrice(product.price),
+      formattedPrice: product.price,
     }));
 
     if (allProducts.length > 0) {
       const prices = allProducts.map((p) => p.price);
       priceRange.value.min = Math.floor(Math.min(...prices));
       priceRange.value.max = Math.ceil(Math.max(...prices));
-      priceRange.value.current = [priceRange.value.min, priceRange.value.max];
+
+      // update price filter only when no filters are applied
+      if (!filters.category) {
+        priceRange.value.current = [priceRange.value.min, priceRange.value.max];
+      }
     }
 
     if (filters.category) {
@@ -104,7 +108,7 @@ const statusMessage = computed(() => {
 });
 
 const formatPrice = (price) => {
-  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return price;
 };
 
 const handleCategorySelect = (category) => {
