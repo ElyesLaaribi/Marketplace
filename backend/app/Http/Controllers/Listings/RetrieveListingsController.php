@@ -14,7 +14,7 @@ class RetrieveListingsController extends Controller
      */
     public function index()
     {
-        return ListingClientResource::collection(Listing::all());
+        return ListingClientResource::collection(Listing::with(['user', 'category'])->get());
     }
 
     

@@ -21,6 +21,10 @@ class ListingClientResource extends JsonResource
             'images' => collect($this->images ?? [])->map(function ($image) {
                 return $image ? asset('storage/' . $image) : null;
             })->filter(),
+            'category_id' => $this->category_id,
+            'cat_title' => optional($this->category)->cat_title,
+            'user_id' => $this->user_id,
+            'user_name' => optional($this->user)->name,
         ];
     }
 }
