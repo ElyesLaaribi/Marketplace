@@ -6,7 +6,7 @@ import api from "../../axios";
 const route = useRoute();
 const router = useRouter();
 
-const email = ref(route.query.email || "");
+const email = ref(localStorage.getItem("resetEmail") || "");
 const token = ref("");
 const newPassword = ref("");
 const confirmPassword = ref("");
@@ -15,6 +15,12 @@ const error = ref("");
 const loading = ref(false);
 const showPassword = ref(false);
 const passwordStrength = ref(0);
+
+onMounted(() => {
+  if (!email.value) {
+    router.push({ name: "ForgotPassword" });
+  }
+});
 
 const hasMinLength = computed(() => newPassword.value.length >= 8);
 const hasUppercase = computed(() => /[A-Z]/.test(newPassword.value));

@@ -29,7 +29,6 @@ const submitForgotPassword = async () => {
     message.value =
       response.data.message || "Password reset link sent to your email.";
 
-    // Store email in localStorage instead of query params for better security
     localStorage.setItem("resetEmail", email.value);
 
     setTimeout(() => {
