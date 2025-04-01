@@ -22,7 +22,10 @@ class UpdateListingRequest extends FormRequest
             'deleted_images' => 'sometimes|array',
             'deleted_images.*' => 'string',
             'category_id' => 'sometimes|exists:categories,id',
-            'status' => 'sometimes|boolean'
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string',
         ];
     }
 }

@@ -31,6 +31,8 @@ class UpdateProfileRequest extends FormRequest
             'cin' => 'sometimes|digits:8|unique:users,cin,' . $UserId . ',id',
             'country' => 'sometimes|string',
             'city' => 'sometimes|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ];
     }
 }

@@ -18,7 +18,9 @@ class Listing extends Model
         'images',  
         'category_id', 
         'user_id', 
-        'status'
+        'status',
+        'latitude',
+        'longitude',
     ];
 
     public function setImagesAttribute($value)
