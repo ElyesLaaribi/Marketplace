@@ -4,6 +4,7 @@ import DefaultLayout from "../../components/DefaultLayout.vue";
 import api from "../../axios";
 import CategoryBar from "../../components/CategoryBar.vue";
 import SearchForm from "../../components/SearchForm.vue";
+import PaginationComponent from "../../components/pagination.vue";
 
 const products = ref([]);
 const selectedCategory = ref(null);
@@ -15,6 +16,9 @@ const priceRange = ref({
   max: 1000,
   current: [0, 1000],
 });
+
+const currentPage = ref(1);
+const itemsPerPage = ref(12);
 
 const fetchProducts = async (filters = {}) => {
   try {
@@ -47,6 +51,8 @@ const fetchProducts = async (filters = {}) => {
     } else {
       products.value = allProducts;
     }
+
+    currentPage.value = 1;
   } catch (err) {
     error.value = "Failed to load products. Please try again later.";
     console.error(err);
@@ -63,6 +69,14 @@ watch(selectedCategory, (newCategory) => {
   fetchProducts(filters);
 });
 
+watch(
+  [searchQuery, () => priceRange.value.current],
+  () => {
+    currentPage.value = 1;
+  },
+  { deep: true }
+);
+
 onMounted(() => {
   fetchProducts();
 });
@@ -70,6 +84,7 @@ onMounted(() => {
 const filteredProducts = computed(() => {
   if (!products.value.length) return [];
   let filtered = products.value;
+
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(
@@ -86,6 +101,12 @@ const filteredProducts = computed(() => {
   );
 
   return filtered;
+});
+
+const paginatedProducts = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
+  const endIndex = startIndex + itemsPerPage.value;
+  return filteredProducts.value.slice(startIndex, endIndex);
 });
 
 const statusMessage = computed(() => {
@@ -105,6 +126,18 @@ const statusMessage = computed(() => {
   return null;
 });
 
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  document
+    .querySelector(".bg-white.rounded-lg")
+    .scrollIntoView({ behavior: "smooth" });
+};
+
+const handlePerPageChange = (perPage) => {
+  itemsPerPage.value = perPage;
+  currentPage.value = 1;
+};
+
 const handleCategorySelect = (category) => {
   selectedCategory.value = category;
 };
@@ -123,6 +156,7 @@ const resetFilters = () => {
   if (products.value.length > 0) {
     priceRange.value.current = [priceRange.value.min, priceRange.value.max];
   }
+  currentPage.value = 1;
   fetchProducts();
 };
 </script>
@@ -294,7 +328,7 @@ const resetFilters = () => {
             class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           >
             <div
-              v-for="product in filteredProducts"
+              v-for="product in paginatedProducts"
               :key="product.id"
               class="group relative bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg"
             >
@@ -345,6 +379,17 @@ const resetFilters = () => {
           </div>
         </div>
       </div>
+
+      <!-- Use the pagination component -->
+      <PaginationComponent
+        v-if="!statusMessage"
+        :totalItems="filteredProducts.length"
+        :currentPage="currentPage"
+        :itemsPerPage="itemsPerPage"
+        :perPageOptions="[8, 12, 24, 48]"
+        @page-change="handlePageChange"
+        @per-page-change="handlePerPageChange"
+      />
     </main>
   </DefaultLayout>
 </template>
