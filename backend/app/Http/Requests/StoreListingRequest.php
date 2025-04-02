@@ -28,8 +28,7 @@ class StoreListingRequest extends FormRequest
             'images' => 'required|array|min:1',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp,svg',
             'category_id' => 'required|exists:categories,id',
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180'
+            'status' => 'boolean'
         ];
 
     }

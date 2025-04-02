@@ -25,14 +25,6 @@ class ListingClientResource extends JsonResource
             'cat_title' => optional($this->category)->cat_title,
             'user_id' => $this->user_id,
             'user_name' => optional($this->user)->name,
-            'location' => [
-                'latitude' => $this->latitude,
-                'longitude' => $this->longitude,
-                'address' => $this->address,
-                'city' => $this->city,
-            ],
-            'distance' => isset($this->distance) ? round($this->distance, 1) : null,
-            'created_at' => $this->created_at,
         ];
     }
 }
