@@ -28,6 +28,7 @@ class ListingsController extends Controller
             ->with('category')
             ->latest();
 
+        // If location filtering is requested
         if ($request->has('nearby') && $request->has('lat') && $request->has('lng')) {
             $lat = $request->input('lat');
             $lng = $request->input('lng');
@@ -61,6 +62,8 @@ class ListingsController extends Controller
             $imagePaths[] = $image->store('listings', 'public');
             }
         }
+
+        // Create listing with all the data
         $listing = Listing::create([
             ...$request->validated(),
             'user_id' => auth()->id(),
@@ -119,10 +122,13 @@ class ListingsController extends Controller
 
     $data['images'] = $existingImages;
     
+    // If location data is provided in the request, use it
     if ($request->has('latitude') && $request->has('longitude')) {
         $data['latitude'] = $request->latitude;
         $data['longitude'] = $request->longitude;
     }
+    // If no location data is provided but we don't have it stored yet, 
+    // we could set default values here if needed
     
     $listing->update($data);
 
@@ -144,6 +150,7 @@ class ListingsController extends Controller
                 }
             }
         }
+        
         $listing->delete();
         
         return response()->json(['message' => 'Listing deleted successfully']);
