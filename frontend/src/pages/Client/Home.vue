@@ -15,28 +15,116 @@ const priceRange = ref({
   max: 1000,
   current: [0, 1000],
 });
+const distanceFilter = ref({
+  enabled: false,
+  max: 1000,
+  current: 50,
+});
+const clientLat = ref(null);
+const clientLng = ref(null);
+
+const getLocation = () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        clientLat.value = position.coords.latitude;
+        clientLng.value = position.coords.longitude;
+        fetchProducts({ lat: clientLat.value, lng: clientLng.value });
+      },
+      (err) => {
+        console.log("Location error:", err);
+        fetchProducts();
+      }
+    );
+  } else {
+    console.error("Geolocation is not supported by this browser.");
+  }
+};
+
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+
+  const latFrom = parseFloat(lat1);
+  const lonFrom = parseFloat(lon1);
+  const latTo = parseFloat(lat2);
+  const lonTo = parseFloat(lon2);
+
+  if (isNaN(latFrom) || isNaN(lonFrom) || isNaN(latTo) || isNaN(lonTo)) {
+    return null;
+  }
+
+  const R = 6371;
+  const dLat = ((latTo - latFrom) * Math.PI) / 180;
+  const dLon = ((lonTo - lonFrom) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((latFrom * Math.PI) / 180) *
+      Math.cos((latTo * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+
+  return distance;
+};
 
 const fetchProducts = async (filters = {}) => {
   try {
     isLoading.value = true;
     error.value = null;
-    const response = await api.get("/api/public-listings");
 
-    const allProducts = response.data.data.map((product) => ({
-      ...product,
-      imageSrc:
-        product.images && product.images.length
-          ? product.images[0]
-          : "/images/fallback-image.jpg",
-    }));
+    const params = {};
+
+    if (filters.category) {
+      params.category = filters.category;
+    }
+
+    if (distanceFilter.value.enabled && clientLat.value && clientLng.value) {
+      params.lat = clientLat.value;
+      params.lng = clientLng.value;
+      params.radius = distanceFilter.value.current;
+    } else if (filters.lat && filters.lng) {
+      params.lat = filters.lat;
+      params.lng = filters.lng;
+    }
+
+    const response = await api.get("/api/public-listings", { params });
+    const allProducts = response.data.data.map((product) => {
+      let distance = null;
+      if (clientLat.value && clientLng.value && product.lat && product.lng) {
+        distance = calculateDistance(
+          clientLat.value,
+          clientLng.value,
+          product.lat,
+          product.lng
+        );
+      }
+
+      return {
+        ...product,
+        imageSrc: product.images?.[0] || "/images/fallback-image.jpg",
+        distance: distance,
+        formattedPrice: product.price
+          ? parseFloat(product.price).toFixed(2)
+          : null,
+      };
+    });
 
     if (allProducts.length > 0) {
-      const prices = allProducts.map((p) => p.price);
-      priceRange.value.min = Math.floor(Math.min(...prices));
-      priceRange.value.max = Math.ceil(Math.max(...prices));
+      const prices = allProducts
+        .map((p) => parseFloat(p.price))
+        .filter((p) => !isNaN(p));
 
-      if (!filters.category) {
-        priceRange.value.current = [priceRange.value.min, priceRange.value.max];
+      if (prices.length > 0) {
+        priceRange.value.min = Math.floor(Math.min(...prices));
+        priceRange.value.max = Math.ceil(Math.max(...prices));
+
+        if (!filters.category) {
+          priceRange.value.current = [
+            priceRange.value.min,
+            priceRange.value.max,
+          ];
+        }
       }
     }
 
@@ -47,6 +135,13 @@ const fetchProducts = async (filters = {}) => {
     } else {
       products.value = allProducts;
     }
+
+    console.log(`Loaded ${products.value.length} products`);
+    console.log(
+      `Products with distance: ${
+        products.value.filter((p) => p.distance !== null).length
+      }`
+    );
   } catch (err) {
     error.value = "Failed to load products. Please try again later.";
     console.error(err);
@@ -63,45 +158,67 @@ watch(selectedCategory, (newCategory) => {
   fetchProducts(filters);
 });
 
+watch(
+  [clientLat, clientLng, () => distanceFilter.value.enabled],
+  () => {
+    if (distanceFilter.value.enabled) {
+      fetchProducts();
+    }
+  },
+  { immediate: true }
+);
+
 onMounted(() => {
+  getLocation();
   fetchProducts();
 });
 
 const filteredProducts = computed(() => {
-  if (!products.value.length) return [];
-  let filtered = products.value;
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(
-      (product) =>
-        product.name.toLowerCase().includes(query) ||
-        product.description?.toLowerCase().includes(query)
-    );
-  }
+  if (!products.value || !products.value.length) return [];
 
-  filtered = filtered.filter(
-    (product) =>
-      product.price >= priceRange.value.current[0] &&
-      product.price <= priceRange.value.current[1]
-  );
+  return products.value.filter((product) => {
+    if (!product) return false;
+    const matchesSearch =
+      !searchQuery.value ||
+      [product.name, product.description].some((field) =>
+        field
+          ? field.toLowerCase().includes(searchQuery.value.toLowerCase())
+          : false
+      );
+    const price = parseFloat(product.price);
+    const matchesPrice =
+      !isNaN(price) &&
+      price >= priceRange.value.current[0] &&
+      price <= priceRange.value.current[1];
+    const matchesDistance =
+      !distanceFilter.value.enabled ||
+      product.distance === null ||
+      product.distance <= distanceFilter.value.current;
 
-  return filtered;
+    return matchesSearch && matchesPrice && matchesDistance;
+  });
 });
 
 const statusMessage = computed(() => {
   if (isLoading.value) return "Loading products...";
   if (error.value) return `Error: ${error.value}`;
-  if (filteredProducts.value.length === 0) {
-    if (
-      selectedCategory.value ||
-      searchQuery.value ||
-      priceRange.value.current[0] > priceRange.value.min ||
-      priceRange.value.current[1] < priceRange.value.max
-    ) {
-      return "No products match your criteria. Try adjusting your filters.";
-    }
+  if (products.value.length === 0) {
     return "No products available at this time.";
   }
+
+  if (filteredProducts.value.length === 0) {
+    const hasActiveFilters =
+      selectedCategory.value !== null ||
+      searchQuery.value.trim() !== "" ||
+      priceRange.value.current[0] > priceRange.value.min ||
+      priceRange.value.current[1] < priceRange.value.max ||
+      distanceFilter.value.enabled;
+
+    return hasActiveFilters
+      ? "No products match your criteria. Try adjusting your filters."
+      : "No products available at this time.";
+  }
+
   return null;
 });
 
@@ -117,14 +234,65 @@ const handlePriceChange = (values) => {
   priceRange.value.current = values;
 };
 
+const toggleDistanceFilter = () => {
+  distanceFilter.value.enabled = !distanceFilter.value.enabled;
+};
+
+const handleDistanceChange = (value) => {
+  distanceFilter.value.current = value;
+};
+
 const resetFilters = () => {
   selectedCategory.value = null;
   searchQuery.value = "";
   if (products.value.length > 0) {
     priceRange.value.current = [priceRange.value.min, priceRange.value.max];
   }
+  distanceFilter.value = {
+    enabled: false,
+    max: 100,
+    current: 50,
+  };
   fetchProducts();
 };
+
+const debugFilters = () => {
+  console.log("Filter status:", {
+    hasProducts: products.value.length > 0,
+    hasFilteredProducts: filteredProducts.value.length > 0,
+    categorySelected: selectedCategory.value !== null,
+    categoryValue: selectedCategory.value,
+
+    hasSearchQuery: searchQuery.value.trim() !== "",
+    searchQueryValue: searchQuery.value,
+
+    priceMinChanged: priceRange.value.current[0] > priceRange.value.min,
+    priceMaxChanged: priceRange.value.current[1] < priceRange.value.max,
+    priceValues: {
+      current: priceRange.value.current,
+      min: priceRange.value.min,
+      max: priceRange.value.max,
+    },
+
+    distanceEnabled: distanceFilter.value.enabled,
+    distanceValue: distanceFilter.value.current,
+  });
+};
+
+watch(
+  [
+    () => filteredProducts.value.length,
+    selectedCategory,
+    searchQuery,
+    () => priceRange.value.current,
+    () => distanceFilter.value.enabled,
+  ],
+  debugFilters
+);
+
+onMounted(() => {
+  setTimeout(debugFilters, 1000);
+});
 </script>
 
 <template>
@@ -194,13 +362,70 @@ const resetFilters = () => {
             </div>
           </div>
 
+          <div class="mt-6 px-2">
+            <div class="flex items-center justify-between">
+              <h3 class="text-md font-medium text-gray-700">Distance Filter</h3>
+              <label class="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  v-model="distanceFilter.enabled"
+                  class="sr-only peer"
+                />
+                <div
+                  class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"
+                ></div>
+              </label>
+            </div>
+
+            <div
+              v-if="distanceFilter.enabled"
+              class="mt-3"
+              :class="{ 'opacity-50': !clientLat || !clientLng }"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm text-gray-600">Max distance:</span>
+                  <input
+                    type="number"
+                    min="1"
+                    :max="distanceFilter.max"
+                    v-model.number="distanceFilter.current"
+                    @input="handleDistanceChange(distanceFilter.current)"
+                    class="w-20 px-2 py-1 border rounded-md text-sm"
+                    :disabled="!clientLat || !clientLng"
+                  />
+                  <span class="text-sm text-gray-600">km</span>
+                </div>
+                <span
+                  v-if="!clientLat || !clientLng"
+                  class="text-xs text-red-500"
+                  >Location required</span
+                >
+              </div>
+              <input
+                type="range"
+                min="1"
+                :max="distanceFilter.max"
+                v-model.number="distanceFilter.current"
+                @input="handleDistanceChange(distanceFilter.current)"
+                class="w-full accent-indigo-600"
+                :disabled="!clientLat || !clientLng"
+              />
+              <div class="flex justify-between mt-1 text-sm text-gray-600">
+                <span>1 km</span>
+                <span>{{ distanceFilter.max }} km</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Active filters display -->
           <div
             v-if="
               selectedCategory ||
               searchQuery ||
               priceRange.current[0] > priceRange.min ||
-              priceRange.current[1] < priceRange.max
+              priceRange.current[1] < priceRange.max ||
+              distanceFilter.enabled
             "
             class="mt-4 flex flex-wrap items-center gap-2 text-sm"
           >
@@ -247,6 +472,21 @@ const resetFilters = () => {
               >
               <button
                 @click="priceRange.current = [priceRange.min, priceRange.max]"
+                class="ml-2 text-indigo-800 hover:text-indigo-600"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div
+              v-if="distanceFilter.enabled"
+              class="rounded-full bg-indigo-100 px-3 py-1 flex items-center"
+            >
+              <span class="text-indigo-800"
+                >Distance: ≤ {{ distanceFilter.current }} km</span
+              >
+              <button
+                @click="distanceFilter.enabled = false"
                 class="ml-2 text-indigo-800 hover:text-indigo-600"
               >
                 &times;
@@ -323,6 +563,14 @@ const resetFilters = () => {
                       class="text-sm font-normal text-gray-500"
                       >/day</span
                     >
+                  </p>
+
+                  <!-- Display distance if available -->
+                  <p
+                    v-if="product.distance !== null"
+                    class="mt-1 text-sm text-gray-500"
+                  >
+                    {{ Math.round(product.distance * 10) / 10 }} km away
                   </p>
 
                   <div class="mt-4 flex justify-between items-center">
