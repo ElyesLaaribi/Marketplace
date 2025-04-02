@@ -23,7 +23,8 @@ class RetrieveListingsController extends Controller
      */
     public function show(Listing $listing)
     {
-        //
+        $listing->load(['user', 'category']); 
+        return ListingClientResource::make($listing);
     }
 
 }
