@@ -43,30 +43,7 @@ const data = ref({
   images: [],
   description: "",
   category_id: "",
-  latitude: "",
-  longitude: "",
 });
-
-const getCurrentLocation = () => {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        data.value.latitude = position.coords.latitude;
-        data.value.longitude = position.coords.longitude;
-        console.log(
-          "Location captured:",
-          data.value.latitude,
-          data.value.longitude
-        );
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-      }
-    );
-  } else {
-    console.error("Geolocation is not supported by this browser");
-  }
-};
 
 const handleImageChange = (event) => {
   const files = Array.from(event.target.files);
@@ -165,10 +142,6 @@ const editListing = (item) => {
 
   data.value = { ...item };
 
-  if (!data.value.latitude || !data.value.longitude) {
-    getCurrentLocation();
-  }
-
   if (item.image_paths && item.image_paths.length > 0) {
     existingImages.value = item.image_paths.map((path) =>
       path.startsWith("http") ? path : `http://localhost:8000/storage/${path}`
@@ -187,34 +160,11 @@ const submit = async () => {
   loading.value = true;
   errors.value = {};
   try {
-    if (!data.value.latitude || !data.value.longitude) {
-      const locationPromise = new Promise((resolve) => {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              data.value.latitude = position.coords.latitude;
-              data.value.longitude = position.coords.longitude;
-              resolve();
-            },
-            () => resolve()
-          );
-        } else {
-          resolve();
-        }
-      });
-      await Promise.race([
-        locationPromise,
-        new Promise((resolve) => setTimeout(resolve, 1000)),
-      ]);
-    }
-
     const formData = new FormData();
     formData.append("name", data.value.name);
     formData.append("price", data.value.price);
     formData.append("category_id", data.value.category_id);
     formData.append("description", data.value.description);
-    formData.append("latitude", data.value.latitude || "");
-    formData.append("longitude", data.value.longitude || "");
 
     imageFiles.value.forEach((file) => {
       formData.append("images[]", file);
@@ -256,8 +206,6 @@ const resetForm = () => {
     images: [],
     category_id: "",
     description: "",
-    latitude: "",
-    longitude: "",
   };
   imageFiles.value = [];
   imagePreview.value = [];
@@ -270,7 +218,6 @@ const resetForm = () => {
 const openNewListingForm = () => {
   resetForm();
   isOpen.value = true;
-  getCurrentLocation();
 };
 </script>
 

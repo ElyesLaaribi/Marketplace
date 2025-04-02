@@ -1,11 +1,17 @@
 <script setup>
-import LessorLayout from "../../components/LessorLayout.vue";
+
+import LessorLayout from '../../components/LessorLayout.vue';
+
 </script>
 
 <template>
-  <LessorLayout>
-    <div>Add listings</div>
-  </LessorLayout>
+    <LessorLayout>
+        <div>
+            Add listings
+        </div>
+    </LessorLayout>
 </template>
 
-<style scoped></style>
+<style scoped>
+
+</style>
