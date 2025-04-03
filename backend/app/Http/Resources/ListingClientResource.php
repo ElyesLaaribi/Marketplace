@@ -26,6 +26,7 @@ class ListingClientResource extends JsonResource
             'cat_title' => optional($this->category)->cat_title,
             'user_id' => $this->user_id,
             'user_name' => optional($this->user)->name,
+            'joined_since' => optional($this->user)->created_at->format('Y-m-d'),
         ];
     }
 }

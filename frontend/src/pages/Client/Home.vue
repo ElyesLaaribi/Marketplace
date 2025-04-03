@@ -1,10 +1,13 @@
 <script setup>
 import { onMounted, ref, computed, watch } from "vue";
+import { useRouter } from "vue-router";
 import DefaultLayout from "../../components/DefaultLayout.vue";
 import api from "../../axios";
 import CategoryBar from "../../components/CategoryBar.vue";
 import SearchForm from "../../components/SearchForm.vue";
 import PaginationComponent from "../../components/pagination.vue";
+
+const router = useRouter();
 
 const products = ref([]);
 const selectedCategory = ref(null);
@@ -19,6 +22,10 @@ const priceRange = ref({
 
 const currentPage = ref(1);
 const itemsPerPage = ref(12);
+
+const navigateToProduct = (productId) => {
+  router.push(`/product-overview/${productId}`);
+};
 
 const fetchProducts = async (filters = {}) => {
   try {
@@ -330,51 +337,44 @@ const resetFilters = () => {
             <div
               v-for="product in paginatedProducts"
               :key="product.id"
-              class="group relative bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg"
+              class="group relative bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer"
+              @click="navigateToProduct(product.id)"
             >
-              <a :href="`/product/${product.id}`" class="block">
-                <div class="aspect-square bg-gray-200 overflow-hidden">
-                  <img
-                    :src="product.imageSrc"
-                    :alt="product.name"
-                    class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+              <div class="aspect-square bg-gray-200 overflow-hidden">
+                <img
+                  :src="product.imageSrc"
+                  :alt="product.name"
+                  class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+
+              <div class="p-4">
+                <div class="flex justify-between">
+                  <h3 class="text-lg font-medium text-gray-900 line-clamp-1">
+                    {{ product.name }}
+                  </h3>
                 </div>
 
-                <div class="p-4">
-                  <div class="flex justify-between">
-                    <h3 class="text-lg font-medium text-gray-900 line-clamp-1">
-                      {{ product.name }}
-                    </h3>
-                  </div>
+                <p v-if="product.category" class="mt-1 text-sm text-gray-500">
+                  {{ product.category }}
+                </p>
 
-                  <p v-if="product.category" class="mt-1 text-sm text-gray-500">
-                    {{ product.category }}
-                  </p>
+                <p class="mt-2 text-lg font-semibold text-indigo-600">
+                  {{ product.formattedPrice ?? product.price }} TND<span
+                    class="text-sm font-normal text-gray-500"
+                    >/day</span
+                  >
+                </p>
 
-                  <p class="mt-2 text-lg font-semibold text-indigo-600">
-                    {{ product.formattedPrice ?? product.price }} TND<span
-                      class="text-sm font-normal text-gray-500"
-                      >/day</span
-                    >
-                  </p>
-
-                  <div class="mt-4 flex justify-between items-center">
-                    <span
-                      v-if="product.availability"
-                      class="text-sm font-medium text-green-600"
-                    >
-                      Available
-                    </span>
-                    <span
-                      class="text-sm text-indigo-600 font-medium flex items-center"
-                    >
-                      View details
-                      <span class="ml-1">→</span>
-                    </span>
-                  </div>
+                <div class="mt-4 flex justify-between items-center">
+                  <span
+                    class="text-sm text-indigo-600 font-medium flex items-center"
+                  >
+                    View details
+                    <span class="ml-1">→</span>
+                  </span>
                 </div>
-              </a>
+              </div>
             </div>
           </div>
         </div>

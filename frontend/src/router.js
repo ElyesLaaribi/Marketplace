@@ -22,6 +22,7 @@ import Admin from "./pages/Admin/Admin.vue";
 import Users from "./pages/Admin/Users.vue";
 import AdminsList from "./pages/Admin/AdminsList.vue";
 import Category from "./pages/Admin/Category.vue";
+import ProductOverview from "./pages/Client/ProductOverview.vue";
 
 
 
@@ -84,6 +85,7 @@ const routes = [
     // client
     { path: "/home", name: "Home", component: Home, beforeEnter: clientGuard },
     { path: "/client-profile", name: "client-profile", component: ClientProfile , beforeEnter: clientGuard },
+    { path: "/product-overview/:id", name: "product", component: ProductOverview , beforeEnter: clientGuard },
 
     // lessor
     { path: "/lessorhome", name: "LessorHome", component: LessorHome, beforeEnter: lessorGuard },
