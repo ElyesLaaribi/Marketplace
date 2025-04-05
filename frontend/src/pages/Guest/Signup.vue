@@ -154,7 +154,7 @@ function hasError(field) {
             <label for="name" class="block text-sm font-medium text-gray-700">
               Full name
             </label>
-            <div class="mt-1 relative">
+            <div class="mt-1 relative bg-white">
               <input
                 type="text"
                 name="name"
@@ -179,7 +179,7 @@ function hasError(field) {
             <label for="email" class="block text-sm font-medium text-gray-700">
               Email address
             </label>
-            <div class="mt-1 relative">
+            <div class="mt-1 relative bg-white">
               <input
                 type="email"
                 name="email"
@@ -211,7 +211,7 @@ function hasError(field) {
             >
               Country
             </label>
-            <div class="mt-1">
+            <div class="mt-1 bg-white">
               <select
                 id="country"
                 name="country"
@@ -244,7 +244,7 @@ function hasError(field) {
             <label for="city" class="block text-sm font-medium text-gray-700">
               City
             </label>
-            <div class="mt-1">
+            <div class="mt-1 bg-white">
               <input
                 type="text"
                 name="city"
@@ -273,7 +273,7 @@ function hasError(field) {
             <label for="id" class="block text-sm font-medium text-gray-700">
               ID card number
             </label>
-            <div class="mt-1">
+            <div class="mt-1 bg-white">
               <input
                 type="number"
                 name="id"
@@ -299,7 +299,7 @@ function hasError(field) {
             <label for="tel" class="block text-sm font-medium text-gray-700">
               Phone number
             </label>
-            <div class="mt-1">
+            <div class="mt-1 bg-white">
               <input
                 type="tel"
                 name="tel"
@@ -331,7 +331,7 @@ function hasError(field) {
             >
               Password
             </label>
-            <div class="mt-1 relative">
+            <div class="mt-1 relative bg-white">
               <input
                 :type="passwordVisible ? 'text' : 'password'"
                 name="password"
@@ -399,7 +399,7 @@ function hasError(field) {
             >
               Confirm password
             </label>
-            <div class="mt-1 relative">
+            <div class="mt-1 relative bg-white">
               <input
                 :type="confirmPasswordVisible ? 'text' : 'password'"
                 name="password_confirmation"
