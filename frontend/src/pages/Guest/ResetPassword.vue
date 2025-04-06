@@ -2,11 +2,14 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import api from "../../axios";
+import { useToast } from "vue-toast-notification";
+import "vue-toast-notification/dist/theme-sugar.css";
+const $toast = useToast();
 
 const route = useRoute();
 const router = useRouter();
 
-const email = ref(route.query.email || "");
+const email = ref("");
 const token = ref("");
 const newPassword = ref("");
 const confirmPassword = ref("");
@@ -15,6 +18,15 @@ const error = ref("");
 const loading = ref(false);
 const showPassword = ref(false);
 const passwordStrength = ref(0);
+
+onMounted(() => {
+  const storedEmail = localStorage.getItem("resetEmail");
+  if (storedEmail) {
+    email.value = storedEmail;
+  } else {
+    email.value = route.query.email || "";
+  }
+});
 
 const hasMinLength = computed(() => newPassword.value.length >= 8);
 const hasUppercase = computed(() => /[A-Z]/.test(newPassword.value));
@@ -62,6 +74,12 @@ const submitResetPassword = async () => {
   message.value = "";
   error.value = "";
 
+  if (!email.value) {
+    error.value = "Email address is required";
+    loading.value = false;
+    return;
+  }
+
   if (newPassword.value !== confirmPassword.value) {
     error.value = "Passwords do not match!";
     loading.value = false;
@@ -83,12 +101,16 @@ const submitResetPassword = async () => {
     });
 
     message.value = response.data.message || "Password reset successful!";
+    $toast.success(message.value);
+
+    localStorage.removeItem("resetEmail");
 
     setTimeout(() => {
       router.push({ name: "Login" });
     }, 2000);
   } catch (err) {
     error.value = err.response?.data?.message || "Failed to reset password.";
+    $toast.error(error.value);
   } finally {
     loading.value = false;
   }
@@ -127,7 +149,23 @@ const submitResetPassword = async () => {
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
       <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
         <form class="space-y-6" @submit.prevent="submitResetPassword">
-          <div v-if="email" class="rounded-md bg-indigo-50 p-4">
+          <div v-if="!email" class="mb-4">
+            <label for="email" class="block text-sm font-medium text-gray-700">
+              Email Address
+            </label>
+            <div class="mt-1">
+              <input
+                type="email"
+                v-model="email"
+                id="email"
+                required
+                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Enter your email address"
+              />
+            </div>
+          </div>
+
+          <div v-else class="rounded-md bg-indigo-50 p-4">
             <div class="flex">
               <div class="ml-3 flex-1">
                 <p class="text-sm text-indigo-700">
@@ -226,7 +264,7 @@ const submitResetPassword = async () => {
                 <div
                   class="h-1.5 rounded-full transition-all duration-300"
                   :class="strengthColor"
-                  :style="{ width: passwordStrength.value * 25 + '%' }"
+                  :style="{ width: passwordStrength * 25 + '%' }"
                 ></div>
               </div>
 

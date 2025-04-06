@@ -4,6 +4,9 @@ import { ref } from "vue";
 import api from "../../axios.js";
 import router from "../../router.js";
 import { useRoute } from "vue-router";
+import { useToast } from "vue-toast-notification";
+import "vue-toast-notification/dist/theme-sugar.css";
+const $toast = useToast();
 
 const route = useRoute();
 const data = ref({
@@ -57,7 +60,8 @@ function submit() {
         api.defaults.headers.common[
           "Authorization"
         ] = `Bearer ${response.data.token}`;
-        alert("Account created successfully!");
+        /////
+        $toast.success("Account created successfully!");
         router.push({ name: "Login" });
       } else {
         console.error("Token not found in response");

@@ -2,6 +2,9 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import api from "../../axios";
+import { useToast } from "vue-toast-notification";
+import "vue-toast-notification/dist/theme-sugar.css";
+const $toast = useToast();
 
 const email = ref("");
 const message = ref("");
@@ -28,6 +31,7 @@ const submitForgotPassword = async () => {
     const response = await api.post("api/forgot", { email: email.value });
     message.value =
       response.data.message || "Password reset link sent to your email.";
+    $toast.success(message.value);
 
     // Store email in localStorage instead of query params for better security
     localStorage.setItem("resetEmail", email.value);
@@ -39,6 +43,7 @@ const submitForgotPassword = async () => {
     error.value =
       err.response?.data?.message ||
       "We couldn't find an account with that email address.";
+    $toast.error(error.value);
   } finally {
     loading.value = false;
   }

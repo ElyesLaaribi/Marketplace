@@ -5,6 +5,10 @@ import router from "../../router.js";
 import api from "../../axios.js";
 import { useUserStore } from "../../store/user";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
+import { useToast } from "vue-toast-notification";
+import "vue-toast-notification/dist/theme-sugar.css";
+import { $t } from "@primeuix/themes";
+const $toast = useToast();
 
 const data = ref({
   email: "",
@@ -49,6 +53,7 @@ async function submit() {
       response.data.user.role === "client"
         ? { name: "Home" }
         : { name: "LessorHome" };
+    $toast.success("Login successfull!");
     router.push(redirectRoute);
   } catch (error) {
     if (error.response) {
@@ -57,18 +62,22 @@ async function submit() {
           email: error.response.data.errors?.email || [],
           password: error.response.data.errors?.password || [],
         };
+        $toast.error("login failed");
       } else if (error.response.status === 401) {
         errors.value = {
           email: error.response.data.errors?.email || [],
           password: error.response.data.errors?.password || [],
         };
+        $toast.error("login failed");
       } else {
         errorMessage.value =
           error.response.data.message || "Login failed. Please try again.";
+        $toast.error("login failed");
       }
     } else if (error.request) {
       errorMessage.value =
         "No response from server. Check your internet connection.";
+      $toast.error("login failed");
     }
   } finally {
     loading.value = false;
