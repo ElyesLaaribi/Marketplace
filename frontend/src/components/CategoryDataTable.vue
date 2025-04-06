@@ -2,6 +2,9 @@
 import { defineProps, computed, ref, defineEmits } from "vue";
 import SearchForm from "./SearchForm.vue";
 import api from "../axios";
+import { useToast } from "vue-toast-notification";
+import "vue-toast-notification/dist/theme-sugar.css";
+const $toast = useToast();
 
 const props = defineProps({
   items: {
@@ -47,11 +50,11 @@ const deleteCategory = async (id) => {
     isDeleting.value = true;
     await api.delete(`/api/categories/${id}`);
     emit("categoryDeleted", id);
-    alert("Category deleted successfully");
+    $toast.success("Category deleted successfully!");
     window.location.reload();
   } catch (error) {
     console.error("Error deleting category:", error);
-    alert("Failed to delete category. Please try again.");
+    $toast.error("Failed to delete category. Please try again.");
   } finally {
     isDeleting.value = false;
   }
@@ -74,10 +77,10 @@ const submit = async () => {
     if (isEditMode.value) {
       response = await api.put(`/api/categories/${data.value.id}`, data.value);
       emit("categoryEdited", data.value);
-      alert("Category updated successfully!");
+      $toast.success("Category updated successfully!");
     } else {
       response = await api.post("/api/categories", data.value);
-      alert("Category added successfully!");
+      $toast.success("Category added successfully!");
     }
 
     console.log("Response from server:", response);
