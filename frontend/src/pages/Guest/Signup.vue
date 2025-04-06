@@ -57,7 +57,7 @@ function submit() {
         api.defaults.headers.common[
           "Authorization"
         ] = `Bearer ${response.data.token}`;
-
+        alert("Account created successfully!");
         router.push({ name: "Login" });
       } else {
         console.error("Token not found in response");
