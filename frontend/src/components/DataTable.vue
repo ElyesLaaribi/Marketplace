@@ -2,6 +2,9 @@
 import { defineProps, computed, ref, defineEmits } from "vue";
 import SearchForm from "./SearchForm.vue";
 import api from "../axios";
+import { useToast } from "vue-toast-notification";
+import "vue-toast-notification/dist/theme-sugar.css";
+const $toast = useToast();
 
 const props = defineProps({
   items: {
@@ -45,10 +48,10 @@ const deleteUser = async (id) => {
     isDeleting.value = true;
     await api.delete(`/api/users/${id}`);
     emit("userDeleted", id);
-    alert("User deleted successfully");
+    $toast.success("User deleted successfully!");
   } catch (error) {
     console.error("Error deleting user:", error);
-    alert("Failed to delete user. Please try again.");
+    $toast.error("Failed to delete user. Please try again.");
   } finally {
     isDeleting.value = false;
   }

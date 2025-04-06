@@ -11,6 +11,9 @@ import { ChevronUpDownIcon } from "@heroicons/vue/16/solid";
 import { CheckIcon, XMarkIcon } from "@heroicons/vue/20/solid";
 import SearchForm from "./SearchForm.vue";
 import api from "../axios";
+import { useToast } from "vue-toast-notification";
+import "vue-toast-notification/dist/theme-sugar.css";
+const $toast = useToast();
 
 const props = defineProps({
   items: {
@@ -97,7 +100,7 @@ const fetchCategories = async () => {
     }
   } catch (error) {
     console.error("Error fetching categories:", error);
-    alert("Failed to fetch categories. Please try again.");
+    $toast.error("Failed to fetch categories. Please try again.");
   }
 };
 
@@ -124,11 +127,13 @@ const deleteListing = async (id) => {
     isDeleting.value = true;
     await api.delete(`/api/listings/${id}`);
     emit("listingDeleted", id);
-    alert("Listing deleted successfully");
+    // alert("Listing deleted successfully");
+    $toast.success("Listing deleted successfully!");
     window.location.reload();
   } catch (error) {
     console.error("Error deleting listing:", error);
-    alert("Failed to delete listing. Please try again.");
+    // alert("Failed to delete listing. Please try again.");
+    $toast.error("Failed to delete listing. Please try again.");
   } finally {
     isDeleting.value = false;
   }
