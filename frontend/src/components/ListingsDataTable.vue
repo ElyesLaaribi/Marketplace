@@ -28,9 +28,11 @@ const data = ref({
 });
 
 const updateLocation = (location) => {
-  data.value.address = location.address;
-  data.value.latitude = location.latitude;
-  data.value.longitude = location.longitude;
+  if (location) {
+    data.value.address = location.address || "";
+    data.value.latitude = location.latitude || null;
+    data.value.longitude = location.longitude || null;
+  }
 };
 
 const $toast = useToast();
@@ -138,12 +140,10 @@ const deleteListing = async (id) => {
     isDeleting.value = true;
     await api.delete(`/api/listings/${id}`);
     emit("listingDeleted", id);
-    // alert("Listing deleted successfully");
     $toast.success("Listing deleted successfully!");
     window.location.reload();
   } catch (error) {
     console.error("Error deleting listing:", error);
-    // alert("Failed to delete listing. Please try again.");
     $toast.error("Failed to delete listing. Please try again.");
   } finally {
     isDeleting.value = false;
@@ -158,13 +158,17 @@ const editListing = (item) => {
 
   data.value = { ...item };
 
+  const sanitizedItem = {
+    ...item,
+    address: item.address || "",
+  };
+
   if (item.image_paths && item.image_paths.length > 0) {
     existingImages.value = item.image_paths.map((path) =>
       path.startsWith("http") ? path : `http://localhost:8000/storage/${path}`
     );
 
     imagePreview.value = [...existingImages.value];
-
     initialExistingCount.value = existingImages.value.length;
   }
 
@@ -224,7 +228,7 @@ const resetForm = () => {
     name: "",
     price: "",
     images: [],
-    category_id: "",
+    category_id: categories.value.length > 0 ? categories.value[0].id : "",
     description: "",
     address: "",
     latitude: null,
@@ -482,7 +486,6 @@ const openNewListingForm = () => {
                   Location
                 </label>
                 <MapInput
-                  class="bg-white"
                   :initial-address="data.address"
                   :initial-latitude="data.latitude"
                   :initial-longitude="data.longitude"
