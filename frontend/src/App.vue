@@ -1,15 +1,16 @@
 <script setup>
-import Footer from './components/Footer.vue';
+import Footer from "./components/Footer.vue";
 </script>
 
 <template>
   <!-- <RouterView /> -->
-  <router-view v-slot="{ Component }">
+  <!-- <router-view v-slot="{ Component }">
     <transition name="fade" mode="out-in"> 
       <component :is="Component"></component>
     </transition>
-  </router-view>
+  </router-view> -->
   <!-- <Footer /> -->
+  <router-view />
 </template>
 
 <style scoped>

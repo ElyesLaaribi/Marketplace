@@ -13,6 +13,26 @@ import SearchForm from "./SearchForm.vue";
 import api from "../axios";
 import { useToast } from "vue-toast-notification";
 import "vue-toast-notification/dist/theme-sugar.css";
+import MapInput from "./MapInput.vue";
+
+const data = ref({
+  id: "",
+  name: "",
+  price: "",
+  images: [],
+  description: "",
+  category_id: "",
+  address: "",
+  latitude: null,
+  longitude: null,
+});
+
+const updateLocation = (location) => {
+  data.value.address = location.address;
+  data.value.latitude = location.latitude;
+  data.value.longitude = location.longitude;
+};
+
 const $toast = useToast();
 
 const props = defineProps({
@@ -38,15 +58,6 @@ const imagesToRemove = ref([]);
 const initialExistingCount = ref(0);
 
 const categories = ref([]);
-
-const data = ref({
-  id: "",
-  name: "",
-  price: "",
-  images: [],
-  description: "",
-  category_id: "",
-});
 
 const handleImageChange = (event) => {
   const files = Array.from(event.target.files);
@@ -170,6 +181,10 @@ const submit = async () => {
     formData.append("price", data.value.price);
     formData.append("category_id", data.value.category_id);
     formData.append("description", data.value.description);
+    //////
+    formData.append("address", data.value.address || "");
+    formData.append("latitude", data.value.latitude || "");
+    formData.append("longitude", data.value.longitude || "");
 
     imageFiles.value.forEach((file) => {
       formData.append("images[]", file);
@@ -211,6 +226,9 @@ const resetForm = () => {
     images: [],
     category_id: "",
     description: "",
+    address: "",
+    latitude: null,
+    longitude: null,
   };
   imageFiles.value = [];
   imagePreview.value = [];
@@ -455,6 +473,30 @@ const openNewListingForm = () => {
                     {{ errors.description[0] }}
                   </p>
                 </div>
+              </div>
+
+              <div class="sm:col-span-2">
+                <label
+                  class="block text-xs sm:text-sm font-medium text-gray-900"
+                >
+                  Location
+                </label>
+                <MapInput
+                  class="bg-white"
+                  :initial-address="data.address"
+                  :initial-latitude="data.latitude"
+                  :initial-longitude="data.longitude"
+                  @update:location="updateLocation"
+                />
+                <p v-if="errors.address" class="text-red-500 text-xs mt-1">
+                  {{ errors.address[0] }}
+                </p>
+                <p
+                  v-if="errors.latitude || errors.longitude"
+                  class="text-red-500 text-xs mt-1"
+                >
+                  Location coordinates are required
+                </p>
               </div>
 
               <div
