@@ -27,6 +27,9 @@ class ListingClientResource extends JsonResource
             'user_id' => $this->user_id,
             'user_name' => optional($this->user)->name,
             'joined_since' => optional($this->user)->created_at->format('Y-m-d'),
+            'address' => $this->address,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
         ];
     }
 }

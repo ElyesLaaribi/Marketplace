@@ -11,6 +11,7 @@ use App\Http\Controllers\ResetPassController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\AdminAddController;
+use App\Http\Controllers\Reviews\ReviewController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminLogoutController;
 use App\Http\Controllers\Category\CategoryController;
@@ -42,10 +43,14 @@ Route::middleware('auth:sanctum')->get('/profile', [ProfileController::class, 'p
 Route::middleware('auth:sanctum')->post('/change-password', [ProfileController::class, 'changePassword']);
 Route::middleware('auth:sanctum')->post('/update-profile', [ProfileController::class, 'updateProfile']);
 
-// listings 
+// Listings 
 Route::middleware('auth:sanctum')->apiResource('/listings', ListingsController::class);
 Route::apiResource('/public-listings', RetrieveListingsController::class)
     ->parameters(['public-listings' => 'listing']);
+
+// Reviews
+Route::apiResource('/reviews', ReviewController::class);
+
 
 // Category
 Route::apiResource('/categories', CategoryController::class);

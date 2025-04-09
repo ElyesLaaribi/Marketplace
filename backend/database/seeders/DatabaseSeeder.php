@@ -5,6 +5,7 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\User;
 use App\Models\Admin;
+use App\Models\Review;
 use App\Models\Listing;
 use App\Models\Category;
 use Illuminate\Database\Seeder;
@@ -16,12 +17,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        Admin::factory(10)->create();
-        Category::factory(10)->create();
+        // Admin::factory(10)->create();
+        // Category::factory(10)->create();
 
-        User::factory(5)->has(
-            Listing::factory(10)
-        )->create();
+        // User::factory(5)->has(
+        //     Listing::factory(10)
+        // )->create();
+
+        Review::factory(10)->create();
 
     }
 }
