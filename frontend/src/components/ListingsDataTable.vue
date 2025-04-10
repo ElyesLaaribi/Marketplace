@@ -8,32 +8,103 @@ import {
   ListboxOptions,
 } from "@headlessui/vue";
 import { ChevronUpDownIcon } from "@heroicons/vue/16/solid";
-import { CheckIcon, XMarkIcon } from "@heroicons/vue/20/solid";
+import { CheckIcon, XMarkIcon, MapPinIcon } from "@heroicons/vue/20/solid";
 import SearchForm from "./SearchForm.vue";
 import api from "../axios";
 import { useToast } from "vue-toast-notification";
 import "vue-toast-notification/dist/theme-sugar.css";
-import MapInput from "./MapInput.vue";
 
-const data = ref({
-  id: "",
-  name: "",
-  price: "",
-  images: [],
-  description: "",
-  category_id: "",
-  address: "",
-  latitude: null,
-  longitude: null,
-});
+const lat = ref(0);
+const lng = ref(0);
+const address = ref("");
+const isLoadingLocation = ref(false);
+const locationError = ref("");
 
-const updateLocation = (location) => {
-  if (location) {
-    data.value.address = location.address || "";
-    data.value.latitude = location.latitude || null;
-    data.value.longitude = location.longitude || null;
+function getLocation() {
+  if (navigator.geolocation) {
+    isLoadingLocation.value = true;
+    locationError.value = "";
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        lat.value = position.coords.latitude;
+        lng.value = position.coords.longitude;
+        isLoadingLocation.value = false;
+
+        reverseGeocode(lat.value, lng.value);
+      },
+      (error) => {
+        isLoadingLocation.value = false;
+        locationError.value = `Error getting location: ${error.message}`;
+        console.error("Geolocation error:", error);
+      }
+    );
+  } else {
+    locationError.value = "Geolocation is not supported by your browser";
   }
-};
+}
+
+async function reverseGeocode(latitude, longitude) {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+    );
+    const data = await response.json();
+
+    if (data && data.display_name) {
+      address.value = data.display_name;
+
+      if (data.value) {
+        data.value.address = address.value;
+        data.value.latitude = latitude;
+        data.value.longitude = longitude;
+      }
+    }
+  } catch (error) {
+    locationError.value = "Error fetching address from coordinates";
+    console.error("Reverse geocoding error:", error);
+  }
+}
+
+async function geocodeAddress() {
+  if (!address.value.trim()) {
+    locationError.value = "Please enter an address";
+    return;
+  }
+
+  try {
+    isLoadingLocation.value = true;
+    locationError.value = "";
+
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        address.value
+      )}`
+    );
+    const result = await response.json();
+
+    if (result && result.length > 0) {
+      lat.value = parseFloat(result[0].lat);
+      lng.value = parseFloat(result[0].lon);
+
+      // Update the data object with location information
+      // Check if data.value exists before setting properties
+      if (data.value) {
+        data.value.address = address.value;
+        data.value.latitude = lat.value;
+        data.value.longitude = lng.value;
+      }
+    } else {
+      locationError.value =
+        "Address not found. Please try a different address.";
+    }
+  } catch (error) {
+    locationError.value = "Error converting address to coordinates";
+    console.error("Geocoding error:", error);
+  } finally {
+    isLoadingLocation.value = false;
+  }
+}
 
 const $toast = useToast();
 
@@ -60,6 +131,18 @@ const imagesToRemove = ref([]);
 const initialExistingCount = ref(0);
 
 const categories = ref([]);
+
+const data = ref({
+  id: "",
+  name: "",
+  price: "",
+  images: [],
+  description: "",
+  category_id: "",
+  address: "",
+  latitude: "",
+  longitude: "",
+});
 
 const handleImageChange = (event) => {
   const files = Array.from(event.target.files);
@@ -158,10 +241,10 @@ const editListing = (item) => {
 
   data.value = { ...item };
 
-  const sanitizedItem = {
-    ...item,
-    address: item.address || "",
-  };
+  // Set address and coordinates if they exist
+  if (item.address) address.value = item.address;
+  if (item.latitude) lat.value = item.latitude;
+  if (item.longitude) lng.value = item.longitude;
 
   if (item.image_paths && item.image_paths.length > 0) {
     existingImages.value = item.image_paths.map((path) =>
@@ -169,6 +252,7 @@ const editListing = (item) => {
     );
 
     imagePreview.value = [...existingImages.value];
+
     initialExistingCount.value = existingImages.value.length;
   }
 
@@ -185,10 +269,11 @@ const submit = async () => {
     formData.append("price", data.value.price);
     formData.append("category_id", data.value.category_id);
     formData.append("description", data.value.description);
-    //////
-    formData.append("address", data.value.address || "");
-    formData.append("latitude", data.value.latitude || "");
-    formData.append("longitude", data.value.longitude || "");
+
+    // Add location data to form
+    formData.append("address", address.value);
+    formData.append("latitude", lat.value);
+    formData.append("longitude", lng.value);
 
     imageFiles.value.forEach((file) => {
       formData.append("images[]", file);
@@ -228,12 +313,15 @@ const resetForm = () => {
     name: "",
     price: "",
     images: [],
-    category_id: categories.value.length > 0 ? categories.value[0].id : "",
+    category_id: "",
     description: "",
     address: "",
-    latitude: null,
-    longitude: null,
+    latitude: "",
+    longitude: "",
   };
+  address.value = "";
+  lat.value = 0;
+  lng.value = 0;
   imageFiles.value = [];
   imagePreview.value = [];
   existingImages.value = [];
@@ -309,6 +397,54 @@ const openNewListingForm = () => {
                   />
                   <p v-if="errors.price" class="text-red-500 text-xs mt-1">
                     {{ errors.price[0] }}
+                  </p>
+                </div>
+
+                <!-- Location input section -->
+                <div class="sm:col-span-2">
+                  <label
+                    for="address"
+                    class="block text-xs sm:text-sm font-medium text-gray-900"
+                    >Location Address</label
+                  >
+                  <div class="mt-1 flex space-x-2">
+                    <input
+                      v-model="address"
+                      id="address"
+                      placeholder="Enter full address"
+                      class="bg-white flex-grow border border-gray-300 rounded-md px-2 py-1.5 sm:px-3 sm:py-2 placeholder-gray-400 focus:border-indigo-600 focus:ring-indigo-600 text-xs sm:text-sm"
+                    />
+                    <button
+                      type="button"
+                      @click="geocodeAddress"
+                      class="rounded-md bg-indigo-600 px-3 py-1.5 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold text-white shadow hover:bg-indigo-500"
+                    >
+                      Find
+                    </button>
+                    <button
+                      type="button"
+                      @click="getLocation"
+                      class="rounded-md bg-green-600 px-3 py-1.5 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold text-white shadow hover:bg-green-500 flex items-center gap-1"
+                    >
+                      <MapPinIcon class="h-4 w-4" />
+                      Use My Location
+                    </button>
+                  </div>
+
+                  <div class="mt-2 flex items-center text-sm">
+                    <p v-if="isLoadingLocation" class="text-gray-600">
+                      Getting location...
+                    </p>
+                    <p v-else-if="locationError" class="text-red-500 text-xs">
+                      {{ locationError }}
+                    </p>
+                    <p v-else-if="lat && lng" class="text-gray-600 text-xs">
+                      Coordinates: {{ lat.toFixed(6) }}, {{ lng.toFixed(6) }}
+                    </p>
+                  </div>
+
+                  <p v-if="errors.address" class="text-red-500 text-xs mt-1">
+                    {{ errors.address[0] }}
                   </p>
                 </div>
 
@@ -479,35 +615,12 @@ const openNewListingForm = () => {
                 </div>
               </div>
 
-              <div class="sm:col-span-2">
-                <label
-                  class="block text-xs sm:text-sm font-medium text-gray-900"
-                >
-                  Location
-                </label>
-                <MapInput
-                  :initial-address="data.address"
-                  :initial-latitude="data.latitude"
-                  :initial-longitude="data.longitude"
-                  @update:location="updateLocation"
-                />
-                <p v-if="errors.address" class="text-red-500 text-xs mt-1">
-                  {{ errors.address[0] }}
-                </p>
-                <p
-                  v-if="errors.latitude || errors.longitude"
-                  class="text-red-500 text-xs mt-1"
-                >
-                  Location coordinates are required
-                </p>
-              </div>
-
               <div
                 class="mt-4 sm:mt-6 flex items-center justify-end gap-x-2 sm:gap-x-4"
               >
                 <button
                   type="button"
-                  @click="isOpen = false"
+                  @click="resetForm"
                   class="text-xs sm:text-sm font-semibold text-gray-900"
                 >
                   Cancel
@@ -565,6 +678,12 @@ const openNewListingForm = () => {
             </th>
             <th
               scope="col"
+              class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+            >
+              Location
+            </th>
+            <th
+              scope="col"
               class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider"
             >
               Actions
@@ -608,6 +727,15 @@ const openNewListingForm = () => {
             </td>
             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
               {{ item.cat_title }}
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+              <span v-if="item.address" class="truncate max-w-xs block">{{
+                item.address
+              }}</span>
+              <span v-else-if="item.latitude && item.longitude" class="text-xs">
+                {{ item.latitude }}, {{ item.longitude }}
+              </span>
+              <span v-else class="text-gray-400 text-xs">No location</span>
             </td>
             <td class="px-4 py-4 whitespace-nowrap text-center">
               <div class="flex justify-center space-x-2">
