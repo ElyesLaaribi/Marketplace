@@ -87,8 +87,6 @@ async function geocodeAddress() {
       lat.value = parseFloat(result[0].lat);
       lng.value = parseFloat(result[0].lon);
 
-      // Update the data object with location information
-      // Check if data.value exists before setting properties
       if (data.value) {
         data.value.address = address.value;
         data.value.latitude = lat.value;
@@ -241,7 +239,6 @@ const editListing = (item) => {
 
   data.value = { ...item };
 
-  // Set address and coordinates if they exist
   if (item.address) address.value = item.address;
   if (item.latitude) lat.value = item.latitude;
   if (item.longitude) lng.value = item.longitude;
