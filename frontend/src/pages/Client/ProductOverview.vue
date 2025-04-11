@@ -5,10 +5,22 @@ import { UserCircleIcon } from "@heroicons/vue/24/solid";
 import DefaultLayout from "../../components/DefaultLayout.vue";
 import api from "../../axios";
 import { useRoute, useRouter } from "vue-router";
+import L from "leaflet";
 
 const route = useRoute();
 const router = useRouter();
 const id = route.params.id;
+const map = ref();
+const mapContainer = ref();
+
+onMounted(() => {
+  map.value = L.map(mapContainer.value).setView([51.505, -0.09], 13);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(map.value);
+});
 
 const listingData = ref({
   id: "",
@@ -600,6 +612,11 @@ onMounted(() => {
               </div>
             </div>
           </div>
+          <!-- map container -->
+          <div
+            ref="mapContainer"
+            class="border border-gray-300 rounded-lg overflow-hidden"
+          ></div>
         </div>
       </div>
     </div>
