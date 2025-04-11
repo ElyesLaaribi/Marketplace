@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed, watch } from "vue";
+import { onMounted, ref, computed, watch, nextTick } from "vue";
 import { StarIcon } from "@heroicons/vue/20/solid";
 import { UserCircleIcon } from "@heroicons/vue/24/solid";
 import DefaultLayout from "../../components/DefaultLayout.vue";
@@ -7,20 +7,23 @@ import api from "../../axios";
 import { useRoute, useRouter } from "vue-router";
 import L from "leaflet";
 
+const isLoading = ref(true);
+const error = ref(null);
+const activeImageIndex = ref(0);
+const showAllImages = ref(false);
+const rentalStart = ref("");
+const rentalEnd = ref("");
+const totalDays = ref(1);
+const reviews = ref({
+  href: "#reviews",
+  average: 4,
+  totalCount: 117,
+});
 const route = useRoute();
 const router = useRouter();
 const id = route.params.id;
 const map = ref();
 const mapContainer = ref();
-
-onMounted(() => {
-  map.value = L.map(mapContainer.value).setView([51.505, -0.09], 13);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution:
-      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  }).addTo(map.value);
-});
 
 const listingData = ref({
   id: "",
@@ -34,19 +37,28 @@ const listingData = ref({
   avatar: "",
 });
 
-const isLoading = ref(true);
-const error = ref(null);
-const activeImageIndex = ref(0);
-const showAllImages = ref(false);
+onMounted(() => {
+  fetchListingData().then(() => {
+    nextTick(() => {
+      if (mapContainer.value) {
+        map.value = L.map(mapContainer.value).setView([51.505, -0.09], 13);
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution:
+            '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        }).addTo(map.value);
+      }
+    });
+  });
 
-const rentalStart = ref("");
-const rentalEnd = ref("");
-const totalDays = ref(1);
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
 
-const reviews = ref({
-  href: "#reviews",
-  average: 4,
-  totalCount: 117,
+  rentalStart.value = today.toISOString().slice(0, 10);
+  rentalEnd.value = tomorrow.toISOString().slice(0, 10);
+
+  calculateDays();
 });
 
 const extractImages = (data) => {
@@ -192,18 +204,6 @@ const fetchListingData = async () => {
     isLoading.value = false;
   }
 };
-
-onMounted(() => {
-  fetchListingData();
-  const today = new Date();
-  const tomorrow = new Date();
-  tomorrow.setDate(today.getDate() + 1);
-
-  rentalStart.value = today.toISOString().slice(0, 10);
-  rentalEnd.value = tomorrow.toISOString().slice(0, 10);
-
-  calculateDays();
-});
 </script>
 
 <template>
@@ -615,7 +615,7 @@ onMounted(() => {
           <!-- map container -->
           <div
             ref="mapContainer"
-            class="border border-gray-300 rounded-lg overflow-hidden"
+            class="border border-gray-300 rounded-lg overflow-hidden h-96 lg:col-span-3 mt-8"
           ></div>
         </div>
       </div>
