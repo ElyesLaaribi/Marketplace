@@ -14,16 +14,60 @@ const showAllImages = ref(false);
 const rentalStart = ref("");
 const rentalEnd = ref("");
 const totalDays = ref(1);
-const reviews = ref({
-  href: "#reviews",
-  average: 4,
-  totalCount: 117,
-});
+
+const mapVisible = ref(true);
 const route = useRoute();
 const router = useRouter();
 const id = route.params.id;
 const map = ref();
 const mapContainer = ref();
+
+// reviews reactive
+const showAllReviews = ref(false);
+const reviews = ref([]);
+const totalReviews = ref(0);
+const reviewsLoading = ref(true);
+const reviewsError = ref(null);
+const showReviewsModal = ref(false);
+
+const openReviewsModal = () => {
+  showReviewsModal.value = true;
+  mapVisible.value = false;
+  document.body.style.overflow = "hidden";
+
+  if (map.value) {
+    map.value.remove();
+    map.value = null;
+  }
+};
+
+const closeReviewsModal = () => {
+  showReviewsModal.value = false;
+  mapVisible.value = true;
+  document.body.style.overflow = "";
+
+  nextTick(() => {
+    if (mapContainer.value && !map.value) {
+      initializeMap();
+    }
+  });
+};
+
+const initializeMap = () => {
+  if (mapContainer.value && !map.value) {
+    map.value = L.map(mapContainer.value).setView([51.505, -0.09], 13);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution:
+        '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map.value);
+  }
+};
+
+// Computed property for displayed reviews
+const displayedReviews = computed(() => {
+  return showAllReviews.value ? reviews.value : reviews.value.slice(0, 4);
+});
 
 const listingData = ref({
   id: "",
@@ -37,19 +81,59 @@ const listingData = ref({
   avatar: "",
 });
 
+const fetchReviews = async () => {
+  try {
+    reviewsLoading.value = true;
+    const response = await api.get(`/api/reviews?listing_id=${id}`);
+
+    if (!response.data) {
+      throw new Error("Failed to fetch reviews");
+    }
+
+    reviews.value = response.data.data
+      ? response.data.data.map((review) => ({
+          id: review.id,
+          name: review.user_name,
+          review: review.comment,
+          showFull: false,
+          avatar: "/images/default-avatar.jpg",
+          location: "Customer",
+          date: "Recent rental",
+          stayDuration: "Rental",
+        }))
+      : [];
+
+    totalReviews.value = reviews.value.length;
+  } catch (err) {
+    reviewsError.value = err.message;
+    console.error("Error fetching reviews:", err);
+  } finally {
+    reviewsLoading.value = false;
+  }
+};
+
+const isReviewTruncated = (review) => {
+  return review.review && review.review.length > 150 && !review.showFull;
+};
+
 onMounted(() => {
   fetchListingData().then(() => {
     nextTick(() => {
-      if (mapContainer.value) {
-        map.value = L.map(mapContainer.value).setView([51.505, -0.09], 13);
-        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19,
-          attribution:
-            '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        }).addTo(map.value);
+      if (mapVisible.value) {
+        initializeMap();
       }
     });
   });
+
+  fetchReviews();
+
+  const handleEscKey = (event) => {
+    if (event.key === "Escape" && showReviewsModal.value) {
+      closeReviewsModal();
+    }
+  };
+
+  window.addEventListener("keydown", handleEscKey);
 
   const today = new Date();
   const tomorrow = new Date();
@@ -59,6 +143,14 @@ onMounted(() => {
   rentalEnd.value = tomorrow.toISOString().slice(0, 10);
 
   calculateDays();
+
+  return () => {
+    window.removeEventListener("keydown", handleEscKey);
+    if (map.value) {
+      map.value.remove();
+      map.value = null;
+    }
+  };
 });
 
 const extractImages = (data) => {
@@ -266,20 +358,8 @@ const fetchListingData = async () => {
           <!-- Rating and Host info in the same row (Airbnb style) -->
           <div class="flex items-center justify-between mt-2">
             <div class="flex items-center">
-              <div class="flex items-center">
-                <StarIcon class="h-4 w-4 text-indigo-500" aria-hidden="true" />
-                <span class="ml-1 text-sm text-gray-700">{{
-                  reviews.average
-                }}</span>
-              </div>
-              <span class="mx-2 text-gray-400">·</span>
-              <a
-                :href="reviews.href"
-                class="text-sm font-medium text-gray-700 hover:underline"
-              >
-                {{ reviews.totalCount }} reviews
-              </a>
-              <span class="mx-2 text-gray-400">·</span>
+              <div class="flex items-center"></div>
+
               <div class="flex items-center">
                 <span class="text-sm font-medium text-gray-700">
                   {{ listingData.user_name }}
@@ -289,7 +369,7 @@ const fetchListingData = async () => {
           </div>
         </div>
 
-        <!-- Airbnb-Style Image Gallery -->
+        <!--  Image Gallery -->
         <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8 mt-4">
           <!-- Regular gallery view -->
           <div v-if="!showAllImages" class="relative">
@@ -535,22 +615,7 @@ const fetchListingData = async () => {
 
               <!-- Reviews summary -->
               <div class="mt-2 flex items-center">
-                <div class="flex items-center">
-                  <StarIcon
-                    v-for="rating in [0, 1, 2, 3, 4]"
-                    :key="rating"
-                    :class="[
-                      reviews.average > rating
-                        ? 'text-indigo-500'
-                        : 'text-gray-200',
-                      'h-4 w-4 shrink-0',
-                    ]"
-                    aria-hidden="true"
-                  />
-                </div>
-                <span class="ml-1 text-sm text-gray-700"
-                  >{{ reviews.totalCount }} reviews</span
-                >
+                <div class="flex items-center"></div>
               </div>
 
               <!-- Booking form -->
@@ -612,8 +677,253 @@ const fetchListingData = async () => {
               </div>
             </div>
           </div>
+          <!-- reviews container -->
+          <div class="lg:col-span-3 mt-10 border-t border-gray-200 pt-10">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">
+              <div class="flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6 mr-2 text-red-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                {{ totalReviews }} reviews
+              </div>
+            </h2>
+
+            <!-- Loading state -->
+            <div v-if="reviewsLoading" class="py-6 text-center">
+              <div class="animate-pulse flex flex-col items-center">
+                <div class="h-8 w-8 bg-indigo-200 rounded-full mb-4"></div>
+                <p class="text-gray-500">Loading reviews...</p>
+              </div>
+            </div>
+
+            <!-- Error state -->
+            <div v-else-if="reviewsError" class="py-6 text-center text-red-500">
+              {{ reviewsError }}
+            </div>
+
+            <!-- Reviews content -->
+            <div v-else>
+              <!-- Reviews preview grid (only showing first 6) -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
+                <div
+                  v-for="review in reviews.slice(0, 6)"
+                  :key="review.id"
+                  class="space-y-2"
+                >
+                  <div class="flex items-start">
+                    <!-- Avatar with fallback -->
+                    <div class="flex-shrink-0 mr-4">
+                      <div
+                        class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden"
+                      >
+                        <svg
+                          v-if="
+                            !review.avatar || review.avatar.includes('default')
+                          "
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-8 w-8 text-gray-400"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                        <img
+                          v-else
+                          :src="review.avatar"
+                          :alt="review.name"
+                          class="h-full w-full object-cover"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Review content -->
+                    <div class="flex-1 min-w-0">
+                      <h3 class="text-base font-medium text-gray-900">
+                        {{ review.name }}
+                      </h3>
+                      <p class="text-sm text-gray-500">
+                        {{ review.date || "Recent rental" }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Review text with show more functionality - in preview grid, always truncate -->
+                  <div>
+                    <p class="text-base text-gray-700 line-clamp-3">
+                      {{ review.review }}
+                    </p>
+                    <button
+                      v-if="review.review.length > 150"
+                      @click="review.showFull = !review.showFull"
+                      class="mt-1 text-sm font-medium underline text-gray-800"
+                    >
+                      Show more
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Show all reviews button -->
+              <div v-if="reviews.length > 6" class="mt-10">
+                <button
+                  @click="openReviewsModal"
+                  class="px-6 py-2.5 bg-white border border-black rounded-lg text-black font-medium hover:bg-gray-50 transition duration-150"
+                >
+                  Show all {{ totalReviews }} reviews
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Teleport for Reviews Modal -->
+          <Teleport to="body">
+            <div
+              v-if="showReviewsModal"
+              class="fixed inset-0 z-50 overflow-y-auto"
+              aria-labelledby="modal-title"
+              role="dialog"
+              aria-modal="true"
+            >
+              <!-- Background overlay -->
+              <div
+                class="fixed inset-0 bg-black/50 bg-opacity-75 transition-opacity"
+                @click="closeReviewsModal"
+              ></div>
+
+              <!-- Modal container -->
+              <div
+                class="flex min-h-screen items-end justify-center p-4 text-center sm:items-center sm:p-0"
+              >
+                <div
+                  class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl"
+                >
+                  <!-- Modal header -->
+                  <div
+                    class="border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 bg-white z-10"
+                  >
+                    <button
+                      @click="closeReviewsModal"
+                      class="rounded-full p-2 hover:bg-gray-100"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                    <h2 class="text-lg font-semibold">
+                      {{ totalReviews }} reviews
+                    </h2>
+                    <div class="w-6"></div>
+                    <!-- Empty div for flex centering -->
+                  </div>
+
+                  <!-- Modal content -->
+                  <div class="p-6 max-h-[calc(100vh-120px)] overflow-y-auto">
+                    <!-- All reviews list -->
+                    <div class="space-y-8">
+                      <div
+                        v-for="review in reviews"
+                        :key="review.id"
+                        class="pb-8 border-b border-gray-200 last:border-b-0"
+                      >
+                        <div class="flex items-start">
+                          <!-- Avatar with fallback -->
+                          <div class="flex-shrink-0 mr-4">
+                            <div
+                              class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden"
+                            >
+                              <svg
+                                v-if="
+                                  !review.avatar ||
+                                  review.avatar.includes('default')
+                                "
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-8 w-8 text-gray-400"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                  clip-rule="evenodd"
+                                />
+                              </svg>
+                              <img
+                                v-else
+                                :src="review.avatar"
+                                :alt="review.name"
+                                class="h-full w-full object-cover"
+                              />
+                            </div>
+                          </div>
+
+                          <!-- Review content -->
+                          <div class="flex-1 min-w-0">
+                            <h3 class="text-base font-medium text-gray-900">
+                              {{ review.name }}
+                            </h3>
+                            <p class="text-sm text-gray-500">
+                              {{ review.date || "Recent stay" }}
+                            </p>
+
+                            <!-- Review text -->
+                            <div class="mt-3">
+                              <p
+                                class="text-base text-gray-700"
+                                :class="{
+                                  'line-clamp-4':
+                                    !review.showFull &&
+                                    review.review.length > 280,
+                                }"
+                              >
+                                {{ review.review }}
+                              </p>
+                              <button
+                                v-if="review.review.length > 280"
+                                @click="review.showFull = !review.showFull"
+                                class="mt-1 text-sm font-medium underline text-gray-800"
+                              >
+                                {{
+                                  review.showFull ? "Show less" : "Show more"
+                                }}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Teleport>
           <!-- map container -->
+          <div class="mt-10 text-2xl font-bold text-gray-900">
+            Item's location
+          </div>
           <div
+            v-if="mapVisible"
             ref="mapContainer"
             class="border border-gray-300 rounded-lg overflow-hidden h-96 lg:col-span-3 mt-8"
           ></div>
