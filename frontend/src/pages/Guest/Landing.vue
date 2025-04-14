@@ -6,49 +6,24 @@ import {
   XMarkIcon,
   UserCircleIcon,
   HeartIcon,
+  MagnifyingGlassIcon,
+  CreditCardIcon,
+  TruckIcon,
 } from "@heroicons/vue/24/outline";
 import { RouterLink } from "vue-router";
+import landing from "../../assets/images/landing.png";
+
+const hover = ref(false);
+const signupHover = ref(false);
+const linkHover = ref(false);
+const navHover = ref("");
+const buttonHovers = ref({});
 
 const navigation = [
   { name: "Browse Items", href: "#browse" },
   { name: "How It Works", href: "#how-it-works" },
   { name: "About Us", href: "#about" },
   { name: "Testimonials", href: "#testimonials" },
-];
-
-const categories = [
-  {
-    name: "Electronics",
-    icon: "📱",
-    href: "#electronics",
-    description:
-      "Cameras, projectors, speakers, and more for your next event or project.",
-    bgColor: "bg-blue-50",
-  },
-  {
-    name: "Tools",
-    icon: "🔨",
-    href: "#tools",
-    description:
-      "Professional-grade tools for home improvement, construction, and DIY projects.",
-    bgColor: "bg-amber-50",
-  },
-  {
-    name: "Outdoor",
-    icon: "🏕️",
-    href: "#outdoor",
-    description:
-      "Camping gear, bikes, kayaks, and everything you need for outdoor adventures.",
-    bgColor: "bg-green-50",
-  },
-  {
-    name: "Party",
-    icon: "🎉",
-    href: "#party",
-    description:
-      "Tables, chairs, decorations, and equipment to make your event unforgettable.",
-    bgColor: "bg-pink-50",
-  },
 ];
 
 const featuredItems = [
@@ -94,6 +69,10 @@ const testimonials = [
 ];
 
 const mobileMenuOpen = ref(false);
+
+const setButtonHover = (id, value) => {
+  buttonHovers.value[id] = value;
+};
 </script>
 
 <template>
@@ -104,15 +83,11 @@ const mobileMenuOpen = ref(false);
         aria-label="Global"
       >
         <div class="flex lg:flex-1">
-          <a href="#" class="-m-1.5 p-1.5 flex items-center">
-            <span class="sr-only">RentEase</span>
-            <img
-              class="h-10 w-auto"
-              src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-              alt=""
-            />
-            <span class="ml-2 text-xl font-bold text-indigo-600">RentEase</span>
-          </a>
+          <img
+            class="h-17 w-auto"
+            src="../../assets/images/logo.png"
+            alt="RentEase Logo"
+          />
         </div>
         <div class="flex lg:hidden">
           <button
@@ -124,21 +99,32 @@ const mobileMenuOpen = ref(false);
             <Bars3Icon class="size-6" aria-hidden="true" />
           </button>
         </div>
-        <div class="hidden lg:flex lg:gap-x-12">
+        <div class="hidden lg:flex lg:gap-x-4">
           <a
             v-for="item in navigation"
             :key="item.name"
             :href="item.href"
-            class="text-sm/6 font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
-            >{{ item.name }}</a
+            class="px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-300"
+            @mouseover="navHover = item.name"
+            @mouseleave="navHover = ''"
+            :style="{
+              backgroundColor: navHover === item.name ? '#28BBDD' : '#135CA5',
+              color: 'white',
+            }"
           >
+            {{ item.name }}
+          </a>
         </div>
         <div class="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-6">
           <router-link
             :to="{ name: 'Login' }"
-            class="text-sm/6 font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
-            >Log in <span aria-hidden="true">&rarr;</span></router-link
+            class="px-4 py-2 rounded-md text-sm font-semibold text-white transition-colors duration-300"
+            @mouseover="hover = true"
+            @mouseleave="hover = false"
+            :style="{ backgroundColor: hover ? '#28BBDD' : '#135CA5' }"
           >
+            Log in
+          </router-link>
         </div>
       </nav>
       <Dialog
@@ -155,10 +141,10 @@ const mobileMenuOpen = ref(false);
               <span class="sr-only">RentEase</span>
               <img
                 class="h-8 w-auto"
-                src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+                src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=135CA5&shade=600"
                 alt=""
               />
-              <span class="ml-2 text-lg font-bold text-indigo-600"
+              <span class="ml-2 text-lg font-bold text-[#135CA5]"
                 >RentEase</span
               >
             </a>
@@ -178,21 +164,24 @@ const mobileMenuOpen = ref(false);
                   v-for="item in navigation"
                   :key="item.name"
                   :href="item.href"
-                  class="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                  >{{ item.name }}</a
+                  class="block rounded-md px-3 py-2 text-base font-semibold text-white bg-[#135CA5] hover:bg-[#28BBDD]"
                 >
+                  {{ item.name }}
+                </a>
               </div>
               <div class="py-6">
                 <router-link
                   :to="{ name: 'Login' }"
-                  class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                  >Log in</router-link
+                  class="block rounded-md px-3 py-2.5 text-base font-semibold text-white bg-[#135CA5] hover:bg-[#28BBDD]"
                 >
+                  Log in
+                </router-link>
                 <router-link
                   :to="{ name: 'Signup' }"
-                  class="-mx-3 mt-2 block rounded-lg bg-indigo-600 px-3 py-2.5 text-base/7 font-semibold text-white hover:bg-indigo-500"
-                  >Sign up</router-link
+                  class="mt-2 block rounded-md px-3 py-2.5 text-base font-semibold text-white bg-[#002D4A] hover:bg-[#28BBDD]"
                 >
+                  Sign up
+                </router-link>
               </div>
             </div>
           </div>
@@ -200,99 +189,56 @@ const mobileMenuOpen = ref(false);
       </Dialog>
     </header>
 
-    <!-- Hero Section with Background Color Instead of Image -->
-    <div class="relative isolate">
-      <!-- Solid background color instead of image -->
-      <div class="absolute inset-0 -z-10"></div>
-
-      <div class="relative px-6 pt-2 lg:px-8">
-        <div
-          class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
-          aria-hidden="true"
-        >
-          <div
-            class="relative left-[calc(50%-11rem)] aspect-1155/678 w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
-          />
-        </div>
-        <div class="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-          <div class="text-center">
-            <h1
-              class="text-5xl font-bold tracking-tight text-balance text-gray-900 sm:text-7xl"
-            >
-              Rent with ease, find with confidence
-            </h1>
-            <p
-              class="mt-8 text-lg font-medium text-pretty text-gray-600 sm:text-xl/8"
-            >
-              Your peer-to-peer rental marketplace - simple, secure, and
-              hassle-free. Save money and reduce waste by renting what you need.
-            </p>
-            <div class="mt-10 flex items-center justify-center gap-x-6">
-              <router-link
-                :to="{ name: 'Signup' }"
-                class="rounded-md bg-indigo-600 px-5 py-3 text-base font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors"
-                >Get started</router-link
+    <!-- Hero Section with content on the left and image on the right -->
+    <div class="relative bg-white overflow-hidden">
+      <div class="relative px-6 pt-1 lg:px-8">
+        <div class="mx-auto max-w-7xl py-24 sm:py-32 lg:py-40">
+          <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-8">
+            <!-- Left Content Section -->
+            <div class="text-left">
+              <h1
+                class="text-4xl font-bold tracking-tight text-balance text-[#135CA5] sm:text-5xl lg:text-6xl"
               >
-              <a
-                href="#how-it-works"
-                class="text-base font-semibold text-gray-600 hover:text-indigo-600 transition-colors"
-                >Learn more <span aria-hidden="true">→</span></a
+                Rent with ease, find with confidence
+              </h1>
+              <p
+                class="mt-6 text-lg font-medium text-pretty text-gray-700 sm:text-xl/8"
               >
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Enhanced Category Section -->
-    <div id="browse" class="bg-white py-24 sm:py-32">
-      <div class="mx-auto max-w-7xl px-6 lg:px-8">
-        <div class="mx-auto max-w-2xl text-center">
-          <h2
-            class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
-          >
-            Browse by category
-          </h2>
-          <p class="mt-4 text-lg text-gray-600">
-            Find exactly what you need from our extensive collection of rental
-            items.
-          </p>
-        </div>
-
-        <!-- Improved category cards with better visuals -->
-        <div class="mx-auto mt-16 max-w-7xl">
-          <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            <div
-              v-for="category in categories"
-              :key="category.name"
-              :class="[
-                category.bgColor,
-                'group relative overflow-hidden rounded-lg shadow transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1',
-              ]"
-            >
-              <div
-                class="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-transparent opacity-60"
-              ></div>
-              <div class="relative p-8">
-                <div class="text-4xl mb-4">{{ category.icon }}</div>
-                <h3
-                  class="text-xl font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors"
+                Your peer-to-peer rental marketplace - simple, secure, and
+                hassle-free. Save money and reduce waste by renting what you
+                need.
+              </p>
+              <div class="mt-10 flex items-center gap-x-6">
+                <router-link
+                  :to="{ name: 'Signup' }"
+                  class="rounded-md px-5 py-3 text-base font-semibold text-white shadow-sm transition-colors duration-300"
+                  @mouseover="signupHover = true"
+                  @mouseleave="signupHover = false"
+                  :style="{
+                    backgroundColor: signupHover ? '#28BBDD' : '#135CA5',
+                  }"
                 >
-                  {{ category.name }}
-                </h3>
-                <p class="mt-2 text-gray-600">
-                  {{ category.description }}
-                </p>
-                <div class="mt-6">
-                  <a
-                    :href="category.href"
-                    class="inline-flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-500"
-                  >
-                    Explore {{ category.name }}
-                    <span class="ml-1">→</span>
-                  </a>
-                </div>
+                  Get started
+                </router-link>
+                <a
+                  href="#how-it-works"
+                  class="text-base font-semibold transition-colors duration-300"
+                  @mouseover="linkHover = true"
+                  @mouseleave="linkHover = false"
+                  :style="{ color: linkHover ? '#28BBDD' : '#135CA5' }"
+                >
+                  Learn more →
+                </a>
               </div>
+            </div>
+
+            <!-- Right Image Section -->
+            <div class="relative mt-10 lg:mt-0">
+              <img
+                :src="landing"
+                alt="RentEase platform"
+                class="w-full h-auto object-cover rounded-lg"
+              />
             </div>
           </div>
         </div>
@@ -304,7 +250,7 @@ const mobileMenuOpen = ref(false);
       <div class="mx-auto max-w-7xl px-6 lg:px-8">
         <div class="mx-auto max-w-2xl text-center">
           <h2
-            class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
+            class="text-3xl font-bold tracking-tight text-[#135CA5] sm:text-4xl"
           >
             Featured items
           </h2>
@@ -341,15 +287,13 @@ const mobileMenuOpen = ref(false);
                     item.rating
                   }}</span>
                 </div>
-                <span class="font-medium text-indigo-600">{{
-                  item.price
-                }}</span>
+                <span class="font-medium text-[#135CA5]">{{ item.price }}</span>
               </div>
               <div class="group">
                 <h3
-                  class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600"
+                  class="text-lg font-semibold text-gray-900 group-hover:text-[#135CA5]"
                 >
-                  <a href="#">{{ item.name }}</a>
+                  <a href="#" class="block">{{ item.name }}</a>
                 </h3>
                 <p class="mt-2 text-sm text-gray-600">
                   Available now in your area. Includes free delivery for rentals
@@ -359,7 +303,12 @@ const mobileMenuOpen = ref(false);
               <div class="mt-4">
                 <a
                   href="#"
-                  class="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                  @mouseover="setButtonHover(item.id, true)"
+                  @mouseleave="setButtonHover(item.id, false)"
+                  class="text-sm font-medium transition-colors"
+                  :style="{
+                    color: buttonHovers[item.id] ? '#28BBDD' : '#135CA5',
+                  }"
                 >
                   View details →
                 </a>
@@ -375,7 +324,7 @@ const mobileMenuOpen = ref(false);
       <div class="mx-auto max-w-7xl px-6 lg:px-8">
         <div class="mx-auto max-w-2xl text-center">
           <h2
-            class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
+            class="text-3xl font-bold tracking-tight text-[#135CA5] sm:text-4xl"
           >
             How it works
           </h2>
@@ -390,9 +339,9 @@ const mobileMenuOpen = ref(false);
           >
             <div class="flex flex-col items-center">
               <div
-                class="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-white text-2xl font-bold"
+                class="flex h-16 w-16 items-center justify-center rounded-full text-white bg-[#135CA5]"
               >
-                1
+                <MagnifyingGlassIcon class="h-8 w-8" />
               </div>
               <dt class="mt-6 text-lg font-semibold text-gray-900">
                 Browse & Search
@@ -404,9 +353,9 @@ const mobileMenuOpen = ref(false);
             </div>
             <div class="flex flex-col items-center">
               <div
-                class="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-white text-2xl font-bold"
+                class="flex h-16 w-16 items-center justify-center rounded-full text-white bg-[#135CA5]"
               >
-                2
+                <CreditCardIcon class="h-8 w-8" />
               </div>
               <dt class="mt-6 text-lg font-semibold text-gray-900">
                 Book & Pay
@@ -418,9 +367,9 @@ const mobileMenuOpen = ref(false);
             </div>
             <div class="flex flex-col items-center">
               <div
-                class="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-white text-2xl font-bold"
+                class="flex h-16 w-16 items-center justify-center rounded-full text-white bg-[#135CA5]"
               >
-                3
+                <TruckIcon class="h-8 w-8" />
               </div>
               <dt class="mt-6 text-lg font-semibold text-gray-900">
                 Pick Up & Return
@@ -440,7 +389,7 @@ const mobileMenuOpen = ref(false);
       <div class="mx-auto max-w-7xl px-6 lg:px-8">
         <div class="mx-auto max-w-2xl text-center">
           <h2
-            class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
+            class="text-3xl font-bold tracking-tight text-[#135CA5] sm:text-4xl"
           >
             What our users say
           </h2>
@@ -475,40 +424,13 @@ const mobileMenuOpen = ref(false);
       </div>
     </div>
 
-    <!-- CTA Section -->
-    <div class="bg-indigo-600">
-      <div class="px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
-        <div class="mx-auto max-w-2xl text-center">
-          <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Ready to start renting?
-          </h2>
-          <p class="mx-auto mt-6 max-w-xl text-lg text-indigo-100">
-            Join thousands of users saving money and reducing waste by renting
-            items instead of buying them.
-          </p>
-          <div class="mt-10 flex items-center justify-center gap-x-6">
-            <router-link
-              :to="{ name: 'Signup' }"
-              class="rounded-md bg-white px-5 py-3 text-base font-semibold text-indigo-600 shadow-sm hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
-              >Sign up now</router-link
-            >
-            <a
-              href="#browse"
-              class="text-base font-semibold text-white hover:text-indigo-100 transition-colors"
-              >Browse items <span aria-hidden="true">→</span></a
-            >
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Footer -->
-    <footer class="bg-gray-900">
+    <footer class="bg-[#002D4A]">
       <div
         class="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8"
       >
         <div class="flex justify-center space-x-6 md:order-2">
-          <a href="#" class="text-gray-400 hover:text-gray-300">
+          <a href="#" class="text-gray-400 hover:text-[#28BBDD]">
             <span class="sr-only">Facebook</span>
             <svg
               class="h-6 w-6"
@@ -523,7 +445,7 @@ const mobileMenuOpen = ref(false);
               />
             </svg>
           </a>
-          <a href="#" class="text-gray-400 hover:text-gray-300">
+          <a href="#" class="text-gray-400 hover:text-[#28BBDD]">
             <span class="sr-only">Instagram</span>
             <svg
               class="h-6 w-6"
@@ -538,7 +460,7 @@ const mobileMenuOpen = ref(false);
               />
             </svg>
           </a>
-          <a href="#" class="text-gray-400 hover:text-gray-300">
+          <a href="#" class="text-gray-400 hover:text-[#28BBDD]">
             <span class="sr-only">Twitter</span>
             <svg
               class="h-6 w-6"
@@ -572,70 +494,17 @@ const mobileMenuOpen = ref(false);
   background-color: #f9fafb;
 }
 
-.bg-gray-900 {
-  background-color: #111827;
+/* Transition effects */
+.transition-colors {
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.bg-indigo-600 {
-  background-color: #4f46e5;
-}
-
-.bg-indigo-700 {
-  background-color: #4338ca;
+.transition-shadow {
+  transition: box-shadow 0.3s ease;
 }
 
 /* Background opacity and overlay styles */
 .bg-white\/80 {
   background-color: rgb(255 255 255 / 0.8);
-}
-
-.bg-black {
-  background-color: #000000;
-}
-
-.opacity-50 {
-  opacity: 0.5;
-}
-
-.opacity-60 {
-  opacity: 0.6;
-}
-
-/* Background styles */
-.bg-white {
-  background-color: #ffffff;
-}
-
-.bg-gray-50 {
-  background-color: #f9fafb;
-}
-
-.bg-gray-900 {
-  background-color: #111827;
-}
-
-.bg-indigo-600 {
-  background-color: #4f46e5;
-}
-
-.bg-indigo-700 {
-  background-color: #4338ca;
-}
-
-/* Background opacity and overlay styles */
-.bg-white\/80 {
-  background-color: rgb(255 255 255 / 0.8);
-}
-
-.bg-black {
-  background-color: #000000;
-}
-
-.opacity-50 {
-  opacity: 0.5;
-}
-
-.opacity-60 {
-  opacity: 0.6;
 }
 </style>
