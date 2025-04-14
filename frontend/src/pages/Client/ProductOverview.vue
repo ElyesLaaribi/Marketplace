@@ -919,7 +919,9 @@ const fetchListingData = async () => {
             </div>
           </Teleport>
           <!-- map container -->
-          <div class="mt-10 text-2xl font-bold text-gray-900">
+          <div
+            class="mt-10 text-2xl font-bold border-t text-gray-900 lg:col-span-3 mt-10 border-t border-gray-200 pt-10"
+          >
             Item's location
           </div>
           <div
