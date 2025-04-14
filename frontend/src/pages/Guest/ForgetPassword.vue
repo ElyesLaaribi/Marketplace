@@ -58,11 +58,26 @@ const handleKeydown = (event) => {
 
 <template>
   <div
-    class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8"
+    class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8"
   >
-    <div class="w-full max-w-md space-y-8">
-      <div>
-        <h2 class="text-center text-3xl font-extrabold text-gray-900">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+      <div class="text-center">
+        <span
+          class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-[#135CA5] mb-4"
+        >
+          <svg
+            class="h-6 w-6 text-white"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 9a2 2 0 100-4 2 2 0 000 4z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </span>
+        <h2 class="text-center text-3xl font-bold text-[#135CA5]">
           Forgot your password?
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
@@ -86,12 +101,15 @@ const handleKeydown = (event) => {
                 required
                 autocomplete="email"
                 placeholder="your@email.com"
-                class="block w-full rounded-md border-gray-300 px-4 py-3 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                class="block w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                 :class="{
-                  'border-red-300 focus:border-red-500 focus:ring-red-500':
-                    error,
+                  'border-red-300': error,
                 }"
               />
+              <div
+                class="absolute left-0 top-0 bottom-0 w-2 bg-[#135CA5] rounded-l-md"
+                v-if="email"
+              ></div>
             </div>
           </div>
 
@@ -114,10 +132,30 @@ const handleKeydown = (event) => {
             <button
               type="submit"
               :disabled="loading || !isEmailValid"
-              class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full flex justify-center py-3 md:py-4 px-4 border border-transparent rounded-md shadow-md text-base font-medium text-white bg-[#135CA5] hover:bg-[#28BBDD] focus:outline-none transition-colors duration-200 uppercase tracking-wide"
+              :class="{ 'opacity-70': loading }"
             >
-              <!-- SVG icon removed here -->
-              {{ loading ? "Sending reset link..." : "Reset password" }}
+              <svg
+                v-if="loading"
+                class="animate-spin h-5 w-5 mr-2 text-white"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                ></path>
+              </svg>
+              <span v-if="loading">Sending reset link...</span>
+              <span v-else>Reset Password</span>
             </button>
           </div>
         </form>
@@ -135,14 +173,14 @@ const handleKeydown = (event) => {
           <div class="mt-6 flex justify-center gap-4">
             <router-link
               :to="{ name: 'Login' }"
-              class="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+              class="text-sm font-medium text-[#135CA5] hover:text-[#28BBDD]"
             >
               Back to login
             </router-link>
             <span class="text-gray-500">•</span>
             <router-link
               :to="{ name: 'Register' }"
-              class="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+              class="text-sm font-medium text-[#135CA5] hover:text-[#28BBDD]"
             >
               Create account
             </router-link>
