@@ -301,9 +301,6 @@ async function submit() {
         </p>
       </div>
       <!-- Footer -->
-      <div class="text-center w-full text-gray-400 text-xs mt-6 mb-4">
-        designed by freepik
-      </div>
     </div>
   </div>
 </template>
