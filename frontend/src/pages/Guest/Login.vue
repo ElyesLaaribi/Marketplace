@@ -115,9 +115,6 @@ async function submit() {
         <h2 class="text-2xl md:text-3xl font-bold mb-3">
           Nice to see you again
         </h2>
-        <h1 class="text-3xl md:text-4xl font-extrabold mb-3 tracking-wide">
-          WELCOME BACK
-        </h1>
       </div>
 
       <!-- Background container for grid + waves -->
