@@ -108,8 +108,8 @@ const setButtonHover = (id, value) => {
             @mouseover="navHover = item.name"
             @mouseleave="navHover = ''"
             :style="{
-              backgroundColor: navHover === item.name ? '#28BBDD' : '#135CA5',
-              color: 'white',
+              backgroundColor: navHover === item.name ? '#28BBDD' : 'white',
+              color: navHover === item.name ? 'white' : 'black',
             }"
           >
             {{ item.name }}

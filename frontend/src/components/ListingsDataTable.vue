@@ -341,7 +341,7 @@ const openNewListingForm = () => {
       <SearchForm @search="handleSearch" class="w-full sm:w-auto" />
       <button
         @click="openNewListingForm"
-        class="w-full sm:w-auto rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500 transition"
+        class="w-full sm:w-auto rounded-md bg-[#002D4A] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#036F8B] transition"
       >
         Add Listing
       </button>
@@ -414,14 +414,14 @@ const openNewListingForm = () => {
                     <button
                       type="button"
                       @click="geocodeAddress"
-                      class="rounded-md bg-indigo-600 px-3 py-1.5 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold text-white shadow hover:bg-indigo-500"
+                      class="rounded-md bg-[#036F8B] px-3 py-1.5 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold text-white shadow hover:bg-[#002D4A]"
                     >
                       Find
                     </button>
                     <button
                       type="button"
                       @click="getLocation"
-                      class="rounded-md bg-green-600 px-3 py-1.5 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold text-white shadow hover:bg-green-500 flex items-center gap-1"
+                      class="rounded-md bg-[#002D4A] px-3 py-1.5 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-semibold text-white shadow hover:bg-[#036F8B] flex items-center gap-1"
                     >
                       <MapPinIcon class="h-4 w-4" />
                       Use My Location
@@ -492,7 +492,7 @@ const openNewListingForm = () => {
                     </div>
                     <!-- Upload Button -->
                     <label
-                      class="h-20 w-20 flex items-center justify-center border-2 border-dashed rounded-md cursor-pointer hover:border-indigo-600"
+                      class="h-20 w-20 flex items-center justify-center border-2 border-dashed rounded-md cursor-pointer hover:border-[#036F8B]"
                     >
                       <input
                         type="file"
@@ -524,7 +524,7 @@ const openNewListingForm = () => {
                     </ListboxLabel>
                     <div class="relative mt-2">
                       <ListboxButton
-                        class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-2 pr-8 sm:pl-3 sm:pr-10 text-left text-gray-900 shadow-md ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-xs sm:text-sm"
+                        class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-2 pr-8 sm:pl-3 sm:pr-10 text-left text-gray-900 shadow-md ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-black text-xs sm:text-sm"
                       >
                         <span class="block truncate">
                           {{
@@ -624,7 +624,7 @@ const openNewListingForm = () => {
                 </button>
                 <button
                   type="submit"
-                  class="rounded-md bg-indigo-600 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-white shadow hover:bg-indigo-500"
+                  class="rounded-md bg-[#002D4A] px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-white shadow hover:bg-[#036F8B]"
                   :disabled="loading"
                 >
                   {{

@@ -77,50 +77,19 @@ async function logout() {
   <div class="flex h-screen bg-white dark:bg-gray-900">
     <!-- Sidebar - collapsible -->
     <aside
-      :class="`fixed flex flex-col h-screen overflow-y-auto bg-white border-r rtl:border-r-0 rtl:border-l dark:bg-gray-900 dark:border-gray-700 z-10 transition-all duration-300 shadow-md ${
+      :class="`fixed flex flex-col h-screen overflow-y-auto bg-[#002D4A] border-r rtl:border-r-0 rtl:border-l border-gray-700 z-10 transition-all duration-300 shadow-md ${
         isExpanded ? 'w-64' : 'w-20'
       }`"
     >
-      <!-- <div class="flex lg:flex-1">
-        <img
-          class="h-17 w-auto"
-          src="../../assets/images/logo.png"
-          alt="RentEase Logo"
-        />
-      </div> -->
       <div
-        class="flex items-center justify-between p-4 border-b dark:border-gray-700"
+        class="flex items-center justify-center p-4 border-b dark:border-gray-700"
       >
-        <span
-          v-if="isExpanded"
-          class="text-lg font-semibold text-gray-800 dark:text-white"
+        <span v-if="isExpanded"
           ><img
-            src="../../src/assets/images/logo.png"
+            src="../../src/assets/images/logo2.png"
             class="h-16 w-auto"
             alt="Logo"
         /></span>
-
-        <button
-          @click="toggleMenu"
-          class="p-1 rounded-md text-gray-500 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 focus:outline-none"
-          aria-label="Toggle sidebar"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="w-5 h-5 transition-transform"
-            :class="isExpanded ? '' : 'rotate-180'"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5"
-            />
-          </svg>
-        </button>
       </div>
 
       <div class="flex flex-col justify-between flex-1 p-4">
@@ -128,10 +97,10 @@ async function logout() {
           <div v-for="item in menuItems" :key="item.name" class="relative">
             <router-link
               :to="item.route"
-              :class="`flex items-center px-3 py-3 text-gray-600 transition-colors duration-200 rounded-lg dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-200 hover:text-gray-700 ${
+              :class="`flex items-center px-3 py-3 text-gray-300 transition-colors duration-200 rounded-lg ${
                 activeRoute === item.route
-                  ? 'bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-medium'
-                  : ''
+                  ? 'bg-[#036F8B]/20 text-white font-medium'
+                  : 'hover:bg-[#036F8B] hover:text-white'
               }`"
             >
               <span class="flex-shrink-0" v-html="item.icon"></span>
@@ -152,7 +121,7 @@ async function logout() {
           </div>
         </nav>
 
-        <div class="pt-4 mt-6 border-t border-gray-200 dark:border-gray-700">
+        <div class="pt-4 mt-6 border-t border-gray-700">
           <div class="flex items-center justify-between">
             <a href="#" class="flex items-center gap-x-2">
               <img
@@ -164,21 +133,17 @@ async function logout() {
                 alt="avatar"
               />
               <div v-if="isExpanded" class="flex flex-col">
-                <span
-                  class="text-sm font-medium text-gray-700 dark:text-gray-200"
-                >
+                <span class="text-sm font-medium text-gray-200">
                   {{ lessor?.name || "John Doe" }}
                 </span>
-                <span class="text-xs text-gray-500 dark:text-gray-400">
-                  Items owner
-                </span>
+                <span class="text-xs text-gray-400"> Items owner </span>
               </div>
             </a>
 
             <button
               v-if="isExpanded"
               @click="logout"
-              class="p-1.5 text-gray-500 transition-colors duration-200 rounded-lg dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400"
+              class="p-1.5 text-gray-400 transition-colors duration-200 rounded-lg hover:bg-gray-700 hover:text-red-400"
               aria-label="Logout"
             >
               <svg
@@ -201,7 +166,7 @@ async function logout() {
           <button
             v-if="!isExpanded"
             @click="logout"
-            class="mt-4 flex justify-center w-full p-2 text-gray-500 transition-colors duration-200 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 rounded-lg"
+            class="mt-4 flex justify-center w-full p-2 text-gray-400 transition-colors duration-200 hover:bg-gray-700 hover:text-red-400 rounded-lg"
             aria-label="Logout"
           >
             <svg
