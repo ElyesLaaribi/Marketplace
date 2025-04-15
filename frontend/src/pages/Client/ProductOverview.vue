@@ -649,7 +649,7 @@ const fetchListingData = async () => {
                 <!-- Reserve button -->
                 <button
                   type="submit"
-                  class="mt-6 w-full px-6 py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200"
+                  class="mt-6 w-full px-6 py-3 rounded-lg bg-[#002D4A] text-white font-medium hover:bg-[#036F8B] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200"
                 >
                   Reserve
                 </button>

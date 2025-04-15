@@ -147,7 +147,7 @@ const changeItemsPerPage = (newValue) => {
             id="itemsPerPage"
             :value="itemsPerPage"
             @change="changeItemsPerPage($event.target.value)"
-            class="text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+            class="text-sm border-gray-300 rounded-md focus:ring-[#002D4A] focus:border-[#002D4A]"
           >
             <option
               v-for="option in perPageOptions"
@@ -190,7 +190,7 @@ const changeItemsPerPage = (newValue) => {
               :class="[
                 'relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0',
                 currentPage === page
-                  ? 'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                  ? 'z-10 bg-[#002D4A] text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
                   : 'text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50',
               ]"
             >

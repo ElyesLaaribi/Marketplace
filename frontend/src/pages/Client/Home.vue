@@ -171,7 +171,7 @@ const resetFilters = () => {
 <template>
   <DefaultLayout>
     <!-- Hero section with search -->
-    <header class="bg-gradient-to-r from-indigo-600 to-blue-500 text-white">
+    <header class="bg-gradient-to-r from-[#002D4A] to-blue-500 text-white">
       <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 text-center">
         <h1 class="text-4xl font-bold mb-6">Find What You Need</h1>
         <p class="text-xl mb-8 max-w-2xl mx-auto">
@@ -190,10 +190,14 @@ const resetFilters = () => {
         <div
           class="mb-8 sticky top-0 z-10 bg-gray-50 py-3 px-4 rounded-xl shadow-md"
         >
-          <CategoryBar
-            @category-selected="handleCategorySelect"
-            :selectedCategory="selectedCategory"
-          />
+          <div class="mt-6 px-2">
+            <h3 class="text-md font-medium text-gray-700 mb-3">Categories</h3>
+
+            <CategoryBar
+              @category-selected="handleCategorySelect"
+              :selectedCategory="selectedCategory"
+            />
+          </div>
 
           <!-- Price range filter -->
           <div class="mt-6 px-2">
@@ -212,7 +216,7 @@ const resetFilters = () => {
                     priceRange.current[1],
                   ])
                 "
-                class="w-full accent-indigo-600"
+                class="w-full accent-[#036F8B]"
               />
               <span class="text-sm text-gray-600">to</span>
               <input
@@ -226,7 +230,7 @@ const resetFilters = () => {
                     priceRange.current[1],
                   ])
                 "
-                class="w-full accent-indigo-600"
+                class="w-full accent-[#036F8B]"
               />
             </div>
             <div class="flex justify-between mt-2 text-sm text-gray-600">
@@ -249,27 +253,22 @@ const resetFilters = () => {
 
             <div
               v-if="selectedCategory"
-              class="rounded-full bg-indigo-100 px-3 py-1 flex items-center"
+              class="rounded-full bg-[#036F8B] px-3 py-1 flex items-center"
             >
-              <span class="text-indigo-800"
-                >Category: {{ selectedCategory }}</span
-              >
-              <button
-                @click="selectedCategory = null"
-                class="ml-2 text-indigo-800 hover:text-indigo-600"
-              >
+              <span class="text-white">Category: {{ selectedCategory }}</span>
+              <button @click="selectedCategory = null" class="ml-2 text-white">
                 &times;
               </button>
             </div>
 
             <div
               v-if="searchQuery"
-              class="rounded-full bg-indigo-100 px-3 py-1 flex items-center"
+              class="rounded-full bg-[#036F8B] px-3 py-1 flex items-center"
             >
-              <span class="text-indigo-800">Search: "{{ searchQuery }}"</span>
+              <span class="text-white">Search: "{{ searchQuery }}"</span>
               <button
                 @click="searchQuery = ''"
-                class="ml-2 text-indigo-800 hover:text-indigo-600"
+                class="ml-2 text-white hover:text-white"
               >
                 &times;
               </button>
@@ -280,15 +279,15 @@ const resetFilters = () => {
                 priceRange.current[0] > priceRange.min ||
                 priceRange.current[1] < priceRange.max
               "
-              class="rounded-full bg-indigo-100 px-3 py-1 flex items-center"
+              class="rounded-full bg-[#036F8B] hover:bg-[#036F8B] px-3 py-1 flex items-center"
             >
-              <span class="text-indigo-800"
+              <span class="text-white"
                 >Price: {{ priceRange.current[0] }} -
                 {{ priceRange.current[1] }} TND</span
               >
               <button
                 @click="priceRange.current = [priceRange.min, priceRange.max]"
-                class="ml-2 text-indigo-800 hover:text-indigo-600"
+                class="ml-2 text-[#036F8B] hover:bg-[#036F8B]"
               >
                 &times;
               </button>
@@ -296,7 +295,7 @@ const resetFilters = () => {
 
             <button
               @click="resetFilters"
-              class="ml-2 text-indigo-600 hover:text-indigo-800 font-medium text-sm"
+              class="ml-2 text-[#135CA5] hover:text-[#28BBDD] font-medium text-sm"
             >
               Clear all
             </button>
@@ -359,7 +358,7 @@ const resetFilters = () => {
                   {{ product.category }}
                 </p>
 
-                <p class="mt-2 text-lg font-semibold text-indigo-600">
+                <p class="mt-2 text-lg font-semibold text-[#002D4A]">
                   {{ product.formattedPrice ?? product.price }} TND<span
                     class="text-sm font-normal text-gray-500"
                     >/day</span
@@ -368,7 +367,7 @@ const resetFilters = () => {
 
                 <div class="mt-4 flex justify-between items-center">
                   <span
-                    class="text-sm text-indigo-600 font-medium flex items-center"
+                    class="text-sm text-[#002D4A] font-medium flex items-center"
                   >
                     View details
                     <span class="ml-1">→</span>

@@ -46,8 +46,8 @@ function logout() {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-50">
-    <Disclosure as="nav" class="bg-gray-800" v-slot="{ open }">
+  <div class="min-h-screen flex flex-col bg-[#002D4A]">
+    <Disclosure as="nav" class="bg-[#002D4A]" v-slot="{ open }">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="relative flex items-center justify-between h-16">
           <!-- Mobile menu button -->
@@ -74,29 +74,29 @@ function logout() {
             class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start"
           >
             <div class="flex-shrink-0 flex items-center">
-              <router-link to="/" class="flex items-center">
+              <router-link to="/home" class="flex items-center">
                 <img
-                  class="h-8 w-auto"
-                  src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
+                  class="h-15 w-auto"
+                  src="../../src/assets/images/logo2.png"
                   alt="Company Logo"
                 />
-                <span
+                <!-- <span
                   class="ml-2 text-white font-semibold text-lg hidden sm:block"
                   >RentApp</span
-                >
+                > -->
               </router-link>
             </div>
 
             <!-- Desktop navigation -->
-            <div class="hidden sm:ml-6 sm:flex sm:space-x-4">
+            <div class="items-center hidden sm:ml-7 sm:flex sm:space-x-4">
               <router-link
                 v-for="item in navigation"
                 :key="item.name"
                 :to="item.href"
                 :class="[
                   item.current
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                    ? 'bg-[#002D4A]/10 text-white'
+                    : 'text-gray-300 hover:bg-[#036F8B] hover:text-white',
                   'px-3 py-2 rounded-md text-sm font-medium',
                 ]"
                 :aria-current="item.current ? 'page' : undefined"
@@ -113,7 +113,7 @@ function logout() {
             <!-- Notifications -->
             <button
               type="button"
-              class="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+              class="relative rounded-full bg-[#002D4A] p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
               aria-label="View notifications"
             >
               <BellIcon class="h-6 w-6" aria-hidden="true" />
@@ -129,7 +129,7 @@ function logout() {
             <Menu as="div" class="ml-3 relative">
               <div>
                 <MenuButton
-                  class="flex items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                  class="flex items-center rounded-full bg-[#002D4A] text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                 >
                   <span class="sr-only">Open user menu</span>
                   <div v-if="user" class="flex items-center">
@@ -271,8 +271,8 @@ function logout() {
             :href="item.href"
             :class="[
               item.current
-                ? 'bg-gray-900 text-white'
-                : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                ? 'bg-[#002D4A]/20 text-white'
+                : 'text-gray-300 hover:bg-[#036F8B] hover:text-white',
               'block px-3 py-2 rounded-md text-base font-medium',
             ]"
             :aria-current="item.current ? 'page' : undefined"
@@ -289,15 +289,10 @@ function logout() {
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-6">
+    <footer class="bg-[#002D4A] text-white py-6">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col md:flex-row justify-between items-center">
           <div class="mb-4 md:mb-0">
-            <img
-              class="h-6 w-auto"
-              src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
-              alt="Company Logo"
-            />
             <p class="mt-2 text-sm text-gray-400">
               &copy; 2025 RentApp. All rights reserved.
             </p>

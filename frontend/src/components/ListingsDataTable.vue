@@ -738,7 +738,7 @@ const openNewListingForm = () => {
               <div class="flex justify-center space-x-2">
                 <button
                   @click="editListing(item)"
-                  class="text-indigo-600 hover:text-indigo-900"
+                  class="text-[#002D4A] hover:text-[#036F8B]"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

@@ -241,7 +241,7 @@ const handleProfileUpdate = async (event) => {
                 v-if="!isEditMode"
                 @click="enableEditMode"
                 type="button"
-                class="inline-flex items-center rounded-md bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100"
+                class="inline-flex items-center rounded-md bg-[#002D4A] px-3 py-2 text-sm font-medium text-white hover:bg-[#036F8B]"
               >
                 <PencilIcon class="h-4 w-4 mr-2" />
                 Edit Information
@@ -452,7 +452,7 @@ const handleProfileUpdate = async (event) => {
                 </button>
                 <button
                   type="submit"
-                  class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  class="rounded-md bg-[#002D4A] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#036F8B] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#036F8B]"
                 >
                   Save Changes
                 </button>
@@ -713,7 +713,7 @@ const handleProfileUpdate = async (event) => {
             </button>
             <button
               type="submit"
-              class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              class="rounded-md bg-[#002D4A] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#036F8B] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#036F8B]"
               :disabled="
                 !passwordsMatch ||
                 passwordStrength.value < 50 ||
