@@ -177,7 +177,6 @@ const handleKeydown = (event) => {
             >
               Back to login
             </router-link>
-            <span class="text-gray-500">•</span>
             <router-link
               :to="{ name: 'Register' }"
               class="text-sm font-medium text-[#135CA5] hover:text-[#28BBDD]"

@@ -166,7 +166,8 @@ function hasError(field) {
     <div
       class="bg-white w-full md:w-1/2 flex flex-col overflow-y-auto py-6 px-4 md:py-0 md:px-0"
     >
-      <div class="max-w-md mx-auto w-full px-4 md:px-8">
+      <!-- Added a top margin to move the form lower -->
+      <div class="max-w-md mx-auto w-full px-4 md:px-8 mt-12">
         <!-- Tab Navigation -->
         <div class="border-b border-gray-200 mb-4">
           <nav class="-mb-px flex space-x-8 justify-center" aria-label="Tabs">
@@ -176,7 +177,7 @@ function hasError(field) {
                 route.name === 'Signup'
                   ? 'border-[#135CA5] text-[#135CA5]'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base transition-colors',
               ]"
             >
               Customer
@@ -187,7 +188,7 @@ function hasError(field) {
                 route.name === 'Signuplessor'
                   ? 'border-[#135CA5] text-[#135CA5]'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base transition-colors',
               ]"
             >
               Lessor
@@ -236,7 +237,7 @@ function hasError(field) {
                 id="name"
                 v-model="data.name"
                 placeholder="Full Name"
-                class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                 :class="{ 'border-red-300': errors.name.length }"
               />
               <div
@@ -259,7 +260,7 @@ function hasError(field) {
                 autocomplete="email"
                 v-model="data.email"
                 placeholder="Email ID"
-                class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                 :class="{ 'border-red-300': errors.email.length }"
               />
               <div
@@ -281,7 +282,7 @@ function hasError(field) {
                   id="country"
                   name="country"
                   v-model="data.country"
-                  class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                  class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                   :class="{ 'border-red-300': errors.country.length }"
                 >
                   <option value="" disabled selected>Select Country</option>
@@ -312,7 +313,7 @@ function hasError(field) {
                   id="city"
                   v-model="data.city"
                   placeholder="City"
-                  class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                  class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                   :class="{ 'border-red-300': errors.city.length }"
                 />
                 <div
@@ -337,7 +338,7 @@ function hasError(field) {
                   id="cin"
                   v-model="data.cin"
                   placeholder="ID Card Number"
-                  class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                  class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                   :class="{ 'border-red-300': errors.cin.length }"
                 />
                 <div
@@ -359,7 +360,7 @@ function hasError(field) {
                   id="phone"
                   v-model="data.phone"
                   placeholder="Phone Number"
-                  class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                  class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                   :class="{ 'border-red-300': errors.phone.length }"
                 />
                 <div
@@ -383,7 +384,7 @@ function hasError(field) {
                 autocomplete="new-password"
                 v-model="data.password"
                 placeholder="Password"
-                class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                 :class="{ 'border-red-300': errors.password.length }"
               />
               <div
@@ -414,7 +415,7 @@ function hasError(field) {
                 autocomplete="new-password"
                 v-model="data.password_confirmation"
                 placeholder="Confirm Password"
-                class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
               />
               <div
                 class="absolute left-0 top-0 bottom-0 w-2 bg-[#135CA5] rounded-l-md"
@@ -435,7 +436,7 @@ function hasError(field) {
             <button
               type="submit"
               :disabled="loading"
-              class="w-full flex justify-center py-3 md:py-4 px-4 border border-transparent rounded-md shadow-md text-base font-medium text-white bg-[#135CA5] hover:bg-[#28BBDD] focus:outline-none transition-colors duration-200 uppercase tracking-wide"
+              class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-md text-base font-medium text-white bg-[#135CA5] hover:bg-[#28BBDD] focus:outline-none transition-colors duration-200 uppercase tracking-wide"
               :class="{ 'opacity-70': loading }"
             >
               <svg

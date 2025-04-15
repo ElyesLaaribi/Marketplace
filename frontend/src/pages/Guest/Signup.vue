@@ -1,39 +1,32 @@
 <script setup>
 import { ref, computed } from "vue";
-import router from "../../router.js";
-import api from "../../axios.js";
-import { useUserStore } from "../../store/user";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
-import { useToast } from "vue-toast-notification";
-import "vue-toast-notification/dist/theme-sugar.css";
 import { useRoute } from "vue-router";
-const $toast = useToast();
-const route = useRoute();
+import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
 
+const route = useRoute();
 const data = ref({
   name: "",
   email: "",
-  password: "",
-  password_confirmation: "",
   country: "",
   city: "",
   cin: "",
   phone: "",
-  role: "client",
+  password: "",
+  password_confirmation: "",
 });
 
 const errors = ref({
   name: [],
   email: [],
-  password: [],
   country: [],
   city: [],
   cin: [],
   phone: [],
+  password: [],
 });
 
-const errorMessage = ref("");
 const loading = ref(false);
+const errorMessage = ref("");
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 
@@ -45,65 +38,25 @@ const confirmPasswordInputType = computed(() => {
   return showConfirmPassword.value ? "text" : "password";
 });
 
-const togglePasswordVisibility = (field) => {
+function togglePasswordVisibility(field) {
   if (field === "password") {
     showPassword.value = !showPassword.value;
   } else {
     showConfirmPassword.value = !showConfirmPassword.value;
   }
-};
+}
 
-async function submit() {
-  errors.value = {
-    name: [],
-    email: [],
-    password: [],
-    country: [],
-    city: [],
-    cin: [],
-    phone: [],
-  };
-  errorMessage.value = "";
+function submit() {
   loading.value = true;
 
-  try {
-    await api.get("/sanctum/csrf-cookie");
-    const response = await api.post("/api/register", data.value);
-
-    if (response.data && response.data.token) {
-      const token = response.data.token;
-      localStorage.setItem("auth_token", token);
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-      $toast.success("Account created successfully!");
-      router.push({ name: "Login" });
-    } else {
-      console.error("Token not found in response");
-      errorMessage.value = "Registration failed. Please try again.";
-      $toast.error("Registration failed");
-    }
-  } catch (error) {
-    if (error.response) {
-      if (error.response.status === 422) {
-        errors.value = error.response.data.errors || {};
-        $toast.error("Registration failed");
-      } else {
-        errorMessage.value =
-          error.response.data.message ||
-          "Registration failed. Please try again.";
-        $toast.error("Registration failed");
-      }
-    } else if (error.request) {
-      errorMessage.value =
-        "No response from server. Check your internet connection.";
-      $toast.error("Registration failed");
-    }
-  } finally {
+  // Simulate form submission (replace with actual API call)
+  setTimeout(() => {
     loading.value = false;
-  }
+    errorMessage.value = "";
+    // Here you would typically make an API call and handle the response
+  }, 1500);
 }
 </script>
-
 <template>
   <div class="flex flex-col md:flex-row h-screen w-screen overflow-hidden">
     <!-- Blue left side panel with reversed primary colors -->
@@ -162,7 +115,8 @@ async function submit() {
     <div
       class="bg-white w-full md:w-1/2 flex flex-col overflow-y-auto py-6 px-4 md:py-0 md:px-0"
     >
-      <div class="max-w-md mx-auto w-full px-4 md:px-8">
+      <!-- Added a top margin to move the form lower -->
+      <div class="max-w-md mx-auto w-full px-4 md:px-8 mt-12">
         <!-- Tab Navigation -->
         <div class="border-b border-gray-200 mb-4">
           <nav class="-mb-px flex space-x-8 justify-center" aria-label="Tabs">
@@ -172,7 +126,7 @@ async function submit() {
                 route.name === 'Signup'
                   ? 'border-[#135CA5] text-[#135CA5]'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base transition-colors',
               ]"
             >
               Customer
@@ -183,7 +137,7 @@ async function submit() {
                 route.name === 'Signuplessor'
                   ? 'border-[#135CA5] text-[#135CA5]'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base transition-colors',
               ]"
             >
               Lessor
@@ -232,7 +186,7 @@ async function submit() {
                 id="name"
                 v-model="data.name"
                 placeholder="Full Name"
-                class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                 :class="{ 'border-red-300': errors.name.length }"
               />
               <div
@@ -255,7 +209,7 @@ async function submit() {
                 autocomplete="email"
                 v-model="data.email"
                 placeholder="Email ID"
-                class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                 :class="{ 'border-red-300': errors.email.length }"
               />
               <div
@@ -277,7 +231,7 @@ async function submit() {
                   id="country"
                   name="country"
                   v-model="data.country"
-                  class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                  class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                   :class="{ 'border-red-300': errors.country.length }"
                 >
                   <option value="" disabled selected>Select Country</option>
@@ -308,7 +262,7 @@ async function submit() {
                   id="city"
                   v-model="data.city"
                   placeholder="City"
-                  class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                  class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                   :class="{ 'border-red-300': errors.city.length }"
                 />
                 <div
@@ -333,7 +287,7 @@ async function submit() {
                   id="cin"
                   v-model="data.cin"
                   placeholder="ID Card Number"
-                  class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                  class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                   :class="{ 'border-red-300': errors.cin.length }"
                 />
                 <div
@@ -355,7 +309,7 @@ async function submit() {
                   id="phone"
                   v-model="data.phone"
                   placeholder="Phone Number"
-                  class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                  class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                   :class="{ 'border-red-300': errors.phone.length }"
                 />
                 <div
@@ -379,7 +333,7 @@ async function submit() {
                 autocomplete="new-password"
                 v-model="data.password"
                 placeholder="Password"
-                class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
                 :class="{ 'border-red-300': errors.password.length }"
               />
               <div
@@ -410,7 +364,7 @@ async function submit() {
                 autocomplete="new-password"
                 v-model="data.password_confirmation"
                 placeholder="Confirm Password"
-                class="w-full p-3 md:p-4 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
               />
               <div
                 class="absolute left-0 top-0 bottom-0 w-2 bg-[#135CA5] rounded-l-md"
@@ -431,7 +385,7 @@ async function submit() {
             <button
               type="submit"
               :disabled="loading"
-              class="w-full flex justify-center py-3 md:py-4 px-4 border border-transparent rounded-md shadow-md text-base font-medium text-white bg-[#135CA5] hover:bg-[#28BBDD] focus:outline-none transition-colors duration-200 uppercase tracking-wide"
+              class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-md text-base font-medium text-white bg-[#135CA5] hover:bg-[#28BBDD] focus:outline-none transition-colors duration-200 uppercase tracking-wide"
               :class="{ 'opacity-70': loading }"
             >
               <svg
