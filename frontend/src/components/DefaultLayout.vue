@@ -46,7 +46,7 @@ function logout() {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-[#002D4A]">
+  <div class="min-h-screen flex flex-col bg-white">
     <Disclosure as="nav" class="bg-[#002D4A]" v-slot="{ open }">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="relative flex items-center justify-between h-16">
@@ -271,7 +271,7 @@ function logout() {
             :href="item.href"
             :class="[
               item.current
-                ? 'bg-[#002D4A]/20 text-white'
+                ? 'bg-[#036F8B] text-white'
                 : 'text-gray-300 hover:bg-[#036F8B] hover:text-white',
               'block px-3 py-2 rounded-md text-base font-medium',
             ]"

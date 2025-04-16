@@ -6,6 +6,9 @@ import DefaultLayout from "../../components/DefaultLayout.vue";
 import api from "../../axios";
 import { useRoute, useRouter } from "vue-router";
 import L from "leaflet";
+import { useUserStore } from "../../store/user";
+
+const userStore = useUserStore();
 
 const isLoading = ref(true);
 const error = ref(null);
@@ -22,13 +25,23 @@ const id = route.params.id;
 const map = ref();
 const mapContainer = ref();
 
-// reviews reactive
+// Reviews reactive
 const showAllReviews = ref(false);
 const reviews = ref([]);
 const totalReviews = ref(0);
 const reviewsLoading = ref(true);
 const reviewsError = ref(null);
 const showReviewsModal = ref(false);
+
+const newReview = ref({
+  user_id: userStore.user?.id || "",
+  listing_id: id,
+  comment: "",
+});
+
+const reviewSubmitting = ref(false);
+const reviewSuccess = ref(false);
+const reviewError = ref(null);
 
 const openReviewsModal = () => {
   showReviewsModal.value = true;
@@ -64,7 +77,6 @@ const initializeMap = () => {
   }
 };
 
-// Computed property for displayed reviews
 const displayedReviews = computed(() => {
   return showAllReviews.value ? reviews.value : reviews.value.slice(0, 4);
 });
@@ -85,11 +97,9 @@ const fetchReviews = async () => {
   try {
     reviewsLoading.value = true;
     const response = await api.get(`/api/reviews?listing_id=${id}`);
-
     if (!response.data) {
       throw new Error("Failed to fetch reviews");
     }
-
     reviews.value = response.data.data
       ? response.data.data.map((review) => ({
           id: review.id,
@@ -102,7 +112,6 @@ const fetchReviews = async () => {
           stayDuration: "Rental",
         }))
       : [];
-
     totalReviews.value = reviews.value.length;
   } catch (err) {
     reviewsError.value = err.message;
@@ -193,7 +202,6 @@ const formattedPrice = computed(() => {
   return `${listingData.value.price} TND`;
 });
 
-// Calculate total days between dates
 const calculateDays = () => {
   if (!rentalStart.value || !rentalEnd.value) {
     totalDays.value = 1;
@@ -263,7 +271,6 @@ const fetchListingData = async () => {
   try {
     isLoading.value = true;
     const response = await api.get(`/api/public-listings/${id}`);
-
     if (response?.data?.data) {
       const data = response.data.data;
       const processedImages = extractImages(data);
@@ -296,8 +303,49 @@ const fetchListingData = async () => {
     isLoading.value = false;
   }
 };
-</script>
 
+const submitReview = async () => {
+  try {
+    reviewSubmitting.value = true;
+    reviewError.value = null;
+    reviewSuccess.value = false;
+
+    if (!newReview.value.comment.trim()) {
+      throw new Error("Please enter a review comment");
+    }
+
+    if (!newReview.value.user_id) {
+      throw new Error(
+        "User is not logged in. Please log in before submitting a review."
+      );
+    }
+
+    const response = await api.post("/api/reviews", {
+      listing_id: id,
+      user_id: newReview.value.user_id,
+      comment: newReview.value.comment,
+    });
+
+    if (!response.data || response.data.error) {
+      throw new Error(response.data?.error || "Failed to submit review");
+    }
+
+    newReview.value.comment = "";
+    reviewSuccess.value = true;
+
+    await fetchReviews();
+
+    setTimeout(() => {
+      reviewSuccess.value = false;
+    }, 3000);
+  } catch (err) {
+    reviewError.value = err.message;
+    console.error("Error submitting review:", err);
+  } finally {
+    reviewSubmitting.value = false;
+  }
+};
+</script>
 <template>
   <DefaultLayout>
     <div class="bg-white">
@@ -786,6 +834,58 @@ const fetchListingData = async () => {
                 </button>
               </div>
             </div>
+          </div>
+          <!-- Add this section after the Reviews container but before the map container -->
+          <div class="lg:col-span-3 mt-10 border-t border-gray-200 pt-10">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">
+              Add Your Review
+            </h2>
+
+            <!-- Comment form -->
+            <form @submit.prevent="submitReview" class="space-y-6">
+              <!-- Rating input -->
+
+              <!-- Comment input -->
+              <div>
+                <label
+                  for="comment"
+                  class="block text-sm font-medium text-gray-700"
+                  >Your Review</label
+                >
+                <div class="mt-1">
+                  <textarea
+                    id="comment"
+                    v-model="newReview.comment"
+                    rows="4"
+                    class="p-4 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-200 focus:ring-gray-200 sm:text-sm"
+                    placeholder="Share your experience with this product..."
+                    required
+                  ></textarea>
+                </div>
+              </div>
+
+              <!-- Submit button -->
+              <div>
+                <button
+                  type="submit"
+                  class="inline-flex justify-center rounded-md border border-transparent bg-[#002D4A] py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-[#036F8B] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  :disabled="reviewSubmitting"
+                >
+                  <span v-if="reviewSubmitting">Submitting...</span>
+                  <span v-else>Submit Review</span>
+                </button>
+
+                <!-- Success message -->
+                <div v-if="reviewSuccess" class="mt-3 text-sm text-green-600">
+                  Your review has been submitted successfully!
+                </div>
+
+                <!-- Error message -->
+                <div v-if="reviewError" class="mt-3 text-sm text-red-600">
+                  {{ reviewError }}
+                </div>
+              </div>
+            </form>
           </div>
 
           <!-- Teleport for Reviews Modal -->

@@ -170,8 +170,9 @@ const resetFilters = () => {
 
 <template>
   <DefaultLayout>
-    <!-- Hero section with search -->
-    <header class="bg-gradient-to-r from-[#002D4A] to-blue-500 text-white">
+    <header
+      class="bg-gradient-to-r from-[#002D4A] to-blue-500 text-white shadow-sm"
+    >
       <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 text-center">
         <h1 class="text-4xl font-bold mb-6">Find What You Need</h1>
         <p class="text-xl mb-8 max-w-2xl mx-auto">
