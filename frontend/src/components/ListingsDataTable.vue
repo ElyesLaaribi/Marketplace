@@ -673,12 +673,7 @@ const openNewListingForm = () => {
             >
               Category
             </th>
-            <th
-              scope="col"
-              class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
-            >
-              Location
-            </th>
+
             <th
               scope="col"
               class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider"
@@ -724,15 +719,6 @@ const openNewListingForm = () => {
             </td>
             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
               {{ item.cat_title }}
-            </td>
-            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-              <span v-if="item.address" class="truncate max-w-xs block">{{
-                item.address
-              }}</span>
-              <span v-else-if="item.latitude && item.longitude" class="text-xs">
-                {{ item.latitude }}, {{ item.longitude }}
-              </span>
-              <span v-else class="text-gray-400 text-xs">No location</span>
             </td>
             <td class="px-4 py-4 whitespace-nowrap text-center">
               <div class="flex justify-center space-x-2">
