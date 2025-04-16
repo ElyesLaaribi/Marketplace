@@ -282,7 +282,7 @@ async function submit() {
                 ></path>
               </svg>
               <span v-if="loading">Signing in...</span>
-              <span v-else>Subscribe</span>
+              <span v-else>Sign in</span>
             </button>
           </div>
         </form>

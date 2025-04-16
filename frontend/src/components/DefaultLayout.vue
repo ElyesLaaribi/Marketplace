@@ -95,7 +95,7 @@ function logout() {
                 :to="item.href"
                 :class="[
                   item.current
-                    ? 'bg-[#002D4A]/10 text-white'
+                    ? 'bg-[#036F8B] text-white'
                     : 'text-gray-300 hover:bg-[#036F8B] hover:text-white',
                   'px-3 py-2 rounded-md text-sm font-medium',
                 ]"
@@ -141,7 +141,7 @@ function logout() {
                     />
                     <div
                       v-else
-                      class="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center"
+                      class="h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center"
                     >
                       <UserIcon class="h-5 w-5 text-white" aria-hidden="true" />
                     </div>

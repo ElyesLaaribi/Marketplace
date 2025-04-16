@@ -186,7 +186,7 @@ const resetFilters = () => {
     <!-- Main content area -->
     <main class="bg-gray-50">
       <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <!-- Category selection - enhanced with more rounded appearance -->
+        <!-- Category selection -->
         <div
           class="mb-8 sticky top-0 z-10 bg-gray-50 py-3 px-4 rounded-xl shadow-md"
         >
