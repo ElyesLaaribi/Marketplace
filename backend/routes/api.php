@@ -10,6 +10,7 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ResetPassController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\Admin\AdminAddController;
 use App\Http\Controllers\Reviews\ReviewController;
 use App\Http\Controllers\Admin\AdminLoginController;
@@ -51,6 +52,8 @@ Route::apiResource('/public-listings', RetrieveListingsController::class)
 // Reviews
 Route::apiResource('/reviews', ReviewController::class);
 
+// Reservation
+Route::apiResource('reservations', ReservationController::class);
 
 // Category
 Route::apiResource('/categories', CategoryController::class);

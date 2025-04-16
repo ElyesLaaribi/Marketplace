@@ -51,4 +51,10 @@ class Listing extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
 }
