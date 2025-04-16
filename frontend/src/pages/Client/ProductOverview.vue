@@ -66,14 +66,34 @@ const closeReviewsModal = () => {
   });
 };
 
+/**
+ * Updated initializeMap: Centers the map using the listing’s latitude and longitude.
+ * Also adds a marker (with a popup) at that location if available.
+ */
 const initializeMap = () => {
   if (mapContainer.value && !map.value) {
-    map.value = L.map(mapContainer.value).setView([51.505, -0.09], 13);
+    // Use the listing’s location if available; fallback to default coordinates.
+    const lat = listingData.value.latitude
+      ? parseFloat(listingData.value.latitude)
+      : 51.505;
+    const lng = listingData.value.longitude
+      ? parseFloat(listingData.value.longitude)
+      : -0.09;
+
+    map.value = L.map(mapContainer.value).setView([lat, lng], 13);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map.value);
+
+    // If valid location data exists, add a marker at the specific location.
+    if (listingData.value.latitude && listingData.value.longitude) {
+      L.marker([lat, lng])
+        .addTo(map.value)
+        .bindPopup(listingData.value.address || "Listing Location")
+        .openPopup();
+    }
   }
 };
 
@@ -91,6 +111,10 @@ const listingData = ref({
   user_name: "Item Owner",
   joined_since: "",
   avatar: "",
+  // Added properties for location information
+  address: "",
+  latitude: "",
+  longitude: "",
 });
 
 const fetchReviews = async () => {
@@ -127,6 +151,7 @@ const isReviewTruncated = (review) => {
 
 onMounted(() => {
   fetchListingData().then(() => {
+    // Use nextTick to ensure that listingData is populated before initializing the map.
     nextTick(() => {
       if (mapVisible.value) {
         initializeMap();
@@ -267,6 +292,10 @@ const setActiveImage = (index) => {
   activeImageIndex.value = index;
 };
 
+/**
+ * Updated fetchListingData: In addition to existing properties, also save
+ * the location fields (address, latitude, longitude) returned from the API.
+ */
 const fetchListingData = async () => {
   try {
     isLoading.value = true;
@@ -292,6 +321,10 @@ const fetchListingData = async () => {
         user_name: data.user_name || "Item Owner",
         joined_since: data.Joined_since || data.joined_since || "",
         avatar: data.avatar || "",
+        // Save location data from the API:
+        address: data.address || "",
+        latitude: data.latitude || "",
+        longitude: data.longitude || "",
       };
     } else {
       throw new Error("Failed to load product details");
@@ -346,6 +379,7 @@ const submitReview = async () => {
   }
 };
 </script>
+
 <template>
   <DefaultLayout>
     <div class="bg-white">
