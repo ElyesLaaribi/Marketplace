@@ -75,7 +75,6 @@ async function logout() {
 
 <template>
   <div class="flex h-screen bg-white dark:bg-gray-900">
-    <!-- Sidebar - collapsible -->
     <aside
       :class="`fixed flex flex-col h-screen overflow-y-auto bg-[#002D4A] border-r rtl:border-r-0 rtl:border-l border-gray-700 z-10 transition-all duration-300 shadow-md ${
         isExpanded ? 'w-64' : 'w-20'
@@ -107,16 +106,6 @@ async function logout() {
               <span v-if="isExpanded" class="ml-3 text-sm">{{
                 item.name
               }}</span>
-
-              <span
-                v-if="
-                  isExpanded &&
-                  (item.name === 'Messages' || item.name === 'Reservations')
-                "
-                class="ml-auto inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-red-500 rounded-full"
-              >
-                3
-              </span>
             </router-link>
           </div>
         </nav>
@@ -188,7 +177,7 @@ async function logout() {
       </div>
     </aside>
 
-    <!-- Main content with dynamic margin to account for sidebar width -->
+    <!-- Main content -->
     <main
       :class="`transition-all duration-300 ${
         isExpanded ? 'ml-64' : 'ml-20'
