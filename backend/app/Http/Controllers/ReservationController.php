@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reservation;
-use App\Http\Requests\StoreReservationRequest;
 use Illuminate\Http\Request;
+use App\Http\Resources\ReservationResource;
+use App\Http\Requests\StoreReservationRequest;
 
 class ReservationController extends Controller
 {
@@ -13,7 +14,12 @@ class ReservationController extends Controller
      */
     public function index()
     {
-        return response()->json(Reservation::all());
+        $reservations = Reservation::with([
+            'user',
+            'listing.user',
+        ])->get();
+    
+        return ReservationResource::collection($reservations);
     }
 
     /**
@@ -22,13 +28,10 @@ class ReservationController extends Controller
     public function store(StoreReservationRequest $request)
     {
         $validated = $request->validated();
-        
-        // Convert product_id to listing_id for database consistency
         $listingId = $validated['listing_id'];
         $startDate = $validated['start_date'];
         $endDate = $validated['end_date'];
 
-        // Check for overlapping reservations
         $overlappingReservations = Reservation::where('listing_id', $listingId)
             ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
@@ -62,5 +65,4 @@ class ReservationController extends Controller
         return response()->json($reservation);
     }
 
-    // Other methods...
 }

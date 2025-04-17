@@ -53,7 +53,7 @@ Route::apiResource('/public-listings', RetrieveListingsController::class)
 Route::apiResource('/reviews', ReviewController::class);
 
 // Reservation
-Route::apiResource('reservations', ReservationController::class);
+Route::middleware('auth:sanctum')->apiResource('reservations', ReservationController::class);
 
 // Category
 Route::apiResource('/categories', CategoryController::class);
