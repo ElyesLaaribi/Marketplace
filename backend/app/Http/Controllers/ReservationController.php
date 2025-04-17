@@ -14,11 +14,16 @@ class ReservationController extends Controller
      */
     public function index()
     {
-        $reservations = Reservation::with([
-            'user',
-            'listing.user',
-        ])->get();
-    
+        $me = auth()->user();
+
+        $reservations = Reservation::with(['user','listing.user'])
+            ->where(function($q) use ($me) {
+                $q->where('user_id', $me->id)           
+                  ->orWhereHas('listing', fn($q2) =>
+                      $q2->where('user_id', $me->id)
+                  );
+            })
+            ->get();
         return ReservationResource::collection($reservations);
     }
 
@@ -62,7 +67,8 @@ class ReservationController extends Controller
      */
     public function show(Reservation $reservation)
     {
-        return response()->json($reservation);
+        $this->authorize('view', $reservation);
+        return ReservationResource::make($reservation);
     }
 
 }
