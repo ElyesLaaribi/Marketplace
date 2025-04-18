@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LessorController;
 use App\Http\Controllers\LogoutController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ResetPassController;
@@ -78,3 +79,6 @@ Route::middleware('auth:admin')->get('/admin', function (Request $request) {
 Route::middleware('auth:admin')->apiResource('/users', UsersController::class);
 Route::middleware('auth:admin')->apiResource('/admins', AdminController::class); 
 Route::middleware('auth:admin')->post('/add-admin', AdminAddController::class);
+
+// payment
+Route::middleware('auth:sanctum')->post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
