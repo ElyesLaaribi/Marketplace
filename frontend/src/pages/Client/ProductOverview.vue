@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted, ref, computed, watch, nextTick } from "vue";
-import { StarIcon } from "@heroicons/vue/20/solid";
 import { UserCircleIcon } from "@heroicons/vue/24/solid";
 import DefaultLayout from "../../components/DefaultLayout.vue";
 import api from "../../axios";
@@ -25,7 +24,7 @@ const id = route.params.id;
 const map = ref();
 const mapContainer = ref();
 
-// Reviews reactive
+// Reviews
 const showAllReviews = ref(false);
 const reviews = ref([]);
 const totalReviews = ref(0);
@@ -66,10 +65,6 @@ const closeReviewsModal = () => {
   });
 };
 
-/**
- * Updated initializeMap: Centers the map using the listing’s latitude and longitude.
- * Also adds a marker (with a popup) at that location if available.
- */
 const initializeMap = () => {
   if (mapContainer.value && !map.value) {
     // Use the listing’s location if available; fallback to default coordinates.
@@ -87,7 +82,6 @@ const initializeMap = () => {
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map.value);
 
-    // If valid location data exists, add a marker at the specific location.
     if (listingData.value.latitude && listingData.value.longitude) {
       L.marker([lat, lng])
         .addTo(map.value)
@@ -111,7 +105,6 @@ const listingData = ref({
   user_name: "Item Owner",
   joined_since: "",
   avatar: "",
-  // Added properties for location information
   address: "",
   latitude: "",
   longitude: "",
@@ -256,17 +249,10 @@ const subtotal = computed(() => {
 });
 
 const serviceFee = 10;
+
 const total = computed(() => {
   return subtotal.value + serviceFee;
 });
-
-const handleReserveClick = () => {
-  console.log("Reservation requested for listing:", listingData.value.id);
-  console.log("Rental period:", rentalStart.value, "to", rentalEnd.value);
-  console.log("Total days:", totalDays.value);
-  console.log("Total cost:", total.value, "TND");
-  // router.push(`/checkout/${listingData.value.id}`);
-};
 
 const nextImage = () => {
   if (activeImageIndex.value < listingData.value.images.length - 1) {
@@ -292,10 +278,6 @@ const setActiveImage = (index) => {
   activeImageIndex.value = index;
 };
 
-/**
- * Updated fetchListingData: In addition to existing properties, also save
- * the location fields (address, latitude, longitude) returned from the API.
- */
 const fetchListingData = async () => {
   try {
     isLoading.value = true;
@@ -321,7 +303,6 @@ const fetchListingData = async () => {
         user_name: data.user_name || "Item Owner",
         joined_since: data.Joined_since || data.joined_since || "",
         avatar: data.avatar || "",
-        // Save location data from the API:
         address: data.address || "",
         latitude: data.latitude || "",
         longitude: data.longitude || "",
@@ -377,6 +358,27 @@ const submitReview = async () => {
   } finally {
     reviewSubmitting.value = false;
   }
+};
+
+const handleReserveClick = () => {
+  console.log("Reservation requested for listing:", listingData.value.id);
+  console.log("Rental period:", rentalStart.value, "to", rentalEnd.value);
+  console.log("Total days:", totalDays.value);
+  console.log("Total cost:", total.value, "TND");
+  console.log("servce fee:", serviceFee, "TND");
+
+  router.push({
+    name: "checkout",
+    params: { id: listingData.value.id },
+    query: {
+      startDate: rentalStart.value,
+      endDate: rentalEnd.value,
+      days: totalDays.value,
+      price: listingData.value.price,
+      totalPrice: total.value,
+      service: serviceFee,
+    },
+  });
 };
 </script>
 
