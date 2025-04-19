@@ -10,6 +10,7 @@ const router = useRouter();
 const listingId = route.params.id;
 
 // Get booking details from query params
+const image = ref(route.query.image || "/images/fallback-image.jpg");
 const startDate = ref(route.query.startDate || "");
 const endDate = ref(route.query.endDate || "");
 const days = ref(parseInt(route.query.days) || 1);
@@ -217,7 +218,7 @@ onMounted(() => {
 
           <div class="border-t border-gray-200 pt-6">
             <button
-              class="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-3 px-4 rounded-lg transition duration-150"
+              class="w-full bg-[#002D4A] hover:bg-[#036F8B] text-white font-medium py-3 px-4 rounded-lg transition duration-150"
             >
               Confirm and pay
             </button>
@@ -233,7 +234,7 @@ onMounted(() => {
             <div class="flex items-start gap-4 pb-6 border-b border-gray-200">
               <div class="w-24 h-20 rounded-lg overflow-hidden flex-shrink-0">
                 <img
-                  :src="listing.image"
+                  :src="image"
                   alt="Property"
                   class="w-full h-full object-cover"
                 />
@@ -311,7 +312,7 @@ onMounted(() => {
             Cancel
           </button>
           <button
-            class="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700"
+            class="px-4 py-2 bg-[#002D4A] text-white rounded-md hover:bg-[#036F8B]"
             @click="updateDates"
           >
             Save

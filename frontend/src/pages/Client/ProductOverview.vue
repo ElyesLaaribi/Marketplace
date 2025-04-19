@@ -361,16 +361,20 @@ const submitReview = async () => {
 };
 
 const handleReserveClick = () => {
+  const image0 =
+    listingData.value.images[0]?.src || "/images/fallback-image.jpg";
   console.log("Reservation requested for listing:", listingData.value.id);
   console.log("Rental period:", rentalStart.value, "to", rentalEnd.value);
   console.log("Total days:", totalDays.value);
   console.log("Total cost:", total.value, "TND");
   console.log("servce fee:", serviceFee, "TND");
+  console.log("Image 0:", image0);
 
   router.push({
     name: "checkout",
     params: { id: listingData.value.id },
     query: {
+      image: image0,
       startDate: rentalStart.value,
       endDate: rentalEnd.value,
       days: totalDays.value,
