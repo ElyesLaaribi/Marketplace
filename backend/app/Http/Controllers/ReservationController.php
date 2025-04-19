@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reservation;
+use App\Models\Listing;
 use Illuminate\Http\Request;
 use App\Http\Resources\ReservationResource;
 use App\Http\Requests\StoreReservationRequest;
+use Carbon\Carbon;
 
 class ReservationController extends Controller
 {
@@ -37,6 +39,17 @@ class ReservationController extends Controller
         $startDate = $validated['start_date'];
         $endDate = $validated['end_date'];
 
+        $listing = Listing::findOrFail($listingId);
+
+        $startDateTime = Carbon::parse($startDate);
+        $endDateTime = Carbon::parse($endDate);
+        $days = $endDateTime->diffInDays($startDateTime);
+        
+
+        $days = max(1, $days);
+        
+        $totalPrice = $listing->price * $days;
+
         $overlappingReservations = Reservation::where('listing_id', $listingId)
             ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
@@ -57,6 +70,8 @@ class ReservationController extends Controller
             'user_id' => auth()->id() ?? 1,
             'start_date' => $startDate,
             'end_date' => $endDate,
+            'status' => 'payed',
+            'price' => $totalPrice + 10, 
         ]);
     
         return response()->json(['message' => 'Reservation created successfully.', 'reservation' => $reservation], 201);
@@ -71,4 +86,5 @@ class ReservationController extends Controller
         return ReservationResource::make($reservation);
     }
 
+   
 }
