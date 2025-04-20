@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LessorController;
 use App\Http\Controllers\LogoutController;
+use App\Http\Controllers\ReservationDates;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterController;
@@ -55,6 +56,9 @@ Route::apiResource('/reviews', ReviewController::class);
 
 // Reservation
 Route::middleware('auth:sanctum')->apiResource('reservations', ReservationController::class);
+// Reservaton dates
+Route::get('/listings/{listingId}/reservations', [ReservationDates::class, 'byListing']);
+
 
 // Category
 Route::apiResource('/categories', CategoryController::class);
