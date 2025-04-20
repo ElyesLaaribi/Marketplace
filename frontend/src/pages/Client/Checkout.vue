@@ -6,22 +6,26 @@ import api from "../../axios";
 const route = useRoute();
 const router = useRouter();
 
-// Get listing ID from route params
 const listingId = route.params.id;
 
-// Get booking details from query params
 const image = ref(route.query.image || "/images/fallback-image.jpg");
 const startDate = ref(route.query.startDate || "");
 const endDate = ref(route.query.endDate || "");
 const days = ref(parseInt(route.query.days) || 1);
 const price = ref(parseFloat(route.query.price) || 0);
 const totalPrice = ref(parseFloat(route.query.totalPrice) || 0);
-const serviceFee = parseFloat(route.query.service || 0);
+const serviceFee = parseFloat(route.query.service || 10);
 
-// Date editing
+const isSubmitting = ref(false);
+const errorMessage = ref("");
+const successMessage = ref("");
+
 const showDateEditor = ref(false);
 const tempStartDate = ref("");
 const tempEndDate = ref("");
+
+const today = new Date();
+const formattedToday = today.toISOString().split("T")[0];
 
 const openDateEditor = () => {
   tempStartDate.value = startDate.value;
@@ -34,7 +38,6 @@ const closeDateEditor = () => {
 };
 
 const updateDates = () => {
-  // Validate dates first
   if (!tempStartDate.value || !tempEndDate.value) {
     alert("Please select both start and end dates");
     return;
@@ -48,16 +51,13 @@ const updateDates = () => {
     return;
   }
 
-  // Update the dates
   startDate.value = tempStartDate.value;
   endDate.value = tempEndDate.value;
 
-  // Recalculate days
   const diffTime = Math.abs(end - start);
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   days.value = diffDays || 1;
 
-  // Recalculate total price
   updateTotalPrice();
 
   closeDateEditor();
@@ -70,7 +70,6 @@ const updateTotalPrice = () => {
   }
 };
 
-// Fetch listing data based on ID
 const listing = ref({});
 const isLoading = ref(true);
 const error = ref(null);
@@ -88,11 +87,17 @@ const formatCurrency = (amount) => {
 
 const selectedPaymentMethod = ref("card");
 const paymentMethods = ref([
-  { id: "card", name: "Credit Card" },
+  { id: "paypal", name: "Paypal" },
   { id: "Visa", name: "Visa" },
 ]);
 
-// Compute nights based on start and end dates
+const paymentForm = ref({
+  cardNumber: "",
+  expirationDate: "",
+  cvv: "",
+  zipCode: "",
+});
+
 const nights = computed(() => {
   return days.value || 1;
 });
@@ -103,7 +108,6 @@ const fetchListingData = async () => {
     const response = await api.get(`/api/public-listings/${listingId}`);
     if (response?.data?.data) {
       listing.value = response.data.data;
-      // If price wasn't passed in query, use the one from listing
       if (!route.query.price) {
         price.value = listing.value.price || 0;
       }
@@ -119,15 +123,98 @@ const fetchListingData = async () => {
   }
 };
 
+const submitReservation = async () => {
+  try {
+    isSubmitting.value = true;
+    errorMessage.value = "";
+
+    if (!startDate.value || !endDate.value) {
+      errorMessage.value = "Please select start and end dates";
+      return;
+    }
+
+    const startDateObj = new Date(startDate.value);
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+
+    if (startDateObj < todayDate) {
+      errorMessage.value = "Start date cannot be in the past";
+      isSubmitting.value = false;
+      return;
+    }
+
+    const response = await api.post("/api/reservations", {
+      listing_id: listingId,
+      start_date: startDate.value,
+      end_date: endDate.value,
+    });
+
+    successMessage.value = "Reservation created successfully!";
+
+    setTimeout(() => {
+      router.push("/home");
+    }, 5000);
+  } catch (err) {
+    console.error("Error creating reservation:", err);
+    errorMessage.value =
+      err.response?.data?.message ||
+      "Failed to create reservation. Please try again.";
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
 onMounted(() => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
   fetchListingData();
+
+  // Set default dates if they're not provided
+  if (!startDate.value) {
+    // Set default start date to tomorrow if not provided
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    startDate.value = tomorrow.toISOString().split("T")[0];
+  }
+
+  if (!endDate.value && startDate.value) {
+    // Set default end date to day after start date
+    const endDateObj = new Date(startDate.value);
+    endDateObj.setDate(endDateObj.getDate() + 1);
+    endDate.value = endDateObj.toISOString().split("T")[0];
+  }
 });
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+  <header class="bg-white shadow-sm border-b border-gray-200">
+    <div class="px-4 h-24 flex items-center">
+      <router-link to="/home" class="flex items-center">
+        <img
+          class="h-15 w-auto"
+          src="../../assets/images/logo.png"
+          alt="Company Logo"
+        />
+      </router-link>
+    </div>
+  </header>
+
+  <div class="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-5xl mx-auto">
       <h1 class="text-3xl font-bold text-gray-900 mb-8">Confirm and pay</h1>
+
+      <div
+        v-if="errorMessage"
+        class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg"
+      >
+        {{ errorMessage }}
+      </div>
+
+      <div
+        v-if="successMessage"
+        class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg"
+      >
+        {{ successMessage }}
+      </div>
 
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- Payment Form Section -->
@@ -176,6 +263,7 @@ onMounted(() => {
                   >
                   <input
                     type="text"
+                    v-model="paymentForm.cardNumber"
                     class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="1234 5678 9012 3456"
                   />
@@ -186,6 +274,7 @@ onMounted(() => {
                   >
                   <input
                     type="text"
+                    v-model="paymentForm.expirationDate"
                     class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="MM/YY"
                   />
@@ -198,6 +287,7 @@ onMounted(() => {
                   >
                   <input
                     type="text"
+                    v-model="paymentForm.cvv"
                     class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="123"
                   />
@@ -208,6 +298,7 @@ onMounted(() => {
                   >
                   <input
                     type="text"
+                    v-model="paymentForm.zipCode"
                     class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="12345"
                   />
@@ -215,12 +306,38 @@ onMounted(() => {
               </div>
             </div>
           </div>
+          <div class="border-t border-gray-200 pt-4">
+            <h2 class="text-xl font-semibold mb-4">Cancellation policy</h2>
+            <p class="text-gray-800 mb-4">
+              This reservation is non-refundable.
+            </p>
+          </div>
+          <div class="border-t border-gray-200 pt-4">
+            <h2 class="text-xl font-semibold mb-4">Ground rules</h2>
+            <p class="text-gray-800 mb-4">
+              We ask every client to remember a few simple things about what
+              makes a great client.
+            </p>
+            <ul class="list-disc pl-5 text-gray-800 text-base space-y-1 mb-8">
+              <li>Stick to the rules set by the lessor</li>
+              <li>Treat rented items like they're your own</li>
+            </ul>
+          </div>
 
           <div class="border-t border-gray-200 pt-6">
             <button
               class="w-full bg-[#002D4A] hover:bg-[#036F8B] text-white font-medium py-3 px-4 rounded-lg transition duration-150"
+              @click="submitReservation"
+              :disabled="isSubmitting"
             >
-              Confirm and pay
+              {{ isSubmitting ? "Processing..." : "Confirm and pay" }}
+            </button>
+            <button
+              class="mt-4 w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium py-3 px-4 rounded-lg transition duration-150"
+              @click="$router.push('/home')"
+              :disabled="isSubmitting"
+            >
+              Cancel
             </button>
             <p class="mt-4 text-sm text-gray-500 text-center">
               You won't be charged yet
@@ -289,6 +406,7 @@ onMounted(() => {
               type="date"
               v-model="tempStartDate"
               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              :min="formattedToday"
             />
           </div>
 
@@ -300,6 +418,7 @@ onMounted(() => {
               type="date"
               v-model="tempEndDate"
               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              :min="formattedToday || formattedToday"
             />
           </div>
         </div>

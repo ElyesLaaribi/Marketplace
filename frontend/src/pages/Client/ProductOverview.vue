@@ -8,6 +8,8 @@ import L from "leaflet";
 import { useUserStore } from "../../store/user";
 
 const userStore = useUserStore();
+const todayStr = new Date().toISOString().slice(0, 10);
+const reservations = ref([]);
 
 const isLoading = ref(true);
 const error = ref(null);
@@ -138,6 +140,19 @@ const fetchReviews = async () => {
   }
 };
 
+const fetchReservations = async () => {
+  try {
+    const resp = await api.get(`/api/listings/${id}/reservations`);
+    console.log(resp.data);
+    reservations.value = resp.data.data.map((r) => ({
+      from: r.start_date,
+      to: r.end_date,
+    }));
+  } catch (e) {
+    console.error("Could not load reservations:", e);
+  }
+};
+
 const isReviewTruncated = (review) => {
   return review.review && review.review.length > 150 && !review.showFull;
 };
@@ -153,6 +168,7 @@ onMounted(() => {
   });
 
   fetchReviews();
+  fetchReservations();
 
   const handleEscKey = (event) => {
     if (event.key === "Escape" && showReviewsModal.value) {
@@ -718,6 +734,7 @@ const handleReserveClick = () => {
                       <input
                         v-model="rentalStart"
                         type="date"
+                        :min="todayStr"
                         class="w-full text-sm border-none p-0 mt-1 focus:ring-0"
                       />
                     </div>
@@ -728,6 +745,7 @@ const handleReserveClick = () => {
                       <input
                         v-model="rentalEnd"
                         type="date"
+                        :min="rentalStart"
                         class="w-full text-sm border-none p-0 mt-1 focus:ring-0"
                       />
                     </div>
