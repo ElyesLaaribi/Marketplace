@@ -6,10 +6,19 @@ import api from "../../axios";
 import { useRoute, useRouter } from "vue-router";
 import L from "leaflet";
 import { useUserStore } from "../../store/user";
+import Flatpickr from "vue-flatpickr-component";
+import "flatpickr/dist/flatpickr.css";
+
+const startDatePickerRef = ref(null);
+const endDatePickerRef = ref(null);
 
 const userStore = useUserStore();
 const todayStr = new Date().toISOString().slice(0, 10);
 const reservations = ref([]);
+
+const isDataReady = computed(() => {
+  return reservations.value.length > 0 || !isLoading.value;
+});
 
 const isLoading = ref(true);
 const error = ref(null);
@@ -69,7 +78,6 @@ const closeReviewsModal = () => {
 
 const initializeMap = () => {
   if (mapContainer.value && !map.value) {
-    // Use the listing’s location if available; fallback to default coordinates.
     const lat = listingData.value.latitude
       ? parseFloat(listingData.value.latitude)
       : 51.505;
@@ -148,10 +156,91 @@ const fetchReservations = async () => {
       from: r.start_date,
       to: r.end_date,
     }));
+
+    nextTick(() => {
+      if (startDatePickerRef.value?.fp) {
+        startDatePickerRef.value.fp.redraw();
+      }
+      if (endDatePickerRef.value?.fp) {
+        endDatePickerRef.value.fp.redraw();
+      }
+    });
   } catch (e) {
     console.error("Could not load reservations:", e);
   }
 };
+
+const startDateConfig = computed(() => ({
+  minDate: todayStr,
+  disable: [
+    function (date) {
+      return reservations.value.some((reservation) => {
+        const reservationStart = new Date(reservation.from);
+        const reservationEnd = new Date(reservation.to);
+        return date >= reservationStart && date <= reservationEnd;
+      });
+    },
+  ],
+  onChange: function (selectedDates) {
+    if (new Date(rentalEnd.value) <= new Date(rentalStart.value)) {
+      const nextDay = new Date(selectedDates[0]);
+      nextDay.setDate(nextDay.getDate() + 1);
+      rentalEnd.value = nextDay.toISOString().slice(0, 10);
+    }
+    calculateDays();
+  },
+  onDayCreate: function (dObj, dStr, fp, dayElem) {
+    const date = dayElem.dateObj;
+    const isReserved = reservations.value.some((reservation) => {
+      const reservationStart = new Date(reservation.from);
+      const reservationEnd = new Date(reservation.to);
+      return date >= reservationStart && date <= reservationEnd;
+    });
+
+    // Apply custom class to reserved dates
+    if (isReserved) {
+      dayElem.classList.add("reserved-day");
+    }
+  },
+}));
+
+const endDateConfig = computed(() => ({
+  minDate: rentalStart.value
+    ? (() => {
+        const day = new Date(rentalStart.value);
+        day.setDate(day.getDate() + 1);
+        return day.toISOString().slice(0, 10);
+      })()
+    : todayStr,
+  disable: [
+    function (date) {
+      if (rentalStart.value && date < new Date(rentalStart.value)) {
+        return true;
+      }
+
+      return reservations.value.some((reservation) => {
+        const reservationStart = new Date(reservation.from);
+        const reservationEnd = new Date(reservation.to);
+        return date >= reservationStart && date <= reservationEnd;
+      });
+    },
+  ],
+  onChange: function () {
+    calculateDays();
+  },
+  onDayCreate: function (dObj, dStr, fp, dayElem) {
+    const date = dayElem.dateObj;
+    const isReserved = reservations.value.some((reservation) => {
+      const reservationStart = new Date(reservation.from);
+      const reservationEnd = new Date(reservation.to);
+      return date >= reservationStart && date <= reservationEnd;
+    });
+
+    if (isReserved) {
+      dayElem.classList.add("reserved-day");
+    }
+  },
+}));
 
 const isReviewTruncated = (review) => {
   return review.review && review.review.length > 150 && !review.showFull;
@@ -516,7 +605,7 @@ const handleReserveClick = () => {
           <!-- Fullscreen gallery modal -->
           <div
             v-if="showAllImages"
-            class="fixed inset-0 bg-black z-50 flex flex-col"
+            class="fixed inset-0 bg-black z-50 flex flex-col overflow-auto"
           >
             <!-- Gallery header -->
             <div class="p-4 flex justify-between items-center">
@@ -731,22 +820,22 @@ const handleReserveClick = () => {
                       <label class="block text-xs text-gray-700 font-medium"
                         >RENTAL START</label
                       >
-                      <input
+                      <Flatpickr
+                        ref="startDatePickerRef"
                         v-model="rentalStart"
-                        type="date"
-                        :min="todayStr"
-                        class="w-full text-sm border-none p-0 mt-1 focus:ring-0"
+                        :config="startDateConfig"
+                        class="w-full text-sm p-0 mt-1"
                       />
                     </div>
                     <div class="p-3">
                       <label class="block text-xs text-gray-700 font-medium"
                         >RENTAL END</label
                       >
-                      <input
+                      <Flatpickr
+                        ref="endDatePickerRef"
                         v-model="rentalEnd"
-                        type="date"
-                        :min="rentalStart"
-                        class="w-full text-sm border-none p-0 mt-1 focus:ring-0"
+                        :config="endDateConfig"
+                        class="w-full text-sm p-0 mt-1"
                       />
                     </div>
                   </div>
@@ -1092,3 +1181,18 @@ const handleReserveClick = () => {
     </div>
   </DefaultLayout>
 </template>
+
+<style>
+.reserved-day {
+  color: white !important;
+  background-color: #ff5c5c !important;
+  border-color: #ff5c5c !important;
+}
+
+.flatpickr-day.disabled.reserved-day {
+  color: white !important;
+  background-color: #ff5c5c !important;
+  border-color: #ff5c5c !important;
+  cursor: not-allowed;
+}
+</style>

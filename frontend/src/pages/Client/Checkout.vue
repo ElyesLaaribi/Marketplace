@@ -1,7 +1,21 @@
 <script setup>
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import api from "../../axios";
+import Flatpickr from "vue-flatpickr-component";
+import "flatpickr/dist/flatpickr.css";
+import { useToast } from "vue-toast-notification";
+import "vue-toast-notification/dist/theme-sugar.css";
+
+const $toast = useToast();
+
+const startDatePickerRef = ref(null);
+const endDatePickerRef = ref(null);
+const rentalStart = ref("");
+const rentalEnd = ref("");
+const todayStr = new Date().toISOString().slice(0, 10);
+const reservations = ref([]);
+const totalDays = ref(1);
 
 const route = useRoute();
 const router = useRouter();
@@ -28,8 +42,8 @@ const today = new Date();
 const formattedToday = today.toISOString().split("T")[0];
 
 const openDateEditor = () => {
-  tempStartDate.value = startDate.value;
-  tempEndDate.value = endDate.value;
+  rentalStart.value = startDate.value;
+  rentalEnd.value = endDate.value;
   showDateEditor.value = true;
 };
 
@@ -37,29 +51,120 @@ const closeDateEditor = () => {
   showDateEditor.value = false;
 };
 
+const startDateConfig = computed(() => ({
+  minDate: todayStr,
+  disable: [
+    function (date) {
+      return reservations.value.some((reservation) => {
+        const reservationStart = new Date(reservation.from);
+        const reservationEnd = new Date(reservation.to);
+        return date >= reservationStart && date <= reservationEnd;
+      });
+    },
+  ],
+  onChange: function (selectedDates) {
+    if (new Date(rentalEnd.value) <= new Date(rentalStart.value)) {
+      const nextDay = new Date(selectedDates[0]);
+      nextDay.setDate(nextDay.getDate() + 1);
+      rentalEnd.value = nextDay.toISOString().slice(0, 10);
+    }
+    calculateDays();
+  },
+  onDayCreate: function (dObj, dStr, fp, dayElem) {
+    const date = dayElem.dateObj;
+    const isReserved = reservations.value.some((reservation) => {
+      const reservationStart = new Date(reservation.from);
+      const reservationEnd = new Date(reservation.to);
+      return date >= reservationStart && date <= reservationEnd;
+    });
+
+    if (isReserved) {
+      dayElem.classList.add("reserved-day");
+    }
+  },
+}));
+
+const endDateConfig = computed(() => ({
+  minDate: rentalStart.value
+    ? (() => {
+        const day = new Date(rentalStart.value);
+        day.setDate(day.getDate() + 1);
+        return day.toISOString().slice(0, 10);
+      })()
+    : todayStr,
+  disable: [
+    function (date) {
+      if (rentalStart.value && date < new Date(rentalStart.value)) {
+        return true;
+      }
+
+      return reservations.value.some((reservation) => {
+        const reservationStart = new Date(reservation.from);
+        const reservationEnd = new Date(reservation.to);
+        return date >= reservationStart && date <= reservationEnd;
+      });
+    },
+  ],
+  onChange: function () {
+    calculateDays();
+  },
+  onDayCreate: function (dObj, dStr, fp, dayElem) {
+    const date = dayElem.dateObj;
+    const isReserved = reservations.value.some((reservation) => {
+      const reservationStart = new Date(reservation.from);
+      const reservationEnd = new Date(reservation.to);
+      return date >= reservationStart && date <= reservationEnd;
+    });
+
+    if (isReserved) {
+      dayElem.classList.add("reserved-day");
+    }
+  },
+}));
+
+const calculateDays = () => {
+  if (!rentalStart.value || !rentalEnd.value) {
+    totalDays.value = 1;
+    return;
+  }
+
+  const start = new Date(rentalStart.value);
+  const end = new Date(rentalEnd.value);
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    totalDays.value = 1;
+    return;
+  }
+
+  const diffInTime = end.getTime() - start.getTime();
+  const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+
+  totalDays.value = Math.max(1, diffInDays);
+};
+
 const updateDates = () => {
-  if (!tempStartDate.value || !tempEndDate.value) {
+  if (!rentalStart.value || !rentalEnd.value) {
     alert("Please select both start and end dates");
     return;
   }
 
-  const start = new Date(tempStartDate.value);
-  const end = new Date(tempEndDate.value);
+  const start = new Date(rentalStart.value);
+  const end = new Date(rentalEnd.value);
 
-  if (start > end) {
+  if (start >= end) {
     alert("End date must be after start date");
     return;
   }
 
-  startDate.value = tempStartDate.value;
-  endDate.value = tempEndDate.value;
+  // Update all relevant date variables
+  startDate.value = rentalStart.value;
+  endDate.value = rentalEnd.value;
 
   const diffTime = Math.abs(end - start);
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   days.value = diffDays || 1;
 
   updateTotalPrice();
-
   closeDateEditor();
 };
 
@@ -123,6 +228,34 @@ const fetchListingData = async () => {
   }
 };
 
+const fetchReservations = async () => {
+  try {
+    const resp = await api.get(`/api/listings/${listingId}/reservations`);
+    console.log("Reservations data:", resp.data);
+    reservations.value = resp.data.data.map((r) => ({
+      from: r.start_date,
+      to: r.end_date,
+    }));
+
+    nextTick(() => {
+      if (startDatePickerRef.value?.fp) {
+        startDatePickerRef.value.fp.redraw();
+      }
+      if (endDatePickerRef.value?.fp) {
+        endDatePickerRef.value.fp.redraw();
+      }
+    });
+  } catch (e) {
+    console.error("Could not load reservations:", e);
+  }
+};
+const paymentErrors = ref({
+  cardNumber: "",
+  expirationDate: "",
+  cvv: "",
+  zipCode: "",
+});
+
 const submitReservation = async () => {
   try {
     isSubmitting.value = true;
@@ -139,8 +272,48 @@ const submitReservation = async () => {
 
     if (startDateObj < todayDate) {
       errorMessage.value = "Start date cannot be in the past";
-      isSubmitting.value = false;
       return;
+    }
+
+    // Validate payment based on selected method
+    if (selectedPaymentMethod.value === "Visa") {
+      paymentErrors.value = {
+        cardNumber: "",
+        expirationDate: "",
+        cvv: "",
+        zipCode: "",
+      };
+
+      const { cardNumber, expirationDate, cvv, zipCode } = paymentForm.value;
+
+      let valid = true;
+
+      if (!/^\d{12}$/.test(cardNumber)) {
+        paymentErrors.value.cardNumber =
+          "Card number must be exactly 12 digits.";
+        valid = false;
+      }
+
+      if (!/^\d{2}\/\d{2}$/.test(expirationDate)) {
+        paymentErrors.value.expirationDate =
+          "Expiration date must be in MM/YY format.";
+        valid = false;
+      }
+
+      if (!/^\d{3}$/.test(cvv)) {
+        paymentErrors.value.cvv = "CVV must be 3 digits.";
+        valid = false;
+      }
+
+      if (!/^\d{4}$/.test(zipCode)) {
+        paymentErrors.value.zipCode = "ZIP code must be 4 digits.";
+        valid = false;
+      }
+
+      if (!valid) {
+        isSubmitting.value = false;
+        return;
+      }
     }
 
     const response = await api.post("/api/reservations", {
@@ -148,8 +321,7 @@ const submitReservation = async () => {
       start_date: startDate.value,
       end_date: endDate.value,
     });
-
-    successMessage.value = "Reservation created successfully!";
+    $toast.success("Reservation made successfully!");
 
     setTimeout(() => {
       router.push("/home");
@@ -167,6 +339,7 @@ const submitReservation = async () => {
 onMounted(() => {
   window.scrollTo({ top: 0, behavior: "smooth" });
   fetchListingData();
+  fetchReservations(); // Add this to load reservations
 
   // Set default dates if they're not provided
   if (!startDate.value) {
@@ -182,6 +355,12 @@ onMounted(() => {
     endDateObj.setDate(endDateObj.getDate() + 1);
     endDate.value = endDateObj.toISOString().split("T")[0];
   }
+
+  // Initialize rental dates for the date picker
+  rentalStart.value = startDate.value;
+  rentalEnd.value = endDate.value;
+
+  calculateDays();
 });
 </script>
 
@@ -255,7 +434,7 @@ onMounted(() => {
               </button>
             </div>
 
-            <div class="space-y-4">
+            <div v-if="selectedPaymentMethod === 'Visa'" class="space-y-4">
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -264,9 +443,16 @@ onMounted(() => {
                   <input
                     type="text"
                     v-model="paymentForm.cardNumber"
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="1234 5678 9012 3456"
+                    maxlength="12"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none"
+                    placeholder="123456789012"
                   />
+                  <p
+                    v-if="paymentErrors.cardNumber"
+                    class="text-red-500 text-sm mt-1"
+                  >
+                    {{ paymentErrors.cardNumber }}
+                  </p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -275,9 +461,15 @@ onMounted(() => {
                   <input
                     type="text"
                     v-model="paymentForm.expirationDate"
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="MM/YY"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none"
                   />
+                  <p
+                    v-if="paymentErrors.cardNumber"
+                    class="text-red-500 text-sm mt-1"
+                  >
+                    {{ paymentErrors.expirationDate }}
+                  </p>
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-4">
@@ -288,9 +480,16 @@ onMounted(() => {
                   <input
                     type="text"
                     v-model="paymentForm.cvv"
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    maxlength="3"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none"
                     placeholder="123"
                   />
+                  <p
+                    v-if="paymentErrors.cardNumber"
+                    class="text-red-500 text-sm mt-1"
+                  >
+                    {{ paymentErrors.cvv }}
+                  </p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -299,9 +498,16 @@ onMounted(() => {
                   <input
                     type="text"
                     v-model="paymentForm.zipCode"
-                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="12345"
+                    maxlength="4"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none"
+                    placeholder="1234"
                   />
+                  <p
+                    v-if="paymentErrors.cardNumber"
+                    class="text-red-500 text-sm mt-1"
+                  >
+                    {{ paymentErrors.zipCode }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -392,7 +598,7 @@ onMounted(() => {
 
     <div
       v-if="showDateEditor"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 overflow-auto"
     >
       <div class="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
         <h3 class="text-xl font-semibold mb-4">Edit dates</h3>
@@ -402,11 +608,12 @@ onMounted(() => {
             <label class="block text-sm font-medium text-gray-700 mb-1"
               >Start date</label
             >
-            <input
-              type="date"
-              v-model="tempStartDate"
+            <Flatpickr
+              placeholder="click to choose a date"
+              ref="startDatePickerRef"
+              v-model="rentalStart"
+              :config="startDateConfig"
               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              :min="formattedToday"
             />
           </div>
 
@@ -414,11 +621,12 @@ onMounted(() => {
             <label class="block text-sm font-medium text-gray-700 mb-1"
               >End date</label
             >
-            <input
-              type="date"
-              v-model="tempEndDate"
+            <Flatpickr
+              placeholder="click to choose a date"
+              ref="startDatePickerRef"
+              v-model="rentalEnd"
+              :config="endDateConfig"
               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              :min="formattedToday || formattedToday"
             />
           </div>
         </div>

@@ -265,7 +265,7 @@ const handleProfileUpdate = async (event) => {
                 <!-- First row: Name and Email -->
                 <div class="sm:col-span-3">
                   <dt class="text-sm font-medium text-gray-500">Full Name</dt>
-                  <dd class="mt-1 text-sm text-gray-900 border-b pb-2">
+                  <dd class="mt-1 text-sm text-gray-900 pb-2">
                     {{ userData.name || "Not set" }}
                   </dd>
                 </div>
@@ -274,7 +274,7 @@ const handleProfileUpdate = async (event) => {
                   <dt class="text-sm font-medium text-gray-500">
                     Email address
                   </dt>
-                  <dd class="mt-1 text-sm text-gray-900 border-b pb-2">
+                  <dd class="mt-1 text-sm text-gray-900 pb-2">
                     {{ userData.email || "Not set" }}
                   </dd>
                 </div>
@@ -284,14 +284,14 @@ const handleProfileUpdate = async (event) => {
                   <dt class="text-sm font-medium text-gray-500">
                     Phone Number
                   </dt>
-                  <dd class="mt-1 text-sm text-gray-900 border-b pb-2">
+                  <dd class="mt-1 text-sm text-gray-900 pb-2">
                     {{ userData.phone || "Not set" }}
                   </dd>
                 </div>
 
                 <div class="sm:col-span-3">
                   <dt class="text-sm font-medium text-gray-500">CIN</dt>
-                  <dd class="mt-1 text-sm text-gray-900 border-b pb-2">
+                  <dd class="mt-1 text-sm text-gray-900 pb-2">
                     {{ userData.cin || "Not set" }}
                   </dd>
                 </div>
@@ -299,14 +299,14 @@ const handleProfileUpdate = async (event) => {
                 <!-- Third row: Country and City -->
                 <div class="sm:col-span-3">
                   <dt class="text-sm font-medium text-gray-500">Country</dt>
-                  <dd class="mt-1 text-sm text-gray-900 border-b pb-2">
+                  <dd class="mt-1 text-sm text-gray-900 pb-2">
                     {{ userData.country || "Not set" }}
                   </dd>
                 </div>
 
                 <div class="sm:col-span-3">
                   <dt class="text-sm font-medium text-gray-500">City</dt>
-                  <dd class="mt-1 text-sm text-gray-900 border-b pb-2">
+                  <dd class="mt-1 text-sm text-gray-900 pb-2">
                     {{ userData.city || "Not set" }}
                   </dd>
                 </div>
