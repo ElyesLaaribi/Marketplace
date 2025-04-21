@@ -9,6 +9,8 @@ import PaginationComponent from "../../components/pagination.vue";
 
 const router = useRouter();
 
+const searchInput = ref("");
+
 const products = ref([]);
 const selectedCategory = ref(null);
 const isLoading = ref(true);
@@ -76,13 +78,18 @@ watch(selectedCategory, (newCategory) => {
   fetchProducts(filters);
 });
 
-watch(
-  [searchQuery, () => priceRange.value.current],
-  () => {
-    currentPage.value = 1;
-  },
-  { deep: true }
-);
+const triggerSearch = () => {
+  searchQuery.value = searchInput.value;
+  currentPage.value = 1;
+};
+
+// watch(
+//   [searchQuery, () => priceRange.value.current],
+//   () => {
+//     currentPage.value = 1;
+//   },
+//   { deep: true }
+// );
 
 onMounted(() => {
   fetchProducts();
@@ -178,8 +185,32 @@ const resetFilters = () => {
         <p class="text-xl mb-8 max-w-2xl mx-auto">
           Rent quality items at affordable daily rates
         </p>
-        <div class="max-w-xl mx-auto">
-          <SearchForm @search="handleSearch" :initialQuery="searchQuery" />
+        <div class="flex items-center gap-2 mb-4">
+          <input
+            v-model="searchInput"
+            @keyup.enter="triggerSearch"
+            type="text"
+            placeholder="Search products..."
+            class="border border-gray-300 rounded-lg px-4 py-2 w-full"
+          />
+          <button
+            @click="triggerSearch"
+            class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"
+              />
+            </svg>
+          </button>
         </div>
       </div>
     </header>
