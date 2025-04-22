@@ -17,7 +17,7 @@ const user = computed(() => userStore.user);
 const unreadNotifications = ref(0);
 const navigation = ref([
   { name: "Browse", href: "/home", current: true },
-  { name: "My Rentals", href: "/rentals", current: false },
+  { name: "My Rentals", href: "/my-rentals", current: false },
 ]);
 
 onMounted(() => {

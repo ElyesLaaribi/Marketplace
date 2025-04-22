@@ -173,7 +173,6 @@ const resetFilters = () => {
   fetchProducts();
 };
 
-// Slider functionality
 const priceMinValue = computed(() => priceRange.value.current[0]);
 const priceMaxValue = computed(() => priceRange.value.current[1]);
 

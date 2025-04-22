@@ -23,6 +23,7 @@ import AdminsList from "./pages/Admin/AdminsList.vue";
 import Category from "./pages/Admin/Category.vue";
 import ProductOverview from "./pages/Client/ProductOverview.vue";
 import Checkout from "./pages/Client/Checkout.vue";
+import MyRentals from "./pages/Client/MyRentals.vue";
 
 
 
@@ -87,6 +88,7 @@ const routes = [
     { path: "/client-profile", name: "client-profile", component: ClientProfile , beforeEnter: clientGuard },
     { path: "/product-overview/:id", name: "product", component: ProductOverview , beforeEnter: clientGuard },
     { path: "/checkout/:id", name: "checkout", component: Checkout , beforeEnter: clientGuard },
+    { path: "/my-rentals", name: "my-reservatgions", component: MyRentals , beforeEnter: clientGuard },
 
     // lessor
     { path: "/lessorhome", name: "LessorHome", component: LessorHome, beforeEnter: lessorGuard },

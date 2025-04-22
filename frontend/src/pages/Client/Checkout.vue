@@ -275,7 +275,6 @@ const submitReservation = async () => {
       return;
     }
 
-    // Validate payment based on selected method
     if (selectedPaymentMethod.value === "Visa") {
       paymentErrors.value = {
         cardNumber: "",
@@ -325,7 +324,7 @@ const submitReservation = async () => {
 
     setTimeout(() => {
       router.push("/home");
-    }, 5000);
+    }, 1500);
   } catch (err) {
     console.error("Error creating reservation:", err);
     errorMessage.value =
@@ -339,24 +338,20 @@ const submitReservation = async () => {
 onMounted(() => {
   window.scrollTo({ top: 0, behavior: "smooth" });
   fetchListingData();
-  fetchReservations(); // Add this to load reservations
+  fetchReservations();
 
-  // Set default dates if they're not provided
   if (!startDate.value) {
-    // Set default start date to tomorrow if not provided
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     startDate.value = tomorrow.toISOString().split("T")[0];
   }
 
   if (!endDate.value && startDate.value) {
-    // Set default end date to day after start date
     const endDateObj = new Date(startDate.value);
     endDateObj.setDate(endDateObj.getDate() + 1);
     endDate.value = endDateObj.toISOString().split("T")[0];
   }
 
-  // Initialize rental dates for the date picker
   rentalStart.value = startDate.value;
   rentalEnd.value = endDate.value;
 

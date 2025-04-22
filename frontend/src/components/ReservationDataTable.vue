@@ -11,7 +11,6 @@ const reservations = ref([]);
 const searchFilter = ref("");
 const loading = ref(false);
 
-// Fetch all reservations (client + lessor filtered in backend)
 const fetchReservations = async () => {
   loading.value = true;
   try {
