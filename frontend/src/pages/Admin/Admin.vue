@@ -1,15 +1,11 @@
 <script setup>
-import AdminLayout from '../../components/AdminLayout.vue';
+import AdminLayout from "../../components/AdminLayout.vue";
 </script>
 
 <template>
   <AdminLayout>
-    <div class="p-8">
-        admin dashboard
-    </div>
+    <div class="p-8">admin dashboard</div>
   </AdminLayout>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

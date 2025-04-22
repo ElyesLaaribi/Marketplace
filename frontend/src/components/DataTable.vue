@@ -61,7 +61,9 @@ const emit = defineEmits(["userDeleted"]);
 </script>
 
 <template>
-  <div class="bg-white relative rounded-lg shadow-sm overflow-hidden">
+  <div
+    class="bg-white relative rounded-lg shadow-sm overflow-hidden border border-gray-300"
+  >
     <div class="flex items-center justify-between">
       <SearchForm @search="handleSearch" />
     </div>

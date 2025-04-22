@@ -11,6 +11,7 @@ const router = useRouter();
 
 const searchInput = ref("");
 
+const categories = ref([]);
 const products = ref([]);
 const selectedCategory = ref(null);
 const isLoading = ref(true);
@@ -42,6 +43,11 @@ const fetchProducts = async (filters = {}) => {
           ? product.images[0]
           : "/images/fallback-image.jpg",
     }));
+
+    const categorySet = new Set(
+      allProducts.map((p) => p.cat_title).filter(Boolean)
+    );
+    categories.value = Array.from(categorySet);
 
     if (allProducts.length > 0) {
       const prices = allProducts.map((p) => p.price);
@@ -82,14 +88,6 @@ const triggerSearch = () => {
   searchQuery.value = searchInput.value;
   currentPage.value = 1;
 };
-
-// watch(
-//   [searchQuery, () => priceRange.value.current],
-//   () => {
-//     currentPage.value = 1;
-//   },
-//   { deep: true }
-// );
 
 onMounted(() => {
   fetchProducts();
@@ -143,7 +141,7 @@ const statusMessage = computed(() => {
 const handlePageChange = (page) => {
   currentPage.value = page;
   document
-    .querySelector(".bg-white.rounded-lg")
+    .querySelector(".products-container")
     .scrollIntoView({ behavior: "smooth" });
 };
 
@@ -167,35 +165,97 @@ const handlePriceChange = (values) => {
 const resetFilters = () => {
   selectedCategory.value = null;
   searchQuery.value = "";
+  searchInput.value = "";
   if (products.value.length > 0) {
     priceRange.value.current = [priceRange.value.min, priceRange.value.max];
   }
   currentPage.value = 1;
   fetchProducts();
 };
+
+// Slider functionality
+const priceMinValue = computed(() => priceRange.value.current[0]);
+const priceMaxValue = computed(() => priceRange.value.current[1]);
+
+const updatePriceMin = (event) => {
+  const value = parseInt(event.target.value);
+  if (value <= priceRange.value.current[1]) {
+    priceRange.value.current = [value, priceRange.value.current[1]];
+  }
+};
+
+const updatePriceMax = (event) => {
+  const value = parseInt(event.target.value);
+  if (value >= priceRange.value.current[0]) {
+    priceRange.value.current = [priceRange.value.current[0], value];
+  }
+};
+
+const getSliderPercentage = (value, min, max) => {
+  return ((value - min) / (max - min)) * 100;
+};
+
+const minThumbPosition = computed(() => {
+  return getSliderPercentage(
+    priceRange.value.current[0],
+    priceRange.value.min,
+    priceRange.value.max
+  );
+});
+
+const maxThumbPosition = computed(() => {
+  return getSliderPercentage(
+    priceRange.value.current[1],
+    priceRange.value.min,
+    priceRange.value.max
+  );
+});
 </script>
 
 <template>
   <DefaultLayout>
-    <header
-      class="bg-gradient-to-r from-[#002D4A] to-blue-500 text-white shadow-sm"
-    >
-      <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl font-bold mb-6">Find What You Need</h1>
-        <p class="text-xl mb-8 max-w-2xl mx-auto">
+    <!-- Hero section with parallax effect -->
+    <header class="relative z-5 overflow-hidden bg-[#002D4A] text-white">
+      <!-- Background image with parallax effect -->
+      <div
+        class="absolute inset-0 bg-cover bg-center opacity-20"
+        style="
+          background-image: url('/images/hero-bg.jpg');
+          transform: translateZ(-1px) scale(1.5);
+        "
+      ></div>
+
+      <div
+        class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24 text-center z-10"
+      >
+        <h1
+          class="text-4xl font-bold mb-6 sm:text-5xl lg:text-6xl tracking-tight"
+        >
+          Find What You Need
+          <span
+            class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent"
+            >Today</span
+          >
+        </h1>
+        <p class="text-xl mb-8 max-w-2xl mx-auto opacity-90">
           Rent quality items at affordable daily rates
         </p>
-        <div class="flex items-center gap-2 mb-4">
+
+        <!-- Search box with modern styling -->
+        <div
+          class="flex items-center max-w-xl mx-auto bg-white/10 backdrop-blur-md p-1 rounded-full border border-white/20 shadow-lg"
+        >
           <input
             v-model="searchInput"
             @keyup.enter="triggerSearch"
             type="text"
             placeholder="Search products..."
-            class="border border-gray-300 rounded-lg px-4 py-2 w-full"
+            class="bg-transparent flex-grow px-5 py-3 text-white placeholder-white/70 focus:outline-none"
           />
           <button
             @click="triggerSearch"
-            class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg"
+            class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white p-3 rounded-full hover:shadow-lg transition duration-300 flex items-center justify-center"
+            aria-label="Search"
           >
             <svg
               class="w-5 h-5"
@@ -212,215 +272,539 @@ const resetFilters = () => {
             </svg>
           </button>
         </div>
+
+        <!-- Scroll indicator -->
+        <div
+          class="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-bounce"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            ></path>
+          </svg>
+        </div>
       </div>
     </header>
 
     <!-- Main content area -->
-    <main class="bg-gray-50">
-      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <!-- Category selection -->
-        <div
-          class="mb-8 sticky top-0 z-10 bg-gray-50 py-3 px-4 rounded-xl shadow-md"
-        >
-          <div class="mt-6 px-2">
-            <h3 class="text-md font-medium text-gray-700 mb-3">Categories</h3>
-
-            <CategoryBar
-              @category-selected="handleCategorySelect"
-              :selectedCategory="selectedCategory"
-            />
-          </div>
-
-          <!-- Price range filter -->
-          <div class="mt-6 px-2">
-            <h3 class="text-md font-medium text-gray-700 mb-3">
-              Price Range (TND)
-            </h3>
-            <div class="flex items-center gap-4">
-              <input
-                type="range"
-                :min="priceRange.min"
-                :max="priceRange.max"
-                v-model.number="priceRange.current[0]"
-                @input="
-                  handlePriceChange([
-                    priceRange.current[0],
-                    priceRange.current[1],
-                  ])
-                "
-                class="w-full accent-[#036F8B]"
-              />
-              <span class="text-sm text-gray-600">to</span>
-              <input
-                type="range"
-                :min="priceRange.min"
-                :max="priceRange.max"
-                v-model.number="priceRange.current[1]"
-                @input="
-                  handlePriceChange([
-                    priceRange.current[0],
-                    priceRange.current[1],
-                  ])
-                "
-                class="w-full accent-[#036F8B]"
-              />
-            </div>
-            <div class="flex justify-between mt-2 text-sm text-gray-600">
-              <span>{{ priceRange.current[0] }} TND</span>
-              <span>{{ priceRange.current[1] }} TND</span>
-            </div>
-          </div>
-
-          <!-- Active filters display -->
+    <main class="bg-white">
+      <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <!-- Filter sidebar and product grid container -->
+        <div class="flex flex-col lg:flex-row gap-8">
+          <!-- Filter sidebar -->
           <div
-            v-if="
-              selectedCategory ||
-              searchQuery ||
-              priceRange.current[0] > priceRange.min ||
-              priceRange.current[1] < priceRange.max
-            "
-            class="mt-4 flex flex-wrap items-center gap-2 text-sm"
+            class="lg:w-1/4 bg-white rounded-2xl shadow-sm p-6 h-fit sticky top-24 border border-gray-300 sm-shadow"
           >
-            <span class="text-gray-600 mr-2">Active filters:</span>
-
-            <div
-              v-if="selectedCategory"
-              class="rounded-full bg-[#036F8B] px-3 py-1 flex items-center"
-            >
-              <span class="text-white">Category: {{ selectedCategory }}</span>
-              <button @click="selectedCategory = null" class="ml-2 text-white">
-                &times;
-              </button>
-            </div>
-
-            <div
-              v-if="searchQuery"
-              class="rounded-full bg-[#036F8B] px-3 py-1 flex items-center"
-            >
-              <span class="text-white">Search: "{{ searchQuery }}"</span>
-              <button
-                @click="searchQuery = ''"
-                class="ml-2 text-white hover:text-white"
+            <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+              <svg
+                class="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                &times;
-              </button>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                ></path>
+              </svg>
+              Filters
+            </h2>
+
+            <!-- Categories section -->
+            <div class="mb-8">
+              <h3 class="text-md font-medium text-gray-700 mb-3">Categories</h3>
+              <select
+                v-model="selectedCategory"
+                @change="handleCategorySelect(selectedCategory)"
+                class="border border-gray-300 rounded px-3 py-2 w-full"
+              >
+                <option value="">All</option>
+                <option
+                  v-for="category in categories"
+                  :key="category"
+                  :value="category"
+                >
+                  {{ category }}
+                </option>
+              </select>
             </div>
 
+            <!-- Price range filter with custom slider -->
+            <div class="mb-8">
+              <h3 class="text-md font-medium text-gray-700 mb-4">
+                Price Range (TND)
+              </h3>
+
+              <!-- Price inputs -->
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-24">
+                  <label class="text-xs text-gray-500">Min</label>
+                  <input
+                    type="number"
+                    :min="priceRange.min"
+                    :max="priceRange.max"
+                    v-model.number="priceRange.current[0]"
+                    @input="updatePriceMin"
+                    class="w-full p-2 border border-gray-300 rounded-md text-sm"
+                  />
+                </div>
+                <div class="text-gray-400">—</div>
+                <div class="w-24">
+                  <label class="text-xs text-gray-500">Max</label>
+                  <input
+                    type="number"
+                    :min="priceRange.min"
+                    :max="priceRange.max"
+                    v-model.number="priceRange.current[1]"
+                    @input="updatePriceMax"
+                    class="w-full p-2 border border-gray-300 rounded-md text-sm"
+                  />
+                </div>
+              </div>
+
+              <!-- Modern range slider -->
+              <div class="relative h-10 mt-6">
+                <!-- Track -->
+                <div
+                  class="absolute top-1/2 w-full h-2 bg-gray-200 rounded-full transform -translate-y-1/2"
+                ></div>
+
+                <!-- Selected range fill -->
+                <div
+                  class="absolute top-1/2 h-2 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full transform -translate-y-1/2"
+                  :style="{
+                    left: minThumbPosition + '%',
+                    width: maxThumbPosition - minThumbPosition + '%',
+                  }"
+                ></div>
+
+                <!-- Min Thumb Input -->
+                <input
+                  type="range"
+                  :min="priceRange.min"
+                  :max="priceRange.max"
+                  v-model.number="priceRange.current[0]"
+                  class="range-thumb pointer-events-auto z-30"
+                  :style="{
+                    zIndex:
+                      priceRange.current[0] > priceRange.current[1] - 10
+                        ? 40
+                        : 30,
+                  }"
+                  @input="handleMinChange"
+                />
+
+                <!-- Max Thumb Input -->
+                <input
+                  type="range"
+                  :min="priceRange.min"
+                  :max="priceRange.max"
+                  v-model.number="priceRange.current[1]"
+                  class="range-thumb pointer-events-auto z-40"
+                  :style="{
+                    zIndex:
+                      priceRange.current[1] <= priceRange.current[0] + 10
+                        ? 30
+                        : 40,
+                  }"
+                  @input="handleMaxChange"
+                />
+              </div>
+            </div>
+
+            <!-- Active filters display -->
             <div
               v-if="
+                selectedCategory ||
+                searchQuery ||
                 priceRange.current[0] > priceRange.min ||
                 priceRange.current[1] < priceRange.max
               "
-              class="rounded-full bg-[#036F8B] hover:bg-[#036F8B] px-3 py-1 flex items-center"
+              class="mt-8"
             >
-              <span class="text-white"
-                >Price: {{ priceRange.current[0] }} -
-                {{ priceRange.current[1] }} TND</span
-              >
+              <h3 class="text-md font-medium text-gray-700 mb-3">
+                Active Filters
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                <div
+                  v-if="selectedCategory"
+                  class="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-1 flex items-center"
+                >
+                  <span class="text-white text-sm">{{ selectedCategory }}</span>
+                  <button
+                    @click="selectedCategory = null"
+                    class="ml-2 text-white hover:bg-white/20 rounded-full h-5 w-5 flex items-center justify-center"
+                  >
+                    &times;
+                  </button>
+                </div>
+
+                <div
+                  v-if="searchQuery"
+                  class="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-1 flex items-center"
+                >
+                  <span class="text-white text-sm">"{{ searchQuery }}"</span>
+                  <button
+                    @click="
+                      searchQuery = '';
+                      searchInput = '';
+                    "
+                    class="ml-2 text-white hover:bg-white/20 rounded-full h-5 w-5 flex items-center justify-center"
+                  >
+                    &times;
+                  </button>
+                </div>
+
+                <div
+                  v-if="
+                    priceRange.current[0] > priceRange.min ||
+                    priceRange.current[1] < priceRange.max
+                  "
+                  class="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-1 flex items-center"
+                >
+                  <span class="text-white text-sm"
+                    >{{ priceRange.current[0] }} -
+                    {{ priceRange.current[1] }} TND</span
+                  >
+                  <button
+                    @click="
+                      priceRange.current = [priceRange.min, priceRange.max]
+                    "
+                    class="ml-2 text-white hover:bg-white/20 rounded-full h-5 w-5 flex items-center justify-center"
+                  >
+                    &times;
+                  </button>
+                </div>
+              </div>
+
               <button
-                @click="priceRange.current = [priceRange.min, priceRange.max]"
-                class="ml-2 text-[#036F8B] hover:bg-[#036F8B]"
+                @click="resetFilters"
+                class="mt-4 flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
               >
-                &times;
+                <svg
+                  class="w-4 h-4 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  ></path>
+                </svg>
+                Clear all filters
               </button>
             </div>
-
-            <button
-              @click="resetFilters"
-              class="ml-2 text-[#135CA5] hover:text-[#28BBDD] font-medium text-sm"
-            >
-              Clear all
-            </button>
           </div>
-        </div>
 
-        <!-- Products section -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-bold text-gray-900">
-              {{ selectedCategory ? selectedCategory : "Today's picks" }}
-              <span
-                class="text-gray-500 text-lg font-normal ml-2"
-                v-if="filteredProducts.length"
+          <!-- Products section -->
+          <div class="lg:w-3/4 products-container">
+            <div
+              class="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-gray-300 sm-shadow"
+            >
+              <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4"
               >
-                ({{ filteredProducts.length }} items)
-              </span>
-            </h2>
-          </div>
-
-          <!-- Loading or error states -->
-          <div v-if="statusMessage" class="py-12 text-center">
-            <div
-              v-if="isLoading"
-              class="animate-pulse flex flex-col items-center"
-            >
-              <div class="h-8 w-8 bg-indigo-200 rounded-full mb-4"></div>
-              <p class="text-gray-500">{{ statusMessage }}</p>
-            </div>
-            <p v-else class="text-gray-500">{{ statusMessage }}</p>
-          </div>
-
-          <!-- Product grid -->
-          <div
-            v-else
-            class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          >
-            <div
-              v-for="product in paginatedProducts"
-              :key="product.id"
-              class="group relative bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer"
-              @click="navigateToProduct(product.id)"
-            >
-              <div class="aspect-square bg-gray-200 overflow-hidden">
-                <img
-                  :src="product.imageSrc"
-                  :alt="product.name"
-                  class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-
-              <div class="p-4">
-                <div class="flex justify-between">
-                  <h3 class="text-lg font-medium text-gray-900 line-clamp-1">
-                    {{ product.name }}
-                  </h3>
-                </div>
-
-                <p v-if="product.category" class="mt-1 text-sm text-gray-500">
-                  {{ product.category }}
-                </p>
-
-                <p class="mt-2 text-lg font-semibold text-[#002D4A]">
-                  {{ product.formattedPrice ?? product.price }} TND<span
-                    class="text-sm font-normal text-gray-500"
-                    >/day</span
-                  >
-                </p>
-
-                <div class="mt-4 flex justify-between items-center">
-                  <span
-                    class="text-sm text-[#002D4A] font-medium flex items-center"
-                  >
-                    View details
-                    <span class="ml-1">→</span>
+                <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                  <span class="mr-2">
+                    {{ selectedCategory ? selectedCategory : "Today's picks" }}
                   </span>
+                  <span
+                    class="text-gray-500 text-lg font-normal"
+                    v-if="filteredProducts.length"
+                  >
+                    ({{ filteredProducts.length }} items)
+                  </span>
+                </h2>
+              </div>
+
+              <!-- Loading or error states -->
+              <div v-if="statusMessage" class="py-12 text-center">
+                <div
+                  v-if="isLoading"
+                  class="animate-pulse flex flex-col items-center"
+                >
+                  <div class="h-10 w-10 bg-blue-200 rounded-full mb-4"></div>
+                  <p class="text-gray-500">{{ statusMessage }}</p>
+                </div>
+                <p v-else class="text-gray-500">{{ statusMessage }}</p>
+              </div>
+
+              <!-- Product grid with modern cards -->
+              <div
+                v-else
+                class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3"
+              >
+                <div
+                  v-for="product in paginatedProducts"
+                  :key="product.id"
+                  class="group relative bg-white rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-100 hover:border-blue-200 cursor-pointer transform hover:-translate-y-1"
+                  @click="navigateToProduct(product.id)"
+                >
+                  <!-- Badge for new or featured items -->
+                  <div class="absolute top-3 left-3 z-10">
+                    <span
+                      v-if="product.is_featured"
+                      class="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full"
+                      >Featured</span
+                    >
+                    <span
+                      v-else-if="product.is_new"
+                      class="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-1 rounded-full"
+                      >New</span
+                    >
+                  </div>
+
+                  <div class="aspect-square bg-gray-50 overflow-hidden">
+                    <img
+                      :src="product.imageSrc"
+                      :alt="product.name"
+                      class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  </div>
+
+                  <div class="p-5">
+                    <div class="flex justify-between items-start mb-2">
+                      <h3
+                        class="text-lg font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors"
+                      >
+                        {{ product.name }}
+                      </h3>
+
+                      <!-- Wishlist button -->
+                      <button
+                        class="text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <svg
+                          class="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                          ></path>
+                        </svg>
+                      </button>
+                    </div>
+
+                    <p
+                      v-if="product.category"
+                      class="text-sm text-gray-500 mb-3"
+                    >
+                      {{ product.category }}
+                    </p>
+
+                    <div class="flex justify-between items-center">
+                      <p class="text-lg font-bold text-[#002D4A]">
+                        {{ product.formattedPrice ?? product.price }}
+                        <span class="text-sm font-normal text-gray-500"
+                          >TND/day</span
+                        >
+                      </p>
+
+                      <!-- Rating display -->
+                      <div class="flex items-center" v-if="product.rating">
+                        <svg
+                          class="w-4 h-4 text-yellow-400"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                          ></path>
+                        </svg>
+                        <span class="ml-1 text-sm text-gray-600">{{
+                          product.rating
+                        }}</span>
+                      </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                      <button
+                        class="w-full py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-medium text-sm transition-all hover:shadow-md flex items-center justify-center"
+                      >
+                        <span>View details</span>
+                        <svg
+                          class="w-4 h-4 ml-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3"
+                          ></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <!-- Pagination at the bottom -->
+            <PaginationComponent
+              v-if="!statusMessage"
+              :totalItems="filteredProducts.length"
+              :currentPage="currentPage"
+              :itemsPerPage="itemsPerPage"
+              :perPageOptions="[12, 24, 36, 48]"
+              @page-change="handlePageChange"
+              @per-page-change="handlePerPageChange"
+              class="mb-12"
+            />
           </div>
         </div>
       </div>
 
-      <!-- Use the pagination component -->
-      <PaginationComponent
-        v-if="!statusMessage"
-        :totalItems="filteredProducts.length"
-        :currentPage="currentPage"
-        :itemsPerPage="itemsPerPage"
-        :perPageOptions="[8, 12, 24, 48]"
-        @page-change="handlePageChange"
-        @per-page-change="handlePerPageChange"
-      />
+      <!-- Features section -->
+      <div class="bg-white py-16">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900">Why Rent With Us?</h2>
+            <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+              We make renting easy, affordable, and sustainable
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="flex flex-col items-center p-6 text-center">
+              <div class="bg-blue-100 p-3 rounded-full mb-4">
+                <svg
+                  class="w-8 h-8 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold mb-2">Fast Delivery</h3>
+              <p class="text-gray-600">
+                Get your rentals quickly with our same-day delivery service in
+                select areas.
+              </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="flex flex-col items-center p-6 text-center">
+              <div class="bg-blue-100 p-3 rounded-full mb-4">
+                <svg
+                  class="w-8 h-8 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  ></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold mb-2">Quality Guaranteed</h3>
+              <p class="text-gray-600">
+                All our products are thoroughly checked and maintained to ensure
+                top quality.
+              </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="flex flex-col items-center p-6 text-center">
+              <div class="bg-blue-100 p-3 rounded-full mb-4">
+                <svg
+                  class="w-8 h-8 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold mb-2">Affordable Pricing</h3>
+              <p class="text-gray-600">
+                Save money by renting exactly what you need for as long as you
+                need it.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   </DefaultLayout>
 </template>
+
+<style scoped>
+.range-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  pointer-events: none; /* Prevent whole input from blocking */
+  -webkit-appearance: none;
+  appearance: none;
+  z-index: 10;
+}
+
+/* Allow interaction only on the thumb */
+.range-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  margin-top: 0px;
+  background: #fff;
+  border: 2px solid #0284c7;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  pointer-events: auto; /* 👈 Key fix: only thumb is clickable */
+  position: relative;
+  z-index: 50;
+}
+
+.range-thumb::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  background: #fff;
+  border: 2px solid #0284c7;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  pointer-events: auto;
+}
+</style>

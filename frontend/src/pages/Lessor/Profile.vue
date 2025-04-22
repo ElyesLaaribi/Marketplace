@@ -7,6 +7,8 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   PencilIcon,
+  UserCircleIcon,
+  ShieldCheckIcon,
 } from "@heroicons/vue/24/outline";
 import api from "../../axios.js";
 
@@ -29,6 +31,7 @@ const editUserData = ref({
 });
 
 const isEditMode = ref(false);
+const activeTab = ref("profile"); // 'profile' or 'password'
 
 const currentPassword = ref("");
 const newPassword = ref("");
@@ -55,7 +58,6 @@ onMounted(async () => {
   try {
     isLoading.value = true;
     const response = await api.get("/api/profile");
-    console.log("API Response:", response);
     if (response && response.data && response.data.data) {
       userData.value = {
         name: response.data.data.Name || "",
@@ -65,15 +67,12 @@ onMounted(async () => {
         city: response.data.data.city || "",
         cin: response.data.data.cin || "",
       };
-      console.log("User data loaded:", userData.value);
     } else {
-      console.error("API response does not contain expected data:", response);
       profileMessage.value =
         "Failed to load profile data: Invalid response format";
       profileMessageType.value = "error";
     }
   } catch (error) {
-    console.error("Error fetching user data:", error);
     profileMessage.value = "Failed to load profile information";
     profileMessageType.value = "error";
   } finally {
@@ -163,16 +162,10 @@ const handlePasswordUpdate = async (event) => {
     currentPassword.value = "";
     newPassword.value = "";
     confirmPassword.value = "";
-
-    console.log("Password updated successfully", response.data);
   } catch (error) {
     passwordMessage.value =
       error.response?.data?.message || "Error updating password";
     passwordMessageType.value = "error";
-    console.error(
-      "Error updating password",
-      error.response ? error.response.data : error
-    );
   }
 };
 
@@ -193,261 +186,331 @@ const handleProfileUpdate = async (event) => {
     isEditMode.value = false;
     profileMessage.value = "Profile information updated successfully";
     profileMessageType.value = "success";
-    console.log("Profile updated successfully", response.data);
   } catch (error) {
     profileMessage.value =
       error.response?.data?.message || "Error updating profile";
     profileMessageType.value = "error";
-    console.error(
-      "Error updating profile",
-      error.response ? error.response.data : error
-    );
   }
+};
+
+// Function to get avatar text from name
+const getAvatarText = (name) => {
+  if (!name) return "U";
+  const nameParts = name.split(" ");
+  if (nameParts.length >= 2) {
+    return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+};
+
+// Function to get background color based on name
+const getAvatarColor = (name) => {
+  if (!name) return "bg-blue-600";
+  const colors = [
+    "bg-blue-600",
+    "bg-emerald-600",
+    "bg-violet-600",
+    "bg-amber-600",
+    "bg-rose-600",
+    "bg-indigo-600",
+  ];
+  const hash = name
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return colors[hash % colors.length];
 };
 </script>
 
 <template>
   <LessorLayout>
-    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <!-- Page Header with Avatar -->
+      <div class="mb-8">
+        <div
+          class="flex flex-col sm:flex-row items-center sm:items-start gap-6"
+        >
+          <div
+            class="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-bold"
+            :class="getAvatarColor(userData.name)"
+          >
+            {{ getAvatarText(userData.name) }}
+          </div>
+          <div class="flex flex-col items-center sm:items-start">
+            <h1 class="text-2xl font-bold text-gray-900">
+              {{ userData.name || "Your Profile" }}
+            </h1>
+            <p class="text-gray-500">{{ userData.email || "No email set" }}</p>
+            <div class="flex space-x-4 mt-4">
+              <button
+                @click="activeTab = 'profile'"
+                class="flex items-center px-4 py-2 rounded-md text-sm font-medium"
+                :class="
+                  activeTab === 'profile'
+                    ? 'bg-[#002D4A] text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                "
+              >
+                <UserCircleIcon class="h-5 w-5 mr-2" />
+                Profile
+              </button>
+              <button
+                @click="activeTab = 'password'"
+                class="flex items-center px-4 py-2 rounded-md text-sm font-medium"
+                :class="
+                  activeTab === 'password'
+                    ? 'bg-[#002D4A] text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                "
+              >
+                <ShieldCheckIcon class="h-5 w-5 mr-2" />
+                Security
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Loading indicator -->
       <div v-if="isLoading" class="flex justify-center items-center py-8">
         <div
-          class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"
+          class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#002D4A]"
         ></div>
         <span class="ml-2 text-gray-600">Loading profile information...</span>
       </div>
 
-      <!-- Personal Information Section -->
-      <div v-else class="mb-8">
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div class="pb-6">
-            <div class="flex justify-between items-center">
-              <div>
-                <h2 class="text-xl font-semibold text-gray-900">
-                  Personal Information
-                </h2>
-                <p class="mt-1 text-sm text-gray-600">
-                  Your account details and personal information.
-                </p>
-              </div>
-
-              <!-- Edit Mode Toggle -->
-              <button
-                v-if="!isEditMode"
-                @click="enableEditMode"
-                type="button"
-                class="inline-flex items-center rounded-md bg-[#002D4A] px-3 py-2 text-sm font-medium text-white hover:bg-[#036F8B]"
-              >
-                <PencilIcon class="h-4 w-4 mr-2" />
-                Edit Information
-              </button>
+      <div v-else>
+        <!-- Profile Tab Content -->
+        <div
+          v-if="activeTab === 'profile'"
+          class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200"
+        >
+          <!-- Header -->
+          <div
+            class="px-6 py-5 border-b border-gray-300 flex justify-between items-center bg-white sm-shadow"
+          >
+            <div>
+              <h2 class="text-xl font-semibold text-gray-900">
+                Personal Information
+              </h2>
+              <p class="mt-1 text-sm text-gray-600">
+                Your account details and personal information
+              </p>
             </div>
-
-            <!-- Success/Error Message -->
-            <div
-              v-if="profileMessage"
-              class="mt-4 p-3 rounded-md text-white"
-              :class="
-                profileMessageType === 'success' ? 'bg-green-500' : 'bg-red-500'
-              "
+            <button
+              v-if="!isEditMode"
+              @click="enableEditMode"
+              type="button"
+              class="inline-flex items-center rounded-md bg-[#002D4A] px-4 py-2 text-sm font-medium text-white hover:bg-[#036F8B] transition-colors duration-200"
             >
-              {{ profileMessage }}
+              <PencilIcon class="h-4 w-4 mr-2" />
+              Edit
+            </button>
+          </div>
+
+          <!-- Profile Message -->
+          <div
+            v-if="profileMessage"
+            class="mx-6 mt-4 p-4 rounded-md"
+            :class="
+              profileMessageType === 'success'
+                ? 'bg-green-50 text-green-800 border border-green-200'
+                : 'bg-red-50 text-red-800 border border-red-200'
+            "
+          >
+            <div class="flex">
+              <CheckCircleIcon
+                v-if="profileMessageType === 'success'"
+                class="h-5 w-5 mr-2"
+              />
+              <ExclamationCircleIcon v-else class="h-5 w-5 mr-2" />
+              <span>{{ profileMessage }}</span>
             </div>
+          </div>
 
+          <!-- Profile Content -->
+          <div class="p-6">
             <!-- View Mode -->
-            <div v-if="!isEditMode" class="mt-6">
-              <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
-                <!-- First row: Name and Email -->
-                <div class="sm:col-span-3">
-                  <dt class="text-sm font-medium text-gray-500">Full Name</dt>
-                  <dd class="mt-1 text-sm text-gray-900 pb-2">
+            <div v-if="!isEditMode">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Name -->
+                <div class="flex flex-col">
+                  <h3 class="text-sm font-medium text-gray-500">Full Name</h3>
+                  <p class="mt-1 text-base font-medium text-gray-900">
                     {{ userData.name || "Not set" }}
-                  </dd>
+                  </p>
                 </div>
 
-                <div class="sm:col-span-3">
-                  <dt class="text-sm font-medium text-gray-500">
-                    Email address
-                  </dt>
-                  <dd class="mt-1 text-sm text-gray-900 pb-2">
+                <!-- Email -->
+                <div class="flex flex-col">
+                  <h3 class="text-sm font-medium text-gray-500">
+                    Email Address
+                  </h3>
+                  <p class="mt-1 text-base font-medium text-gray-900">
                     {{ userData.email || "Not set" }}
-                  </dd>
+                  </p>
                 </div>
 
-                <!-- Second row: Phone and CIN -->
-                <div class="sm:col-span-3">
-                  <dt class="text-sm font-medium text-gray-500">
+                <!-- Phone -->
+                <div class="flex flex-col">
+                  <h3 class="text-sm font-medium text-gray-500">
                     Phone Number
-                  </dt>
-                  <dd class="mt-1 text-sm text-gray-900 pb-2">
+                  </h3>
+                  <p class="mt-1 text-base font-medium text-gray-900">
                     {{ userData.phone || "Not set" }}
-                  </dd>
+                  </p>
                 </div>
 
-                <div class="sm:col-span-3">
-                  <dt class="text-sm font-medium text-gray-500">CIN</dt>
-                  <dd class="mt-1 text-sm text-gray-900 pb-2">
+                <!-- CIN -->
+                <div class="flex flex-col">
+                  <h3 class="text-sm font-medium text-gray-500">CIN</h3>
+                  <p class="mt-1 text-base font-medium text-gray-900">
                     {{ userData.cin || "Not set" }}
-                  </dd>
+                  </p>
                 </div>
 
-                <!-- Third row: Country and City -->
-                <div class="sm:col-span-3">
-                  <dt class="text-sm font-medium text-gray-500">Country</dt>
-                  <dd class="mt-1 text-sm text-gray-900 pb-2">
+                <!-- Country -->
+                <div class="flex flex-col">
+                  <h3 class="text-sm font-medium text-gray-500">Country</h3>
+                  <p class="mt-1 text-base font-medium text-gray-900">
                     {{ userData.country || "Not set" }}
-                  </dd>
+                  </p>
                 </div>
 
-                <div class="sm:col-span-3">
-                  <dt class="text-sm font-medium text-gray-500">City</dt>
-                  <dd class="mt-1 text-sm text-gray-900 pb-2">
+                <!-- City -->
+                <div class="flex flex-col">
+                  <h3 class="text-sm font-medium text-gray-500">City</h3>
+                  <p class="mt-1 text-base font-medium text-gray-900">
                     {{ userData.city || "Not set" }}
-                  </dd>
+                  </p>
                 </div>
-              </dl>
+              </div>
             </div>
 
             <!-- Edit Mode Form -->
-            <form v-else @submit="handleProfileUpdate" class="mt-6">
-              <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
-                <!-- First row: Name and Email -->
-                <div class="sm:col-span-3">
+            <form v-else @submit="handleProfileUpdate">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Name -->
+                <div>
                   <label
-                    for="first-name"
-                    class="block text-sm font-medium text-gray-900"
-                    >Full Name</label
+                    for="name"
+                    class="block text-sm font-medium text-gray-700 mb-1"
                   >
-                  <div class="mt-2">
-                    <input
-                      v-model="editUserData.name"
-                      type="text"
-                      name="first-name"
-                      id="first-name"
-                      autocomplete="given-name"
-                      placeholder="Enter your full name"
-                      class="block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-                    />
-                  </div>
+                    Full Name
+                  </label>
+                  <input
+                    v-model="editUserData.name"
+                    type="text"
+                    id="name"
+                    placeholder="Enter your full name"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#036F8B] focus:ring focus:ring-[#036F8B] focus:ring-opacity-20 transition-all duration-200"
+                  />
                 </div>
 
-                <div class="sm:col-span-3">
+                <!-- Email -->
+                <div>
                   <label
                     for="email"
-                    class="block text-sm font-medium text-gray-900"
-                    >Email address</label
+                    class="block text-sm font-medium text-gray-700 mb-1"
                   >
-                  <div class="mt-2">
-                    <input
-                      v-model="editUserData.email"
-                      id="email"
-                      name="email"
-                      type="email"
-                      autocomplete="email"
-                      placeholder="you@example.com"
-                      class="block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-                    />
-                  </div>
+                    Email Address
+                  </label>
+                  <input
+                    v-model="editUserData.email"
+                    type="email"
+                    id="email"
+                    placeholder="your.email@example.com"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#036F8B] focus:ring focus:ring-[#036F8B] focus:ring-opacity-20 transition-all duration-200"
+                  />
                 </div>
 
-                <!-- Second row: Phone and CIN -->
-                <div class="sm:col-span-3">
+                <!-- Phone -->
+                <div>
                   <label
                     for="phone"
-                    class="block text-sm font-medium text-gray-900"
-                    >Phone Number</label
+                    class="block text-sm font-medium text-gray-700 mb-1"
                   >
-                  <div class="mt-2">
-                    <input
-                      v-model="editUserData.phone"
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      autocomplete="tel"
-                      placeholder="(+216) 00-000-000"
-                      class="block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-                    />
-                  </div>
+                    Phone Number
+                  </label>
+                  <input
+                    v-model="editUserData.phone"
+                    type="tel"
+                    id="phone"
+                    placeholder="(+216) 00-000-000"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#036F8B] focus:ring focus:ring-[#036F8B] focus:ring-opacity-20 transition-all duration-200"
+                  />
                 </div>
 
-                <div class="sm:col-span-3">
+                <!-- CIN -->
+                <div>
                   <label
                     for="cin"
-                    class="block text-sm font-medium text-gray-900"
-                    >CIN</label
+                    class="block text-sm font-medium text-gray-700 mb-1"
                   >
-                  <div class="mt-2">
-                    <input
-                      v-model="editUserData.cin"
-                      id="cin"
-                      name="cin"
-                      type="text"
-                      placeholder="Customer Identification Number"
-                      class="block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-                    />
-                  </div>
+                    CIN
+                  </label>
+                  <input
+                    v-model="editUserData.cin"
+                    type="text"
+                    id="cin"
+                    placeholder="Customer Identification Number"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#036F8B] focus:ring focus:ring-[#036F8B] focus:ring-opacity-20 transition-all duration-200"
+                  />
                 </div>
 
-                <!-- Third row: Country and City -->
-                <div class="sm:col-span-3">
+                <!-- Country -->
+                <div>
                   <label
                     for="country"
-                    class="block text-sm font-medium text-gray-900"
-                    >Country</label
+                    class="block text-sm font-medium text-gray-700 mb-1"
                   >
-                  <div class="mt-2">
-                    <select
-                      v-model="editUserData.country"
-                      id="country"
-                      name="country"
-                      autocomplete="country-name"
-                      class="block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-                    >
-                      <option value="" disabled>Select your country</option>
-                      <option value="Tunisia">Tunisia</option>
-                      <option value="Canada">Canada</option>
-                      <option value="Mexico">Mexico</option>
-                      <option value="United Kingdom">United Kingdom</option>
-                      <option value="France">France</option>
-                      <option value="Germany">Germany</option>
-                      <option value="Japan">Japan</option>
-                      <!-- Add more countries as needed -->
-                    </select>
-                  </div>
+                    Country
+                  </label>
+                  <select
+                    v-model="editUserData.country"
+                    id="country"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#036F8B] focus:ring focus:ring-[#036F8B] focus:ring-opacity-20 transition-all duration-200"
+                  >
+                    <option value="" disabled>Select your country</option>
+                    <option value="Tunisia">Tunisia</option>
+                    <option value="Canada">Canada</option>
+                    <option value="Mexico">Mexico</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="France">France</option>
+                    <option value="Germany">Germany</option>
+                    <option value="Japan">Japan</option>
+                  </select>
                 </div>
 
-                <div class="sm:col-span-3">
+                <!-- City -->
+                <div>
                   <label
                     for="city"
-                    class="block text-sm font-medium text-gray-900"
-                    >City</label
+                    class="block text-sm font-medium text-gray-700 mb-1"
                   >
-                  <div class="mt-2">
-                    <input
-                      v-model="editUserData.city"
-                      type="text"
-                      name="city"
-                      id="city"
-                      autocomplete="address-level2"
-                      placeholder="Enter your city"
-                      class="block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-                    />
-                  </div>
+                    City
+                  </label>
+                  <input
+                    v-model="editUserData.city"
+                    type="text"
+                    id="city"
+                    placeholder="Enter your city"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#036F8B] focus:ring focus:ring-[#036F8B] focus:ring-opacity-20 transition-all duration-200"
+                  />
                 </div>
               </div>
 
               <!-- Edit Mode Buttons -->
-              <div class="mt-6 flex items-center justify-end gap-x-6">
+              <div class="mt-8 flex justify-end space-x-4">
                 <button
                   type="button"
                   @click="cancelEdit"
-                  class="text-sm font-semibold text-gray-900 hover:text-gray-700"
+                  class="px-5 py-2.5 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 font-medium transition-colors duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  class="rounded-md bg-[#002D4A] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#036F8B] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#036F8B]"
+                  class="px-5 py-2.5 rounded-lg text-white bg-[#002D4A] hover:bg-[#036F8B] font-medium transition-colors duration-200"
                 >
                   Save Changes
                 </button>
@@ -455,277 +518,299 @@ const handleProfileUpdate = async (event) => {
             </form>
           </div>
         </div>
-      </div>
 
-      <!-- Password Change Section -->
-      <form @submit="handlePasswordUpdate">
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div class="border-b border-gray-900/10 pb-6">
-            <h2 class="text-xl font-semibold text-gray-900">Change Password</h2>
+        <!-- Password Tab Content -->
+        <div
+          v-if="activeTab === 'password'"
+          class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 sm-shadow"
+        >
+          <!-- Header -->
+          <div class="px-6 py-5 border-b border-gray-200 bg-white">
+            <h2 class="text-xl font-semibold text-gray-900">
+              Security Settings
+            </h2>
             <p class="mt-1 text-sm text-gray-600">
-              We recommend using a strong, unique password that you don't use
-              elsewhere.
+              Update your password and secure your account
             </p>
-            <div
-              v-if="passwordMessage"
-              class="mt-4 p-3 rounded-md text-white"
-              :class="
-                passwordMessageType === 'success'
-                  ? 'bg-green-500'
-                  : 'bg-red-500'
-              "
-            >
-              {{ passwordMessage }}
+          </div>
+
+          <!-- Password Message -->
+          <div
+            v-if="passwordMessage"
+            class="mx-6 mt-4 p-4 rounded-md"
+            :class="
+              passwordMessageType === 'success'
+                ? 'bg-green-50 text-green-800 border border-green-200'
+                : 'bg-red-50 text-red-800 border border-red-200'
+            "
+          >
+            <div class="flex">
+              <CheckCircleIcon
+                v-if="passwordMessageType === 'success'"
+                class="h-5 w-5 mr-2"
+              />
+              <ExclamationCircleIcon v-else class="h-5 w-5 mr-2" />
+              <span>{{ passwordMessage }}</span>
+            </div>
+          </div>
+
+          <!-- Password Content -->
+          <form @submit="handlePasswordUpdate" class="p-6">
+            <!-- Current Password -->
+            <div class="mb-6">
+              <label
+                for="current-password"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Current Password
+              </label>
+              <div class="relative">
+                <input
+                  :type="showCurrentPassword ? 'text' : 'password'"
+                  v-model="currentPassword"
+                  id="current-password"
+                  required
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#036F8B] focus:ring focus:ring-[#036F8B] focus:ring-opacity-20 transition-all duration-200 pr-10"
+                />
+                <button
+                  type="button"
+                  @click="showCurrentPassword = !showCurrentPassword"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  <EyeIcon v-if="!showCurrentPassword" class="h-5 w-5" />
+                  <EyeSlashIcon v-else class="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
-            <div class="mt-6">
-              <div class="space-y-6">
-                <!-- Current Password -->
-                <div>
-                  <label
-                    for="current-password"
-                    class="block text-sm font-medium text-gray-900"
+            <!-- New Password -->
+            <div class="mb-6">
+              <label
+                for="new-password"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                New Password
+              </label>
+              <div class="relative">
+                <input
+                  :type="showNewPassword ? 'text' : 'password'"
+                  v-model="newPassword"
+                  id="new-password"
+                  required
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#036F8B] focus:ring focus:ring-[#036F8B] focus:ring-opacity-20 transition-all duration-200 pr-10"
+                />
+                <button
+                  type="button"
+                  @click="showNewPassword = !showNewPassword"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  <EyeIcon v-if="!showNewPassword" class="h-5 w-5" />
+                  <EyeSlashIcon v-else class="h-5 w-5" />
+                </button>
+              </div>
+
+              <!-- Password strength meter -->
+              <div class="mt-3">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs text-gray-600">Password strength:</span>
+                  <span
+                    class="text-xs font-medium"
+                    :class="{
+                      'text-red-600': passwordStrength.value <= 25,
+                      'text-yellow-600':
+                        passwordStrength.value > 25 &&
+                        passwordStrength.value <= 75,
+                      'text-green-600': passwordStrength.value > 75,
+                    }"
                   >
-                    Current Password
-                  </label>
-                  <div class="mt-1 relative">
-                    <input
-                      :type="showCurrentPassword ? 'text' : 'password'"
-                      v-model="currentPassword"
-                      name="current-password"
-                      id="current-password"
-                      autocomplete="current-password"
-                      required
-                      class="block w-full rounded-md border-0 px-3 py-1.5 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-                    />
-                    <button
-                      type="button"
-                      @click="showCurrentPassword = !showCurrentPassword"
-                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
-                    >
-                      <EyeIcon v-if="!showCurrentPassword" class="h-5 w-5" />
-                      <EyeSlashIcon v-else class="h-5 w-5" />
-                    </button>
-                  </div>
+                    {{ passwordStrength.message }}
+                  </span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    class="h-2 rounded-full transition-all duration-300"
+                    :class="passwordStrength.color"
+                    :style="`width: ${passwordStrength.value}%`"
+                  ></div>
                 </div>
 
-                <!-- New Password -->
-                <div>
-                  <label
-                    for="new-password"
-                    class="block text-sm font-medium text-gray-900"
+                <!-- Password requirements -->
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div
+                    class="flex items-center text-xs"
+                    :class="
+                      newPassword.length >= 8
+                        ? 'text-green-600'
+                        : 'text-gray-500'
+                    "
                   >
-                    New Password
-                  </label>
-                  <div class="mt-1 relative">
-                    <input
-                      :type="showNewPassword ? 'text' : 'password'"
-                      v-model="newPassword"
-                      name="new-password"
-                      id="new-password"
-                      autocomplete="new-password"
-                      required
-                      class="block w-full rounded-md border-0 px-3 py-1.5 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                    <CheckCircleIcon
+                      class="h-4 w-4 mr-1.5"
+                      v-if="newPassword.length >= 8"
                     />
-                    <button
-                      type="button"
-                      @click="showNewPassword = !showNewPassword"
-                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
-                    >
-                      <EyeIcon v-if="!showNewPassword" class="h-5 w-5" />
-                      <EyeSlashIcon v-else class="h-5 w-5" />
-                    </button>
+                    <div
+                      v-else
+                      class="h-4 w-4 mr-1.5 rounded-full border"
+                      :class="
+                        newPassword ? 'border-gray-400' : 'border-gray-300'
+                      "
+                    ></div>
+                    At least 8 characters
                   </div>
 
-                  <!-- Password strength meter -->
-                  <div class="mt-2">
-                    <div class="flex items-center justify-between mb-1">
-                      <p class="text-xs text-gray-600">Password strength:</p>
-                      <p
-                        class="text-xs font-medium"
-                        :class="{
-                          'text-red-600': passwordStrength.value <= 25,
-                          'text-yellow-600':
-                            passwordStrength.value > 25 &&
-                            passwordStrength.value <= 75,
-                          'text-green-600': passwordStrength.value > 75,
-                        }"
-                      >
-                        {{ passwordStrength.message }}
-                      </p>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-1.5">
-                      <div
-                        class="h-1.5 rounded-full"
-                        :class="passwordStrength.color"
-                        :style="`width: ${passwordStrength.value}%`"
-                      ></div>
-                    </div>
-                    <ul class="mt-2 text-xs text-gray-600 space-y-1">
-                      <li class="flex items-center gap-x-2">
-                        <span
-                          :class="
-                            newPassword.length >= 8
-                              ? 'text-green-600'
-                              : 'text-gray-400'
-                          "
-                        >
-                          <CheckCircleIcon
-                            class="h-4 w-4 inline"
-                            v-if="newPassword.length >= 8"
-                          />
-                          <span
-                            class="inline-block h-4 w-4 rounded-full border border-current"
-                            v-else
-                          ></span>
-                        </span>
-                        At least 8 characters
-                      </li>
-                      <li class="flex items-center gap-x-2">
-                        <span
-                          :class="
-                            /[A-Z]/.test(newPassword)
-                              ? 'text-green-600'
-                              : 'text-gray-400'
-                          "
-                        >
-                          <CheckCircleIcon
-                            class="h-4 w-4 inline"
-                            v-if="/[A-Z]/.test(newPassword)"
-                          />
-                          <span
-                            class="inline-block h-4 w-4 rounded-full border border-current"
-                            v-else
-                          ></span>
-                        </span>
-                        At least one uppercase letter
-                      </li>
-                      <li class="flex items-center gap-x-2">
-                        <span
-                          :class="
-                            /[0-9]/.test(newPassword)
-                              ? 'text-green-600'
-                              : 'text-gray-400'
-                          "
-                        >
-                          <CheckCircleIcon
-                            class="h-4 w-4 inline"
-                            v-if="/[0-9]/.test(newPassword)"
-                          />
-                          <span
-                            class="inline-block h-4 w-4 rounded-full border border-current"
-                            v-else
-                          ></span>
-                        </span>
-                        At least one number
-                      </li>
-                      <li class="flex items-center gap-x-2">
-                        <span
-                          :class="
-                            /[^A-Za-z0-9]/.test(newPassword)
-                              ? 'text-green-600'
-                              : 'text-gray-400'
-                          "
-                        >
-                          <CheckCircleIcon
-                            class="h-4 w-4 inline"
-                            v-if="/[^A-Za-z0-9]/.test(newPassword)"
-                          />
-                          <span
-                            class="inline-block h-4 w-4 rounded-full border border-current"
-                            v-else
-                          ></span>
-                        </span>
-                        At least one special character
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <!-- Confirm Password -->
-                <div>
-                  <label
-                    for="confirm-password"
-                    class="block text-sm font-medium text-gray-900"
+                  <div
+                    class="flex items-center text-xs"
+                    :class="
+                      /[A-Z]/.test(newPassword)
+                        ? 'text-green-600'
+                        : 'text-gray-500'
+                    "
                   >
-                    Confirm Password
-                  </label>
-                  <div class="mt-1 relative">
-                    <input
-                      :type="showConfirmPassword ? 'text' : 'password'"
-                      v-model="confirmPassword"
-                      name="confirm-password"
-                      id="confirm-password"
-                      autocomplete="new-password"
-                      required
-                      :class="[
-                        'block w-full rounded-md border-0 px-3 py-1.5 pr-10 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm',
-                        confirmPassword && !passwordsMatch
-                          ? 'ring-red-300 focus:ring-red-500'
-                          : 'ring-gray-300',
-                      ]"
+                    <CheckCircleIcon
+                      class="h-4 w-4 mr-1.5"
+                      v-if="/[A-Z]/.test(newPassword)"
                     />
-                    <button
-                      type="button"
-                      @click="showConfirmPassword = !showConfirmPassword"
-                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
-                    >
-                      <EyeIcon v-if="!showConfirmPassword" class="h-5 w-5" />
-                      <EyeSlashIcon v-else class="h-5 w-5" />
-                    </button>
+                    <div
+                      v-else
+                      class="h-4 w-4 mr-1.5 rounded-full border"
+                      :class="
+                        newPassword ? 'border-gray-400' : 'border-gray-300'
+                      "
+                    ></div>
+                    Uppercase letter
                   </div>
-                  <p
-                    v-if="confirmPassword && !passwordsMatch"
-                    class="mt-1 text-xs text-red-600 flex items-center"
+
+                  <div
+                    class="flex items-center text-xs"
+                    :class="
+                      /[0-9]/.test(newPassword)
+                        ? 'text-green-600'
+                        : 'text-gray-500'
+                    "
                   >
-                    <ExclamationCircleIcon class="h-4 w-4 mr-1" />
-                    Passwords don't match
-                  </p>
-                  <p
-                    v-else-if="confirmPassword && passwordsMatch"
-                    class="mt-1 text-xs text-green-600 flex items-center"
+                    <CheckCircleIcon
+                      class="h-4 w-4 mr-1.5"
+                      v-if="/[0-9]/.test(newPassword)"
+                    />
+                    <div
+                      v-else
+                      class="h-4 w-4 mr-1.5 rounded-full border"
+                      :class="
+                        newPassword ? 'border-gray-400' : 'border-gray-300'
+                      "
+                    ></div>
+                    Number
+                  </div>
+
+                  <div
+                    class="flex items-center text-xs"
+                    :class="
+                      /[^A-Za-z0-9]/.test(newPassword)
+                        ? 'text-green-600'
+                        : 'text-gray-500'
+                    "
                   >
-                    <CheckCircleIcon class="h-4 w-4 mr-1" />
-                    Passwords match
-                  </p>
+                    <CheckCircleIcon
+                      class="h-4 w-4 mr-1.5"
+                      v-if="/[^A-Za-z0-9]/.test(newPassword)"
+                    />
+                    <div
+                      v-else
+                      class="h-4 w-4 mr-1.5 rounded-full border"
+                      :class="
+                        newPassword ? 'border-gray-400' : 'border-gray-300'
+                      "
+                    ></div>
+                    Special character
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Password Update Button -->
-          <div class="mt-6 flex items-center justify-end gap-x-6">
-            <button
-              type="button"
-              class="text-sm font-semibold text-gray-900 hover:text-gray-700"
-              @click="
-                currentPassword = '';
-                newPassword = '';
-                confirmPassword = '';
-              "
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="rounded-md bg-[#036F8B] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#036F8B] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#036F8B]"
-              :disabled="
-                !passwordsMatch ||
-                passwordStrength.value < 50 ||
-                !currentPassword
-              "
-              :class="{
-                'opacity-50 cursor-not-allowed':
+            <!-- Confirm Password -->
+            <div class="mb-6">
+              <label
+                for="confirm-password"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Confirm Password
+              </label>
+              <div class="relative">
+                <input
+                  :type="showConfirmPassword ? 'text' : 'password'"
+                  v-model="confirmPassword"
+                  id="confirm-password"
+                  required
+                  class="w-full px-4 py-2.5 rounded-lg border focus:ring focus:ring-opacity-20 transition-all duration-200 pr-10"
+                  :class="
+                    confirmPassword && !passwordsMatch
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-300 focus:border-[#036F8B] focus:ring-[#036F8B]'
+                  "
+                />
+                <button
+                  type="button"
+                  @click="showConfirmPassword = !showConfirmPassword"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  <EyeIcon v-if="!showConfirmPassword" class="h-5 w-5" />
+                  <EyeSlashIcon v-else class="h-5 w-5" />
+                </button>
+              </div>
+              <div class="mt-1.5 min-h-6">
+                <p
+                  v-if="confirmPassword && !passwordsMatch"
+                  class="text-xs text-red-600 flex items-center"
+                >
+                  <ExclamationCircleIcon class="h-4 w-4 mr-1" />
+                  Passwords don't match
+                </p>
+                <p
+                  v-else-if="confirmPassword && passwordsMatch"
+                  class="text-xs text-green-600 flex items-center"
+                >
+                  <CheckCircleIcon class="h-4 w-4 mr-1" />
+                  Passwords match
+                </p>
+              </div>
+            </div>
+
+            <!-- Button Group -->
+            <div class="mt-8 flex justify-end space-x-4">
+              <button
+                type="button"
+                class="px-5 py-2.5 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 font-medium transition-colors duration-200"
+                @click="
+                  currentPassword = '';
+                  newPassword = '';
+                  confirmPassword = '';
+                  passwordMessage = null;
+                "
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="px-5 py-2.5 rounded-lg text-white font-medium transition-colors duration-200"
+                :class="
                   !passwordsMatch ||
                   passwordStrength.value < 50 ||
-                  !currentPassword,
-              }"
-            >
-              Update Password
-            </button>
-          </div>
+                  !currentPassword
+                    ? 'bg-[#002D4A] opacity-50 cursor-not-allowed'
+                    : 'bg-[#002D4A] hover:bg-[#036F8B]'
+                "
+                :disabled="
+                  !passwordsMatch ||
+                  passwordStrength.value < 50 ||
+                  !currentPassword
+                "
+              >
+                Update Password
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   </LessorLayout>
 </template>

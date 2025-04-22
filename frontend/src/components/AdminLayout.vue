@@ -117,8 +117,16 @@ function logout() {
       </div>
     </aside>
     <!-- Main Content Area (Dynamic Content via Slot) -->
-    <main class="flex-1 p-6 ml-64 h-screen overflow-y-auto">
+    <main
+      class="flex-1 p-6 ml-64 h-screen overflow-y-auto bg-white main-content"
+    >
       <slot></slot>
     </main>
   </div>
 </template>
+<style scoped>
+/* Only target .bg-gray-100 within the main content area */
+:deep(main .bg-gray-100) {
+  background-color: white !important;
+}
+</style>

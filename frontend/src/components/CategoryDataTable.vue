@@ -123,11 +123,13 @@ const openNewCategoryForm = () => {
 </script>
 
 <template>
-  <div class="bg-white relative rounded-lg shadow-sm overflow-hidden">
+  <div
+    class="bg-white relative rounded-lg shadow-sm overflow-hidden border border-gray-300"
+  >
     <div class="flex items-center justify-between p-4">
       <SearchForm @search="handleSearch" />
       <button
-        class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500 transition"
+        class="rounded-md bg-[#135CA5] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#28BBDD] transition mr-14"
         @click="openNewCategoryForm"
       >
         Add category
@@ -139,7 +141,7 @@ const openNewCategoryForm = () => {
         v-if="isOpen"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       >
-        <div class="bg-gray-100 rounded-lg shadow-lg max-w-3xl w-full p-6">
+        <div class="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6">
           <form @submit.prevent="submit">
             <div class="space-y-6">
               <div>

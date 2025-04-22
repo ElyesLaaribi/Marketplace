@@ -334,7 +334,9 @@ const openNewListingForm = () => {
 </script>
 
 <template>
-  <div class="bg-white relative rounded-lg shadow-sm overflow-hidden">
+  <div
+    class="bg-white relative rounded-lg shadow-sm overflow-hidden border border-gray-300"
+  >
     <div
       class="flex flex-col sm:flex-row items-center justify-between p-4 space-y-2 sm:space-y-0"
     >
@@ -353,7 +355,7 @@ const openNewListingForm = () => {
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       >
         <div
-          class="bg-gray-100 rounded-lg shadow-lg w-full max-w-3xl mx-auto p-4 sm:p-6"
+          class="bg-white rounded-lg shadow-lg w-full max-w-3xl mx-auto p-4 sm:p-6"
         >
           <form @submit.prevent="submit">
             <div class="space-y-6">
@@ -639,9 +641,9 @@ const openNewListingForm = () => {
     </teleport>
 
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
+      <table class="min-w-full divide-y divide-gray-300">
         <!-- Table Head -->
-        <thead class="bg-gray-100">
+        <thead class="bg-white">
           <tr>
             <th
               scope="col"
@@ -684,7 +686,7 @@ const openNewListingForm = () => {
         </thead>
 
         <!-- Table Body -->
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody class="bg-white divide-y divide-gray-300">
           <tr
             v-for="item in filteredItems"
             :key="item.id"
@@ -704,7 +706,7 @@ const openNewListingForm = () => {
               />
               <div
                 v-else
-                class="h-16 w-16 bg-gray-200 rounded-md flex items-center justify-center text-gray-500 text-xs"
+                class="h-16 w-16 bg-white rounded-md flex items-center justify-center text-gray-500 text-xs"
               >
                 No Image
               </div>
@@ -792,3 +794,9 @@ const openNewListingForm = () => {
     </div>
   </div>
 </template>
+
+<style>
+.p-1 > div {
+  background-color: white !important;
+}
+</style>

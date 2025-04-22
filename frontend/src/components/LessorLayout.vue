@@ -6,18 +6,50 @@ import useLessorStore from "../store/lessor.js";
 
 const lessorStore = useLessorStore();
 const lessor = computed(() => lessorStore.lessor);
-
 const isExpanded = ref(false);
+const showDropdown = ref(false);
 
 onMounted(() => {
   const savedState = localStorage.getItem("sidebar_expanded");
   isExpanded.value = savedState === null ? true : savedState === "true";
+
+  // Close dropdown when clicking outside
+  document.addEventListener("click", (e) => {
+    const dropdownElement = document.getElementById("user-dropdown");
+    const avatarElement = document.getElementById("user-avatar");
+    if (
+      dropdownElement &&
+      avatarElement &&
+      !dropdownElement.contains(e.target) &&
+      !avatarElement.contains(e.target)
+    ) {
+      showDropdown.value = false;
+    }
+  });
 });
 
 const toggleMenu = () => {
   isExpanded.value = !isExpanded.value;
   localStorage.setItem("sidebar_expanded", isExpanded.value);
 };
+
+const toggleDropdown = (event) => {
+  event.stopPropagation();
+  showDropdown.value = !showDropdown.value;
+};
+
+async function logout() {
+  try {
+    await api.post("/api/logout");
+    lessorStore.lessor = null;
+    localStorage.removeItem("auth_token");
+    delete api.defaults.headers.common["Authorization"];
+    await router.push({ name: "Login" });
+    window.location.reload();
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+}
 
 const menuItems = [
   {
@@ -59,22 +91,19 @@ const menuItems = [
 
 const activeRoute = computed(() => router.currentRoute.value.path);
 
-async function logout() {
-  try {
-    await api.post("/api/logout");
-    lessorStore.lessor = null;
-    localStorage.removeItem("auth_token");
-    delete api.defaults.headers.common["Authorization"];
-    await router.push({ name: "Login" });
-    window.location.reload();
-  } catch (error) {
-    console.error("Logout failed:", error);
-  }
-}
+const currentMenuItem = computed(() => {
+  return (
+    menuItems.find((item) => item.route === activeRoute.value) || {
+      name: "Page",
+      route: activeRoute.value,
+    }
+  );
+});
 </script>
 
 <template>
   <div class="flex h-screen bg-white dark:bg-gray-900">
+    <!-- Sidebar -->
     <aside
       :class="`fixed flex flex-col h-screen overflow-y-auto bg-[#002D4A] border-r rtl:border-r-0 rtl:border-l border-gray-700 z-10 transition-all duration-300 shadow-md ${
         isExpanded ? 'w-64' : 'w-20'
@@ -109,83 +138,129 @@ async function logout() {
             </router-link>
           </div>
         </nav>
-
-        <div class="pt-4 mt-6 border-t border-gray-700">
-          <div class="flex items-center justify-between">
-            <a href="#" class="flex items-center gap-x-2">
-              <img
-                class="object-cover rounded-full h-9 w-9 ring-2 ring-gray-200 dark:ring-gray-600"
-                :src="
-                  lessor?.avatar ||
-                  'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=634&h=634&q=80'
-                "
-                alt="avatar"
-              />
-              <div v-if="isExpanded" class="flex flex-col">
-                <span class="text-sm font-medium text-gray-200">
-                  {{ lessor?.name || "John Doe" }}
-                </span>
-                <span class="text-xs text-gray-400"> Items owner </span>
-              </div>
-            </a>
-
-            <button
-              v-if="isExpanded"
-              @click="logout"
-              class="p-1.5 text-gray-400 transition-colors duration-200 rounded-lg hover:bg-gray-700 hover:text-red-400"
-              aria-label="Logout"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-5 h-5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <button
-            v-if="!isExpanded"
-            @click="logout"
-            class="mt-4 flex justify-center w-full p-2 text-gray-400 transition-colors duration-200 hover:bg-gray-700 hover:text-red-400 rounded-lg"
-            aria-label="Logout"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="w-5 h-5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
-              />
-            </svg>
-          </button>
-        </div>
       </div>
     </aside>
+
+    <!-- Top navigation bar -->
+    <div
+      :class="`fixed top-0 right-0 z-20 transition-all duration-300 ${
+        isExpanded ? 'left-64' : 'left-20'
+      }`"
+    >
+      <div
+        class="flex items-center justify-between h-16 bg-white border-b border-gray-200 px-6"
+      >
+        <!-- Left side - Breadcrumb navigation -->
+        <div class="flex items-center">
+          <nav class="flex" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+              <!-- Home icon -->
+              <li class="inline-flex items-center">
+                <router-link
+                  to="/lessorhome"
+                  class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-5 h-5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                    />
+                  </svg>
+                </router-link>
+              </li>
+
+              <!-- Current page -->
+              <li v-if="currentMenuItem.route !== '/lessorhome'">
+                <div class="flex items-center">
+                  <span class="mx-2 text-gray-400">/</span>
+                  <span class="text-sm font-medium text-gray-700">{{
+                    currentMenuItem.name
+                  }}</span>
+                </div>
+              </li>
+            </ol>
+          </nav>
+        </div>
+
+        <!-- Right side - User dropdown -->
+        <div class="flex items-center relative">
+          <div
+            @click="toggleDropdown"
+            id="user-avatar"
+            class="flex items-center cursor-pointer"
+          >
+            <div class="mr-3 text-right hidden sm:block">
+              <p class="text-sm font-medium text-gray-700">
+                {{ lessor?.name || "User" }}
+              </p>
+              <p class="text-xs text-gray-500">Items owner</p>
+            </div>
+            <div
+              class="h-10 w-10 rounded-full bg-[#002D4A] text-white flex items-center justify-center overflow-hidden"
+            >
+              <img
+                v-if="lessor?.avatar"
+                :src="lessor.avatar"
+                class="h-full w-full object-cover"
+                alt="User avatar"
+              />
+              <span v-else class="text-sm font-medium">
+                {{ lessor?.name ? lessor.name.charAt(0) : "U" }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Dropdown menu -->
+          <div
+            v-show="showDropdown"
+            id="user-dropdown"
+            class="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-30 border border-gray-200"
+          >
+            <div class="px-4 py-3 border-b border-gray-100">
+              <p class="text-sm font-medium text-gray-700">
+                {{ lessor?.name || "User" }}
+              </p>
+              <p class="text-xs text-gray-500 truncate">Items owner</p>
+            </div>
+            <a
+              href="#"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >Settings</a
+            >
+            <button
+              @click="logout"
+              class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Main content -->
     <main
       :class="`transition-all duration-300 ${
         isExpanded ? 'ml-64' : 'ml-20'
-      } w-full overflow-y-auto bg-gray-100 `"
+      } pt-16 w-full overflow-y-auto bg-white min-h-screen`"
     >
-      <div class="p-6">
+      <div class="p-6 bg-white">
         <slot></slot>
       </div>
     </main>
   </div>
 </template>
+
+<style scoped>
+:deep(.bg-gray-100) {
+  background-color: white !important;
+}
+</style>

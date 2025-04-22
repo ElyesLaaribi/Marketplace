@@ -54,13 +54,15 @@ const getStatus = (endDate) => {
 </script>
 
 <template>
-  <div class="bg-white relative rounded-lg shadow-sm overflow-hidden">
+  <div
+    class="bg-white relative rounded-lg shadow-sm overflow-hidden border border-gray-300"
+  >
     <div class="flex items-center justify-between p-4">
       <SearchForm @search="handleSearch" />
     </div>
 
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-100">
+    <table class="min-w-full divide-y divide-gray-300">
+      <thead class="bg-white">
         <tr>
           <th
             class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
@@ -99,7 +101,7 @@ const getStatus = (endDate) => {
           </th>
         </tr>
       </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
+      <tbody class="bg-white divide-y divide-gray-300">
         <tr
           v-for="item in filteredItems"
           :key="item.reservation_id"

@@ -11,7 +11,6 @@ import useLessorStore from "./store/lessor";
 import ForgetPassword from "./pages/Guest/ForgetPassword.vue";
 import ResetPassword from "./pages/Guest/ResetPassword.vue";
 import Listings from "./pages/Lessor/Listings.vue";
-import AddListings from "./pages/Lessor/AddListings.vue";
 import { useAdminStore } from "./store/admin"; 
 import Messages from "./pages/Lessor/Messages.vue";
 import Profile from "./pages/Lessor/Profile.vue";
