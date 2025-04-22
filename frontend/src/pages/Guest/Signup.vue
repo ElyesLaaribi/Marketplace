@@ -48,12 +48,9 @@ function togglePasswordVisibility(field) {
 
 function submit() {
   loading.value = true;
-
-  // Simulate form submission (replace with actual API call)
   setTimeout(() => {
     loading.value = false;
     errorMessage.value = "";
-    // Here you would typically make an API call and handle the response
   }, 1500);
 }
 </script>

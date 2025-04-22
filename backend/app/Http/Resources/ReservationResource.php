@@ -27,6 +27,7 @@ class ReservationResource extends JsonResource
             'images' => collect($this->listing->images ?? [])->map(function ($image) {
                 return $image ? asset('storage/' . $image) : null;
             })->filter()->first(),
+            'price' => $this->price,
         ];
     }
 }

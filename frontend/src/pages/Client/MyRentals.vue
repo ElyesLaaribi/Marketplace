@@ -1,6 +1,9 @@
 <script setup>
+import { ref } from "vue";
 import DefaultLayout from "../../components/DefaultLayout.vue";
 import ReservationDataTable from "../../components/ReservationDataTable.vue";
+
+const items = ref();
 </script>
 
 <template>

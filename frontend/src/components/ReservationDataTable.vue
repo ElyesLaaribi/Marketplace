@@ -4,6 +4,16 @@ import SearchForm from "./SearchForm.vue";
 import api from "../axios";
 import { useToast } from "vue-toast-notification";
 import "vue-toast-notification/dist/theme-sugar.css";
+import { PrinterIcon } from "@heroicons/vue/24/solid";
+import { useUserStore } from "../store/user";
+import { useLessorStore } from "../store/lessor";
+import { storeToRefs } from "pinia";
+
+const userStore = useUserStore();
+const user = userStore.user;
+
+const lessorStore = useLessorStore();
+const { lessor } = storeToRefs(lessorStore);
 
 const $toast = useToast();
 
@@ -44,7 +54,6 @@ const filteredItems = computed(() => {
   });
 });
 
-// Determine reservation status based on end date
 const getStatus = (endDate) => {
   const today = new Date().setHours(0, 0, 0, 0);
   const end = new Date(endDate).setHours(0, 0, 0, 0);
@@ -56,7 +65,7 @@ const getStatus = (endDate) => {
   <div
     class="bg-white relative rounded-lg shadow-sm overflow-hidden border border-gray-300"
   >
-    <div class="flex items-center justify-between p-4">
+    <div class="flex items-center justify-between -4">
       <SearchForm @search="handleSearch" />
     </div>
 
@@ -82,6 +91,17 @@ const getStatus = (endDate) => {
             class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider"
           >
             Client
+          </th>
+          <th
+            class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider"
+          >
+            {{
+              user?.role === "client"
+                ? lessor?.role === "lessor"
+                  ? "Revenue"
+                  : "Price payed"
+                : "Revenue"
+            }}
           </th>
           <th
             class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider"
@@ -124,6 +144,9 @@ const getStatus = (endDate) => {
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-center">
             <div class="text-sm text-gray-900">{{ item.client }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-center">
+            <div class="text-sm text-gray-900">{{ item.price }} TND</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-center">
             <div class="text-sm text-gray-900">{{ item.start_date }}</div>

@@ -1,6 +1,9 @@
 <script setup>
+import { ref } from "vue";
 import LessorLayout from "../../components/LessorLayout.vue";
 import ReservationDataTable from "../../components/ReservationDataTable.vue";
+
+const items = ref();
 </script>
 
 <template>

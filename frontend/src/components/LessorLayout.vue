@@ -13,7 +13,6 @@ onMounted(() => {
   const savedState = localStorage.getItem("sidebar_expanded");
   isExpanded.value = savedState === null ? true : savedState === "true";
 
-  // Close dropdown when clicking outside
   document.addEventListener("click", (e) => {
     const dropdownElement = document.getElementById("user-dropdown");
     const avatarElement = document.getElementById("user-avatar");
