@@ -66,12 +66,6 @@ async function submit() {
 
 <template>
   <GuestLayout>
-    <h2
-      class="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900"
-    >
-      Admin
-    </h2>
-
     <div v-if="errorMessage" class="mt-4 text-center text-sm text-red-600">
       {{ errorMessage }}
     </div>
@@ -123,7 +117,7 @@ async function submit() {
           <button
             type="submit"
             :disabled="loading"
-            class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex w-full justify-center rounded-md bg-[#002D4A] px-3 py-1.5 text-sm font-semibold text-white shadow hover:bg-[#036F8B] focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg
               v-if="loading"
