@@ -1,2 +1,4 @@
 @import "tailwindcss";
+@import url('~/node_modules/customer-chat-widget/dist/style.css');
+
 

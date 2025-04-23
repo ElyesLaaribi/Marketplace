@@ -113,6 +113,7 @@ const listingData = ref({
   images: [],
   user_id: "",
   user_name: "Item Owner",
+  phone: "",
   joined_since: "",
   avatar: "",
   address: "",
@@ -387,6 +388,7 @@ const fetchListingData = async () => {
   try {
     isLoading.value = true;
     const response = await api.get(`/api/public-listings/${id}`);
+    console.log("data", response.data);
     if (response?.data?.data) {
       const data = response.data.data;
       const processedImages = extractImages(data);
@@ -406,6 +408,7 @@ const fetchListingData = async () => {
         images: processedImages,
         user_id: data.User_id || data.user_id || "",
         user_name: data.user_name || "Item Owner",
+        phone: data.phone,
         joined_since: data.Joined_since || data.joined_since || "",
         avatar: data.avatar || "",
         address: data.address || "",
@@ -422,6 +425,7 @@ const fetchListingData = async () => {
     isLoading.value = false;
   }
 };
+console.log("Phone number:", listingData.value.phone);
 
 const submitReview = async () => {
   try {
@@ -714,33 +718,57 @@ const handleReserveClick = () => {
         >
           <!-- Left column: Description and details -->
           <div class="lg:col-span-2 lg:pr-8">
-            <!-- Host information (Airbnb style) -->
-            <div class="flex items-center border-b border-gray-200 pb-6">
-              <div class="relative flex-shrink-0">
-                <div
-                  v-if="listingData.avatar"
-                  class="h-14 w-14 rounded-full overflow-hidden"
-                >
-                  <img
-                    :src="listingData.avatar"
-                    alt="Host"
-                    class="h-full w-full object-cover"
-                  />
+            <!-- Host information -->
+            <div
+              class="flex items-center justify-between border-b border-gray-200 pb-6"
+            >
+              <div class="flex items-center">
+                <div class="relative flex-shrink-0">
+                  <div
+                    v-if="listingData.avatar"
+                    class="h-14 w-14 rounded-full overflow-hidden"
+                  >
+                    <img
+                      :src="listingData.avatar"
+                      alt="Host"
+                      class="h-full w-full object-cover"
+                    />
+                  </div>
+                  <UserCircleIcon v-else class="h-14 w-14 text-gray-400" />
                 </div>
-                <UserCircleIcon v-else class="h-14 w-14 text-gray-400" />
+                <div class="ml-4">
+                  <h2 class="text-lg font-medium text-gray-900">
+                    Item provided by {{ listingData.user_name }}
+                  </h2>
+                  <p class="text-sm text-gray-500">
+                    Host since
+                    {{
+                      listingData.joined_since || "Information not available"
+                    }}
+                  </p>
+                </div>
               </div>
-              <div class="ml-4">
-                <h2 class="text-lg font-medium text-gray-900">
-                  Item provided by {{ listingData.user_name }}
-                </h2>
-                <p class="text-sm text-gray-500">
-                  Host since
-                  {{ listingData.joined_since || "Information not available" }}
-                </p>
-              </div>
+              <a
+                :href="`https://wa.me/216${listingData.phone}`"
+                target="_blank"
+                class="flex items-center bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded"
+              >
+                <!-- WhatsApp Icon -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-6 h-6 mr-2"
+                  fill="white"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M20.52 3.48a11.9 11.9 0 0 0-8.48-3.5c-6.63 0-12 5.37-12 12 0 2.11.55 4.16 1.6 5.98L0 24l6.1-1.6a11.94 11.94 0 0 0 5.92 1.6h.03c6.62 0 12-5.37 12-12 0-3.2-1.25-6.2-3.53-8.52zM12 22c-1.88 0-3.68-.5-5.26-1.44l-.38-.22-3.62.95.96-3.52-.24-.37C2.5 15.67 2 13.87 2 12c0-5.52 4.48-10 10-10 2.67 0 5.19 1.05 7.07 2.93A9.93 9.93 0 0 1 22 12c0 5.52-4.48 10-10 10zm4.27-7.73-.03-.02c-.3-.15-1.77-.87-2.05-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.27-.47-2.43-1.5-.9-.8-1.5-1.8-1.67-2.1-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.14-.67-1.6-.92-2.2-.24-.58-.48-.5-.65-.5h-.55c-.2 0-.5.07-.75.37-.25.3-.98.95-.98 2.3 0 1.34.98 2.63 1.12 2.8.13.18 1.92 2.93 4.65 4.1.65.28 1.15.45 1.55.57.65.2 1.25.17 1.72.1.52-.08 1.6-.65 1.82-1.27.23-.63.23-1.17.17-1.27-.08-.1-.28-.17-.58-.3z"
+                  />
+                </svg>
+                Contact lessor
+              </a>
             </div>
 
-            <!-- Property highlights (Airbnb style) -->
+            <!-- Property highlights -->
             <div class="py-6 border-b border-gray-200">
               <div class="grid grid-cols-2 gap-6">
                 <div class="flex items-center">

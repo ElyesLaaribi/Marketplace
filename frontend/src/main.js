@@ -7,6 +7,8 @@ import 'core-js/stable';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import ToastPlugin from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
+import VueSocialChat from 'vue-social-chat'
+import 'vue-social-chat/dist/style.css'
 
 
 const pinia = createPinia();
@@ -15,6 +17,7 @@ const app = createApp(App);
 app.use(router);
 app.use(pinia);
 app.use(ToastPlugin);
+app.use(VueSocialChat)
 
 app.config.errorHandler = (err, vm, info) => {
   console.error('Erreur globale Vue :', err);

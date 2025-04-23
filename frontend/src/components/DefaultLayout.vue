@@ -307,7 +307,11 @@ function logout() {
               <span class="sr-only">Privacy</span>
               Privacy
             </a>
-            <a href="#" class="text-gray-400 hover:text-white">
+            <a
+              href="https://wa.me/21624523108"
+              class="text-gray-400 hover:text-white"
+              target="_blank"
+            >
               <span class="sr-only">Contact</span>
               Contact
             </a>
