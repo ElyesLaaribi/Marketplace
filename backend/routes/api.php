@@ -8,6 +8,7 @@ use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\ReservationDates;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Listings\ListingBI;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ResetPassController;
 use App\Http\Controllers\Admin\AdminController;
@@ -50,6 +51,15 @@ Route::middleware('auth:sanctum')->post('/update-profile', [ProfileController::c
 Route::middleware('auth:sanctum')->apiResource('/listings', ListingsController::class);
 Route::apiResource('/public-listings', RetrieveListingsController::class)
     ->parameters(['public-listings' => 'listing']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/lessor/listings/count', [ListingBI::class, 'countListings']);
+    Route::get('/lessor/listings/demand', [ListingBI::class, 'countReservations']);
+    Route::get('/lessor/listings/revenue', [ListingBI::class, 'getEarnings']);
+    Route::get('/lessor/listings/revenuePerListing', [ListingBI::class, 'getRevenuePerListing']);
+    Route::get('/lessor/listings/clients', [ListingBI::class, 'getTotalClients']);
+});
+
 
 // Reviews
 Route::apiResource('/reviews', ReviewController::class);

@@ -51,7 +51,7 @@ class User extends Authenticatable
     ];
     protected $table = 'users';
 
-    public function listing()
+    public function listings()
     {
         return $this->hasMany(Listing::class);
     }
