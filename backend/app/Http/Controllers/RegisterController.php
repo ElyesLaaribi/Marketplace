@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
 
 class RegisterController extends Controller
@@ -25,30 +27,52 @@ class RegisterController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::error('Registration validation failed', [
+                'errors' => $validator->errors(),
+                'input' => $request->all()
+            ]);
             return response()->json([
+                'message' => 'Validation failed',
                 'errors' => $validator->errors()
             ], 422);
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password, 
-            'role' => $request->role,
-            'country'  => $request->country,
-            'city'     => $request->city,
-            'cin'      => $request->cin,
-            'phone'    => $request->phone,
-        ]);
-        
+        try {
+            $userData = [
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $request->role,
+                'country' => $request->country,
+                'city' => $request->city,
+                'cin' => $request->cin,
+                'phone' => $request->phone,
+            ];
 
-        $tokenResult = $user->createToken('Personal Access Token');
-        $token = $tokenResult->plainTextToken;
+            Log::info('Attempting to create user', ['userData' => array_merge($userData, ['password' => 'HIDDEN'])]);
 
-        return response()->json([
-            'message' => "User successfully registered",
-            'token' => $token,
-            'user' => $user,
-        ]);
+            $user = User::create($userData);
+
+            $tokenResult = $user->createToken('Personal Access Token');
+            $token = $tokenResult->plainTextToken;
+
+            Log::info('User successfully registered', ['userId' => $user->id, 'role' => $user->role]);
+
+            return response()->json([
+                'message' => "User successfully registered",
+                'token' => $token,
+                'user' => $user,
+            ], 201);
+        } catch (\Exception $e) {
+            Log::error('Registration failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->all()
+            ]);
+            return response()->json([
+                'message' => 'Registration failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

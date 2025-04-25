@@ -2,7 +2,12 @@
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
+import api from "../../axios.js";
+import router from "../../router.js";
+import { useToast } from "vue-toast-notification";
+import "vue-toast-notification/dist/theme-sugar.css";
 
+const $toast = useToast();
 const route = useRoute();
 const data = ref({
   name: "",
@@ -13,6 +18,7 @@ const data = ref({
   phone: "",
   password: "",
   password_confirmation: "",
+  role: "client"
 });
 
 const errors = ref({
@@ -48,10 +54,53 @@ function togglePasswordVisibility(field) {
 
 function submit() {
   loading.value = true;
-  setTimeout(() => {
-    loading.value = false;
-    errorMessage.value = "";
-  }, 1500);
+  errors.value = {
+    name: [],
+    email: [],
+    country: [],
+    city: [],
+    cin: [],
+    phone: [],
+    password: [],
+  };
+  
+  data.value.role = "client";
+  
+  api
+    .get("/sanctum/csrf-cookie")
+    .then(() => {
+      return api.post("/api/register", data.value);
+    })
+    .then((response) => {
+      console.log("Response from server:", response);
+
+      if (response.data && response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        api.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
+        $toast.success("Account created successfully!");
+        router.push({ name: "Login" });
+      } else {
+        console.error("Token not found in response");
+      }
+    })
+    .catch((error) => {
+      console.log("Error response:", error.response);
+
+      if (error.response) {
+        if (error.response.status === 422) {
+          errors.value = error.response.data.errors;
+        } else if (error.response.status === 401) {
+          errorMessage.value = "Authentication failed. Please try again.";
+        } else {
+          errorMessage.value = "An error occurred. Please try again later.";
+        }
+      } else {
+        errorMessage.value = "Network error. Please check your connection.";
+      }
+    })
+    .finally(() => {
+      loading.value = false;
+    });
 }
 </script>
 <template>
