@@ -53,6 +53,7 @@ Route::middleware('auth:sanctum')->post('/update-profile', [ProfileController::c
 Route::middleware('auth:sanctum')->apiResource('/listings', ListingsController::class);
 Route::apiResource('/public-listings', RetrieveListingsController::class)
     ->parameters(['public-listings' => 'listing']);
+Route::get('/public-listings/category/{category}', [RetrieveListingsController::class, 'getCategoryProducts']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/lessor/listings/count', [ListingBI::class, 'countListings']);
