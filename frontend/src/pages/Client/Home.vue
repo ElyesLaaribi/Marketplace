@@ -21,20 +21,46 @@ const priceRange = ref({
   min: 0,
   max: 1000,
   current: [0, 1000],
+  temp: [0, 1000], 
 });
 
 const currentPage = ref(1);
 const itemsPerPage = ref(12);
+const totalItems = ref(0);
+const statusMessage = ref("");
 
 const navigateToProduct = (productId) => {
   router.push(`/product-overview/${productId}`);
 };
 
-const fetchProducts = async (filters = {}) => {
+const fetchCategories = async () => {
+  try {
+    const response = await api.get("/api/categories");
+    const categoryData = response.data.data || response.data;
+    categories.value = categoryData.map(category => category.cat_title);
+  } catch (err) {
+    console.error("Failed to fetch categories:", err);
+  }
+};
+
+const fetchProducts = async (filters = {}, options = { skipPriceRangeUpdate: true }) => {
   try {
     isLoading.value = true;
     error.value = null;
-    const response = await api.get("/api/public-listings");
+    
+    const endpoint = "/api/public-listings";
+
+    const params = {
+      page: currentPage.value,
+      per_page: itemsPerPage.value,
+      search: searchQuery.value,
+      min_price: priceRange.value.current[0],
+      max_price: priceRange.value.current[1],
+      category: selectedCategory.value,
+      ...filters
+    };
+
+    const response = await api.get(endpoint, { params });
 
     const allProducts = response.data.data.map((product) => ({
       ...product,
@@ -44,30 +70,26 @@ const fetchProducts = async (filters = {}) => {
           : "/images/fallback-image.jpg",
     }));
 
-    const categorySet = new Set(
-      allProducts.map((p) => p.cat_title).filter(Boolean)
-    );
-    categories.value = Array.from(categorySet);
-
-    if (allProducts.length > 0) {
-      const prices = allProducts.map((p) => p.price);
-      priceRange.value.min = Math.floor(Math.min(...prices));
-      priceRange.value.max = Math.ceil(Math.max(...prices));
-
-      if (!filters.category) {
+    
+    if (response.data.price_range && !options.skipPriceRangeUpdate) {
+      if (response.data.price_range.min !== null && !isNaN(response.data.price_range.min)) {
+        priceRange.value.min = response.data.price_range.min;
+      }
+      if (response.data.price_range.max !== null && !isNaN(response.data.price_range.max)) {
+        priceRange.value.max = response.data.price_range.max;
+      }
+      
+      if (priceRange.value.current[0] < priceRange.value.min || 
+          priceRange.value.current[1] > priceRange.value.max) {
         priceRange.value.current = [priceRange.value.min, priceRange.value.max];
+        priceRange.value.temp = [priceRange.value.min, priceRange.value.max];
+      } else {
+        priceRange.value.temp = [...priceRange.value.current];
       }
     }
 
-    if (filters.category) {
-      products.value = allProducts.filter(
-        (product) => product.cat_title === filters.category
-      );
-    } else {
-      products.value = allProducts;
-    }
-
-    currentPage.value = 1;
+    products.value = allProducts;
+    totalItems.value = response.data.total;
   } catch (err) {
     error.value = "Failed to load products. Please try again later.";
     console.error(err);
@@ -76,118 +98,89 @@ const fetchProducts = async (filters = {}) => {
   }
 };
 
-watch(selectedCategory, (newCategory) => {
-  const filters = {};
-  if (newCategory) {
-    filters.category = newCategory;
-  }
-  fetchProducts(filters);
-});
-
-const triggerSearch = () => {
-  searchQuery.value = searchInput.value;
-  currentPage.value = 1;
-};
 
 onMounted(() => {
-  fetchProducts();
+  fetchCategories();
+  fetchProducts({}, { skipPriceRangeUpdate: false });
 });
 
-const filteredProducts = computed(() => {
-  if (!products.value.length) return [];
-  let filtered = products.value;
-
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(
-      (product) =>
-        product.name.toLowerCase().includes(query) ||
-        product.description?.toLowerCase().includes(query)
-    );
-  }
-
-  filtered = filtered.filter(
-    (product) =>
-      product.price >= priceRange.value.current[0] &&
-      product.price <= priceRange.value.current[1]
-  );
-
-  return filtered;
-});
-
-const paginatedProducts = computed(() => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
-  const endIndex = startIndex + itemsPerPage.value;
-  return filteredProducts.value.slice(startIndex, endIndex);
-});
-
-const statusMessage = computed(() => {
-  if (isLoading.value) return "Loading products...";
-  if (error.value) return `Error: ${error.value}`;
-  if (filteredProducts.value.length === 0) {
-    if (
-      selectedCategory.value ||
-      searchQuery.value ||
-      priceRange.value.current[0] > priceRange.value.min ||
-      priceRange.value.current[1] < priceRange.value.max
-    ) {
-      return "No products match your criteria. Try adjusting your filters.";
-    }
-    return "No products available at this time.";
-  }
-  return null;
-});
-
-const handlePageChange = (page) => {
-  currentPage.value = page;
-  document
-    .querySelector(".products-container")
-    .scrollIntoView({ behavior: "smooth" });
-};
-
-const handlePerPageChange = (perPage) => {
-  itemsPerPage.value = perPage;
+const handleSearchFilter = () => {
   currentPage.value = 1;
+  fetchProducts();
 };
 
 const handleCategorySelect = (category) => {
   selectedCategory.value = category;
+  currentPage.value = 1;
+  fetchProducts();
 };
 
 const handleSearch = (query) => {
   searchQuery.value = query;
+  handleSearchFilter();
+};
+
+const triggerSearch = () => {
+  searchQuery.value = searchInput.value;
+  handleSearchFilter();
 };
 
 const handlePriceChange = (values) => {
-  priceRange.value.current = values;
+  priceRange.value.temp = values;
+};
+
+const applyPriceFilter = () => {
+  const minVal = Math.max(priceRange.value.min, priceRange.value.temp[0]);
+  const maxVal = Math.min(priceRange.value.max, priceRange.value.temp[1]);
+  
+  if (minVal !== priceRange.value.current[0] || maxVal !== priceRange.value.current[1]) {
+    priceRange.value.current = [minVal, maxVal];
+    priceRange.value.temp = [minVal, maxVal]; 
+    currentPage.value = 1;
+    fetchProducts();
+  }
 };
 
 const resetFilters = () => {
   selectedCategory.value = null;
   searchQuery.value = "";
   searchInput.value = "";
-  if (products.value.length > 0) {
-    priceRange.value.current = [priceRange.value.min, priceRange.value.max];
-  }
+  fetchProducts({}, { skipPriceRangeUpdate: false })
+    .then(() => {
+      priceRange.value.current = [priceRange.value.min, priceRange.value.max];
+      priceRange.value.temp = [priceRange.value.min, priceRange.value.max];
+    });
   currentPage.value = 1;
-  fetchProducts();
 };
 
 const priceMinValue = computed(() => priceRange.value.current[0]);
 const priceMaxValue = computed(() => priceRange.value.current[1]);
 
 const updatePriceMin = (event) => {
-  const value = parseInt(event.target.value);
-  if (value <= priceRange.value.current[1]) {
-    priceRange.value.current = [value, priceRange.value.current[1]];
-  }
+  const value = parseInt(event.target.value || priceRange.value.min);
+  const validValue = Math.max(
+    priceRange.value.min,
+    Math.min(value, priceRange.value.temp[1] - 1)
+  );
+  priceRange.value.temp = [validValue, priceRange.value.temp[1]];
 };
 
 const updatePriceMax = (event) => {
-  const value = parseInt(event.target.value);
-  if (value >= priceRange.value.current[0]) {
-    priceRange.value.current = [priceRange.value.current[0], value];
-  }
+  const value = parseInt(event.target.value || priceRange.value.max);
+
+  const validValue = Math.min(
+    priceRange.value.max,
+    Math.max(value, priceRange.value.temp[0] + 1)
+  );
+  priceRange.value.temp = [priceRange.value.temp[0], validValue];
+};
+
+const handleMinChange = (event) => {
+  updatePriceMin(event);
+};
+
+const handleMaxChange = (event) => {
+  updatePriceMax(event);
 };
 
 const getSliderPercentage = (value, min, max) => {
@@ -196,7 +189,7 @@ const getSliderPercentage = (value, min, max) => {
 
 const minThumbPosition = computed(() => {
   return getSliderPercentage(
-    priceRange.value.current[0],
+    priceRange.value.temp[0],
     priceRange.value.min,
     priceRange.value.max
   );
@@ -204,11 +197,46 @@ const minThumbPosition = computed(() => {
 
 const maxThumbPosition = computed(() => {
   return getSliderPercentage(
-    priceRange.value.current[1],
+    priceRange.value.temp[1],
     priceRange.value.min,
     priceRange.value.max
   );
 });
+
+const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value))
+
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  fetchProducts();
+};
+
+const handlePerPageChange = (perPage) => {
+  itemsPerPage.value = perPage;
+  currentPage.value = 1;
+  fetchProducts();
+};
+
+const resetCategoryFilter = () => {
+  selectedCategory.value = null;
+  currentPage.value = 1;
+  fetchProducts();
+};
+
+const resetSearchFilter = () => {
+  searchQuery.value = "";
+  searchInput.value = "";
+  
+  currentPage.value = 1;
+  
+  fetchProducts();
+};
+
+const resetPriceFilter = () => {
+  priceRange.value.current = [priceRange.value.min, priceRange.value.max];
+  priceRange.value.temp = [priceRange.value.min, priceRange.value.max];
+  currentPage.value = 1;
+  fetchProducts();
+};
 </script>
 
 <template>
@@ -321,108 +349,6 @@ const maxThumbPosition = computed(() => {
               Filters
             </h2>
 
-            <!-- Categories section -->
-            <div class="mb-8">
-              <h3 class="text-md font-medium text-gray-700 mb-3">Categories</h3>
-              <select
-                v-model="selectedCategory"
-                @change="handleCategorySelect(selectedCategory)"
-                class="border border-gray-300 rounded px-3 py-2 w-full"
-              >
-                <option value="">All</option>
-                <option
-                  v-for="category in categories"
-                  :key="category"
-                  :value="category"
-                >
-                  {{ category }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Price range filter with custom slider -->
-            <div class="mb-8">
-              <h3 class="text-md font-medium text-gray-700 mb-4">
-                Price Range (TND)
-              </h3>
-
-              <!-- Price inputs -->
-              <div class="flex items-center justify-between mb-4">
-                <div class="w-24">
-                  <label class="text-xs text-gray-500">Min</label>
-                  <input
-                    type="number"
-                    :min="priceRange.min"
-                    :max="priceRange.max"
-                    v-model.number="priceRange.current[0]"
-                    @input="updatePriceMin"
-                    class="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  />
-                </div>
-                <div class="text-gray-400">—</div>
-                <div class="w-24">
-                  <label class="text-xs text-gray-500">Max</label>
-                  <input
-                    type="number"
-                    :min="priceRange.min"
-                    :max="priceRange.max"
-                    v-model.number="priceRange.current[1]"
-                    @input="updatePriceMax"
-                    class="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  />
-                </div>
-              </div>
-
-              <!-- Modern range slider -->
-              <div class="relative h-10 mt-6">
-                <!-- Track -->
-                <div
-                  class="absolute top-1/2 w-full h-2 bg-gray-200 rounded-full transform -translate-y-1/2"
-                ></div>
-
-                <!-- Selected range fill -->
-                <div
-                  class="absolute top-1/2 h-2 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full transform -translate-y-1/2"
-                  :style="{
-                    left: minThumbPosition + '%',
-                    width: maxThumbPosition - minThumbPosition + '%',
-                  }"
-                ></div>
-
-                <!-- Min Thumb Input -->
-                <input
-                  type="range"
-                  :min="priceRange.min"
-                  :max="priceRange.max"
-                  v-model.number="priceRange.current[0]"
-                  class="range-thumb pointer-events-auto z-30"
-                  :style="{
-                    zIndex:
-                      priceRange.current[0] > priceRange.current[1] - 10
-                        ? 40
-                        : 30,
-                  }"
-                  @input="handleMinChange"
-                />
-
-                <!-- Max Thumb Input -->
-                <input
-                  type="range"
-                  :min="priceRange.min"
-                  :max="priceRange.max"
-                  v-model.number="priceRange.current[1]"
-                  class="range-thumb pointer-events-auto z-40"
-                  :style="{
-                    zIndex:
-                      priceRange.current[1] <= priceRange.current[0] + 10
-                        ? 30
-                        : 40,
-                  }"
-                  @input="handleMaxChange"
-                />
-              </div>
-            </div>
-
             <!-- Active filters display -->
             <div
               v-if="
@@ -431,7 +357,7 @@ const maxThumbPosition = computed(() => {
                 priceRange.current[0] > priceRange.min ||
                 priceRange.current[1] < priceRange.max
               "
-              class="mt-8"
+              class="mb-8"
             >
               <h3 class="text-md font-medium text-gray-700 mb-3">
                 Active Filters
@@ -443,8 +369,9 @@ const maxThumbPosition = computed(() => {
                 >
                   <span class="text-white text-sm">{{ selectedCategory }}</span>
                   <button
-                    @click="selectedCategory = null"
+                    @click="resetCategoryFilter"
                     class="ml-2 text-white hover:bg-white/20 rounded-full h-5 w-5 flex items-center justify-center"
+                    title="Clear category filter"
                   >
                     &times;
                   </button>
@@ -456,11 +383,9 @@ const maxThumbPosition = computed(() => {
                 >
                   <span class="text-white text-sm">"{{ searchQuery }}"</span>
                   <button
-                    @click="
-                      searchQuery = '';
-                      searchInput = '';
-                    "
+                    @click="resetSearchFilter"
                     class="ml-2 text-white hover:bg-white/20 rounded-full h-5 w-5 flex items-center justify-center"
+                    title="Clear search filter"
                   >
                     &times;
                   </button>
@@ -478,10 +403,9 @@ const maxThumbPosition = computed(() => {
                     {{ priceRange.current[1] }} TND</span
                   >
                   <button
-                    @click="
-                      priceRange.current = [priceRange.min, priceRange.max]
-                    "
+                    @click="resetPriceFilter"
                     class="ml-2 text-white hover:bg-white/20 rounded-full h-5 w-5 flex items-center justify-center"
+                    title="Clear price filter"
                   >
                     &times;
                   </button>
@@ -509,6 +433,125 @@ const maxThumbPosition = computed(() => {
                 Clear all filters
               </button>
             </div>
+
+            <!-- Categories section -->
+            <div class="mb-8">
+              <h3 class="text-md font-medium text-gray-700 mb-3">Categories</h3>
+              <select
+                v-model="selectedCategory"
+                @change="handleCategorySelect(selectedCategory)"
+                class="border border-gray-300 rounded px-3 py-2 w-full"
+              >
+                <option value="">All</option>
+                <option
+                  v-for="category in categories"
+                  :key="category"
+                  :value="category"
+                >
+                  {{ category }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Price range filter with modern slider -->
+            <div class="mb-8">
+              <h3 class="text-md font-medium text-gray-700 mb-2">
+                Price Range (TND)
+              </h3>
+
+              <!-- Modern range slider -->
+              <div class="px-2 mb-3">
+                <div class="relative h-10">
+                  <!-- Track background -->
+                  <div
+                    class="absolute top-1/2 w-full h-1 bg-gray-200 rounded-full transform -translate-y-1/2"
+                  ></div>
+
+                  <!-- Selected range fill -->
+                  <div
+                    class="absolute top-1/2 h-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full transform -translate-y-1/2"
+                    :style="{
+                      left: minThumbPosition + '%',
+                      width: maxThumbPosition - minThumbPosition + '%',
+                    }"
+                  ></div>
+
+                  <!-- Min Thumb Input -->
+                  <input
+                    type="range"
+                    :min="priceRange.min"
+                    :max="priceRange.max"
+                    v-model.number="priceRange.temp[0]"
+                    class="range-thumb"
+                    :style="{
+                      zIndex: priceRange.temp[0] > priceRange.temp[1] - 10 ? 40 : 30,
+                    }"
+                    @input="handleMinChange"
+                  />
+
+                  <!-- Max Thumb Input -->
+                  <input
+                    type="range"
+                    :min="priceRange.min"
+                    :max="priceRange.max"
+                    v-model.number="priceRange.temp[1]"
+                    class="range-thumb"
+                    :style="{
+                      zIndex: priceRange.temp[1] <= priceRange.temp[0] + 10 ? 30 : 40,
+                    }"
+                    @input="handleMaxChange"
+                  />
+                </div>
+              </div>
+
+              <!-- Price inputs -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-24">
+                  <input
+                    type="number"
+                    :min="priceRange.min"
+                    :max="priceRange.max"
+                    v-model.number="priceRange.temp[0]"
+                    @input="handleMinChange"
+                    class="w-full p-2 border border-gray-300 rounded-md text-sm"
+                    placeholder="Min"
+                  />
+                </div>
+                <div class="text-gray-400">—</div>
+                <div class="w-24">
+                  <input
+                    type="number"
+                    :min="priceRange.min"
+                    :max="priceRange.max"
+                    v-model.number="priceRange.temp[1]"
+                    @input="handleMaxChange"
+                    class="w-full p-2 border border-gray-300 rounded-md text-sm"
+                    placeholder="Max"
+                  />
+                </div>
+              </div>
+
+              <!-- Apply Price Filter Button -->
+              <button
+                @click="applyPriceFilter"
+                class="mt-3 w-full py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-medium text-sm transition-all hover:shadow-md flex items-center justify-center gap-2"
+              >
+                <span>Apply Price Filter</span>
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
+                </svg>
+              </button>
+            </div>
           </div>
 
           <!-- Products section -->
@@ -523,25 +566,91 @@ const maxThumbPosition = computed(() => {
                   <span class="mr-2">
                     {{ selectedCategory ? selectedCategory : "Today's picks" }}
                   </span>
-                  <span
-                    class="text-gray-500 text-lg font-normal"
-                    v-if="filteredProducts.length"
-                  >
-                    ({{ filteredProducts.length }} items)
-                  </span>
+                 
                 </h2>
               </div>
 
               <!-- Loading or error states -->
-              <div v-if="statusMessage" class="py-12 text-center">
+              <div v-if="isLoading || error || statusMessage" class="py-12 text-center">
                 <div
                   v-if="isLoading"
                   class="animate-pulse flex flex-col items-center"
                 >
                   <div class="h-10 w-10 bg-blue-200 rounded-full mb-4"></div>
-                  <p class="text-gray-500">{{ statusMessage }}</p>
+                  <p class="text-gray-500">Loading products...</p>
                 </div>
+                <p v-else-if="error" class="text-gray-500">{{ error }}</p>
                 <p v-else class="text-gray-500">{{ statusMessage }}</p>
+              </div>
+
+              <!-- No products message -->
+              <div v-else-if="products.length === 0" class="py-12 text-center">
+                <div class="flex flex-col items-center">
+                  <svg 
+                    class="w-16 h-16 text-gray-300 mb-4" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      stroke-linecap="round" 
+                      stroke-linejoin="round" 
+                      stroke-width="1.5" 
+                      d="M4 7h16M4 11h16M4 15h8"
+                    />
+                  </svg>
+                  <h3 class="text-xl font-medium text-gray-700 mb-2">No products found</h3>
+                  <p class="text-gray-500 max-w-md">
+                    <span v-if="selectedCategory && searchQuery">
+                      No products matching "<strong>{{ searchQuery }}</strong>" were found in the "<strong>{{ selectedCategory }}</strong>" category.
+                    </span>
+                    <span v-else-if="selectedCategory">
+                      There are no products available in the "<strong>{{ selectedCategory }}</strong>" category.
+                    </span>
+                    <span v-else-if="searchQuery">
+                      No products matching "<strong>{{ searchQuery }}</strong>" were found.
+                    </span>
+                    <span v-else>
+                      There are no products that match your current filters.
+                    </span>
+                    <span> Try adjusting your filters or check back later.</span>
+                  </p>
+                  <div class="mt-6 flex flex-wrap gap-3 justify-center">
+                    <button
+                      v-if="selectedCategory && searchQuery"
+                      @click="resetCategoryFilter"
+                      class="px-4 py-2 bg-white border border-blue-500 text-blue-600 rounded-lg font-medium text-sm transition-all hover:bg-blue-50 flex items-center justify-center"
+                    >
+                      <span>Search all categories</span>
+                    </button>
+                    <button
+                      v-if="searchQuery && selectedCategory"
+                      @click="resetSearchFilter"
+                      class="px-4 py-2 bg-white border border-blue-500 text-blue-600 rounded-lg font-medium text-sm transition-all hover:bg-blue-50 flex items-center justify-center"
+                    >
+                      <span>Browse all {{ selectedCategory }}</span>
+                    </button>
+                    <button
+                      @click="resetFilters"
+                      class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-medium text-sm transition-all hover:shadow-md flex items-center justify-center"
+                    >
+                      <span>Clear all filters</span>
+                      <svg
+                        class="w-4 h-4 ml-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <!-- Product grid with modern cards -->
@@ -550,7 +659,7 @@ const maxThumbPosition = computed(() => {
                 class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3"
               >
                 <div
-                  v-for="product in paginatedProducts"
+                  v-for="product in products"
                   :key="product.id"
                   class="group relative bg-white rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-100 hover:border-blue-200 cursor-pointer transform hover:-translate-y-1"
                   @click="navigateToProduct(product.id)"
@@ -664,8 +773,8 @@ const maxThumbPosition = computed(() => {
 
             <!-- Pagination at the bottom -->
             <PaginationComponent
-              v-if="!statusMessage"
-              :totalItems="filteredProducts.length"
+              v-if="totalItems > 0"
+              :totalItems="totalItems"
               :currentPage="currentPage"
               :itemsPerPage="itemsPerPage"
               :perPageOptions="[12, 24, 36, 48]"
@@ -807,3 +916,4 @@ const maxThumbPosition = computed(() => {
   pointer-events: auto;
 }
 </style>
+
