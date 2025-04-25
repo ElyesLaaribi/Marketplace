@@ -1,0 +1,10 @@
+{
+    "short_name": "RentEase",
+    "name": "RentEase Marketplace",
+    "start_url": "/",
+    "display": "standalone",
+    "gcm_sender_id": "977313734840",
+    "theme_color": "#ffffff",
+    "background_color": "#ffffff"
+  }
+  

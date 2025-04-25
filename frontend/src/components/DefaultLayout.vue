@@ -9,24 +9,92 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/vue";
 import api from "../axios.js";
 import router from "../router.js";
-import { computed, ref, onMounted } from "vue";
+import { ref, watch, onMounted, computed, onUnmounted } from "vue";
 import { useUserStore } from "../store/user.js";
+import { useFirebaseMessaging } from "../composables/useFirebaseMessaging";
+
+const showNotifications = ref(false);
+
+const { notifications, unreadCount, markAsRead, loadNotifications, markAllAsRead, clearAll } = useFirebaseMessaging();
+
+onMounted(async () => {
+  await loadNotifications();
+
+  // Add event listener for clicking outside notification panel
+  document.addEventListener("click", handleOutsideClick);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleOutsideClick);
+});
+
+// Handle click outside notification panel
+const handleOutsideClick = (event) => {
+  const container = document.querySelector(".notification-container");
+  if (
+    container &&
+    !container.contains(event.target) &&
+    !event.target.closest(".notification-bell") &&
+    showNotifications.value
+  ) {
+    showNotifications.value = false;
+  }
+};
+
+const toggleNotifications = () => {
+  showNotifications.value = !showNotifications.value;
+  if (showNotifications.value) {
+    console.log(
+      "Notification panel opened, notifications:",
+      notifications.value
+    );
+  }
+};
+
+const onNotificationClick = (notification) => {
+  console.log("Notification clicked:", notification);
+
+  // Mark as read
+  markAsRead(notification.id);
+
+  // Navigate based on notification type
+  if (notification.type === "rental_reminder" && notification.id) {
+    router.push(`/rental/${notification.id}`);
+    showNotifications.value = false;
+  }
+};
+
+const formatTime = (timestamp) => {
+  if (!timestamp) return "";
+
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+
+  if (diffInHours < 24) {
+    return diffInHours === 0
+      ? "Just now"
+      : `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
+  } else {
+    return date.toLocaleDateString();
+  }
+};
 
 const userStore = useUserStore();
 const user = computed(() => userStore.user);
-const unreadNotifications = ref(0);
+
 const navigation = ref([
   { name: "Browse", href: "/home", current: true },
   { name: "My Rentals", href: "/my-rentals", current: false },
 ]);
 
-onMounted(() => {
-  const currentPath = window.location.pathname;
-  navigation.value.forEach((item) => {
-    item.current =
-      currentPath === item.href || currentPath.startsWith(item.href);
-  });
-});
+// Watch for route changes to update current state
+watch(() => router.currentRoute.value.path, (newPath) => {
+  navigation.value = navigation.value.map(item => ({
+    ...item,
+    current: newPath === item.href
+  }));
+}, { immediate: true });
 
 function logout() {
   api
@@ -80,10 +148,6 @@ function logout() {
                   src="../../src/assets/images/logo2.png"
                   alt="Company Logo"
                 />
-                <!-- <span
-                  class="ml-2 text-white font-semibold text-lg hidden sm:block"
-                  >RentApp</span
-                > -->
               </router-link>
             </div>
 
@@ -95,9 +159,9 @@ function logout() {
                 :to="item.href"
                 :class="[
                   item.current
-                    ? 'bg-[#036F8B] text-white'
+                    ? 'bg-[#036F8B] text-white hover:bg-[#036F8B]'
                     : 'text-gray-300 hover:bg-[#036F8B] hover:text-white',
-                  'px-3 py-2 rounded-md text-sm font-medium',
+                  'px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200',
                 ]"
                 :aria-current="item.current ? 'page' : undefined"
               >
@@ -111,19 +175,83 @@ function logout() {
             class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0"
           >
             <!-- Notifications -->
-            <button
-              type="button"
-              class="relative rounded-full bg-[#002D4A] p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-              aria-label="View notifications"
-            >
-              <BellIcon class="h-6 w-6" aria-hidden="true" />
-              <span
-                v-if="unreadNotifications > 0"
-                class="absolute top-0 right-0 block h-4 w-4 rounded-full bg-red-500 text-xs text-white text-center"
+            <div class="relative ml-4">
+              <button
+                @click="toggleNotifications"
+                class="notification-bell relative rounded-full p-1 bg-[#002D4A] text-gray-400 hover:text-white focus:ring-2 focus:ring-white"
+                aria-label="View notifications"
               >
-                {{ unreadNotifications }}
-              </span>
-            </button>
+                <BellIcon class="h-6 w-6" aria-hidden="true" />
+                <span
+                  v-if="unreadCount > 0"
+                  class="absolute top-0 right-0 inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white"
+                >
+                  {{ unreadCount }}
+                </span>
+              </button>
+
+              <transition
+                enter-active-class="transition ease-out duration-200"
+                enter-from-class="transform opacity-0 scale-95"
+                enter-to-class="transform opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-150"
+                leave-from-class="transform opacity-100 scale-100"
+                leave-to-class="transform opacity-0 scale-95"
+              >
+                <div
+                  v-if="showNotifications"
+                  class="notification-container absolute right-0 mt-2 w-80 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-10"
+                >
+                  <!-- Header -->
+                  <div
+                    class="px-4 py-2 flex justify-between items-center border-b"
+                  >
+                    <span class="font-medium">Notifications</span>
+                    <div class="flex space-x-2">
+                      <button
+                        v-if="unreadCount > 0"
+                        @click="markAllAsRead"
+                        class="text-xs text-blue-500 hover:underline"
+                      >
+                        Mark all read
+                      </button>
+                      <button
+                        v-if="notifications.length > 0"
+                        @click="clearAll"
+                        class="text-xs text-red-500 hover:underline"
+                      >
+                        Clear all
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- List -->
+                  <div class="max-h-60 overflow-y-auto">
+                    <div
+                      v-if="notifications.length === 0"
+                      class="px-4 py-3 text-sm text-gray-500 text-center"
+                    >
+                      No notifications
+                    </div>
+                    <div
+                      v-for="n in notifications"
+                      :key="n.id"
+                      @click="onNotificationClick(n)"
+                      class="px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                      :class="{ 'bg-blue-50': !n.read }"
+                    >
+                      <div :class="{ 'font-semibold': !n.read }">
+                        {{ n.title }}
+                      </div>
+                      <div class="text-gray-600 text-sm mt-1">{{ n.body }}</div>
+                      <div class="text-xs text-gray-400 mt-1">
+                        {{ formatTime(n.timestamp) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </transition>
+            </div>
 
             <!-- Profile dropdown -->
             <Menu as="div" class="ml-3 relative">
@@ -271,9 +399,9 @@ function logout() {
             :href="item.href"
             :class="[
               item.current
-                ? 'bg-[#036F8B] text-white'
+                ? 'bg-[#036F8B] text-white hover:bg-[#036F8B]'
                 : 'text-gray-300 hover:bg-[#036F8B] hover:text-white',
-              'block px-3 py-2 rounded-md text-base font-medium',
+              'block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200',
             ]"
             :aria-current="item.current ? 'page' : undefined"
           >
@@ -328,10 +456,30 @@ function logout() {
   transition: all 0.3s ease;
 }
 
+/* Notification panel styling */
+.notification-container {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.notification-item {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .md\:flex-row {
     flex-direction: column;
+  }
+
+  .notification-container {
+    width: calc(100vw - 2rem);
+    right: -0.5rem;
   }
 }
 </style>

@@ -53,10 +53,6 @@ const formatCurrency = (value) => {
 <template>
   <LessorLayout>
     <div class="px-4 sm:px-6 lg:px-8 py-6">
-      <h1 class="text-3xl font-bold tracking-tight text-gray-900 mb-6">
-        Welcome back
-      </h1>
-
       <!-- Stats Cards Grid -->
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Listings Card -->
