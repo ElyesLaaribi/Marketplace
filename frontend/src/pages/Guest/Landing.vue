@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref } from "vue";
 import { Dialog, DialogPanel } from "@headlessui/vue";
 import {
   Bars3Icon,
@@ -10,26 +10,11 @@ import {
   CreditCardIcon,
   TruckIcon,
 } from "@heroicons/vue/24/outline";
-import { RouterLink, useRouter } from "vue-router";
+import { RouterLink } from "vue-router";
 import landing from "../../assets/images/landing.png";
-import { useUserStore } from "../../store/user";
-
-const router = useRouter();
-const userStore = useUserStore();
-const user = computed(() => userStore.user);
-const isAuthenticated = computed(() => !!userStore.token);
-const isClient = computed(() => user.value?.role === "client");
-const isLessor = computed(() => user.value?.role === "lessor");
-
-onMounted(() => {
-  if (userStore.token) {
-    userStore.fetchUser();
-  }
-});
 
 const hover = ref(false);
 const signupHover = ref(false);
-const dashboardHover = ref(false);
 const linkHover = ref(false);
 const navHover = ref("");
 const buttonHovers = ref({});
@@ -88,21 +73,13 @@ const mobileMenuOpen = ref(false);
 const setButtonHover = (id, value) => {
   buttonHovers.value[id] = value;
 };
-
-const navigateToDashboard = () => {
-  if (isLessor.value) {
-    router.push({ name: 'LessorHome' });
-  } else {
-    router.push({ name: 'Home' });
-  }
-};
 </script>
 
 <template>
   <div class="bg-white">
     <header class="absolute inset-x-0 top-0 z-50">
       <nav
-        class="flex items-center justify-between p-4 lg:px-6"
+        class="flex items-center justify-between p-6 lg:px-8"
         aria-label="Global"
       >
         <div class="flex lg:flex-1">
@@ -139,28 +116,15 @@ const navigateToDashboard = () => {
           </a>
         </div>
         <div class="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-6">
-          <template v-if="!isAuthenticated">
-            <router-link
-              :to="{ name: 'Login' }"
-              class="px-4 py-2 rounded-md text-sm font-semibold text-white transition-colors duration-300"
-              @mouseover="hover = true"
-              @mouseleave="hover = false"
-              :style="{ backgroundColor: hover ? '#28BBDD' : '#135CA5' }"
-            >
-              Log in
-            </router-link>
-          </template>
-          <template v-else>
-            <button
-              @click="navigateToDashboard"
-              class="px-4 py-2 rounded-md text-sm font-semibold text-white transition-colors duration-300"
-              @mouseover="dashboardHover = true"
-              @mouseleave="dashboardHover = false"
-              :style="{ backgroundColor: dashboardHover ? '#28BBDD' : '#135CA5' }"
-            >
-              {{ isLessor ? 'Lessor Dashboard' : 'Browse Products' }}
-            </button>
-          </template>
+          <router-link
+            :to="{ name: 'Login' }"
+            class="px-4 py-2 rounded-md text-sm font-semibold text-white transition-colors duration-300"
+            @mouseover="hover = true"
+            @mouseleave="hover = false"
+            :style="{ backgroundColor: hover ? '#28BBDD' : '#135CA5' }"
+          >
+            Log in
+          </router-link>
         </div>
       </nav>
       <Dialog
@@ -206,28 +170,18 @@ const navigateToDashboard = () => {
                 </a>
               </div>
               <div class="py-6">
-                <template v-if="!isAuthenticated">
-                  <router-link
-                    :to="{ name: 'Login' }"
-                    class="block rounded-md px-3 py-2.5 text-base font-semibold text-white bg-[#135CA5] hover:bg-[#28BBDD]"
-                  >
-                    Log in
-                  </router-link>
-                  <router-link
-                    :to="{ name: 'Signup' }"
-                    class="mt-2 block rounded-md px-3 py-2.5 text-base font-semibold text-white bg-[#002D4A] hover:bg-[#28BBDD]"
-                  >
-                    Sign up
-                  </router-link>
-                </template>
-                <template v-else>
-                  <button
-                    @click="navigateToDashboard"
-                    class="block w-full rounded-md px-3 py-2.5 text-base font-semibold text-white bg-[#135CA5] hover:bg-[#28BBDD]"
-                  >
-                    {{ isLessor ? 'Lessor Dashboard' : 'Browse Products' }}
-                  </button>
-                </template>
+                <router-link
+                  :to="{ name: 'Login' }"
+                  class="block rounded-md px-3 py-2.5 text-base font-semibold text-white bg-[#135CA5] hover:bg-[#28BBDD]"
+                >
+                  Log in
+                </router-link>
+                <router-link
+                  :to="{ name: 'Signup' }"
+                  class="mt-2 block rounded-md px-3 py-2.5 text-base font-semibold text-white bg-[#002D4A] hover:bg-[#28BBDD]"
+                >
+                  Sign up
+                </router-link>
               </div>
             </div>
           </div>
@@ -237,8 +191,8 @@ const navigateToDashboard = () => {
 
     <!-- Hero Section with content on the left and image on the right -->
     <div class="relative bg-white overflow-hidden">
-      <div class="relative px-6 pt-1 lg:px-6">
-        <div class="mx-auto max-w-7xl py-20 sm:py-24 lg:py-32">
+      <div class="relative px-6 pt-1 lg:px-8">
+        <div class="mx-auto max-w-7xl py-24 sm:py-32 lg:py-40">
           <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-8">
             <!-- Left Content Section -->
             <div class="text-left">
@@ -254,33 +208,18 @@ const navigateToDashboard = () => {
                 hassle-free. Save money and reduce waste by renting what you
                 need.
               </p>
-              <div class="mt-8 flex items-center gap-x-6">
-                <template v-if="!isAuthenticated">
-                  <router-link
-                    :to="{ name: 'Signup' }"
-                    class="rounded-md px-5 py-3 text-base font-semibold text-white shadow-sm transition-colors duration-300"
-                    @mouseover="signupHover = true"
-                    @mouseleave="signupHover = false"
-                    :style="{
-                      backgroundColor: signupHover ? '#28BBDD' : '#135CA5',
-                    }"
-                  >
-                    Get started
-                  </router-link>
-                </template>
-                <template v-else>
-                  <button
-                    @click="navigateToDashboard"
-                    class="rounded-md px-5 py-3 text-base font-semibold text-white shadow-sm transition-colors duration-300"
-                    @mouseover="dashboardHover = true"
-                    @mouseleave="dashboardHover = false"
-                    :style="{
-                      backgroundColor: dashboardHover ? '#28BBDD' : '#135CA5',
-                    }"
-                  >
-                    {{ isLessor ? 'Go to Lessor Dashboard' : 'Browse Products' }}
-                  </button>
-                </template>
+              <div class="mt-10 flex items-center gap-x-6">
+                <router-link
+                  :to="{ name: 'Signup' }"
+                  class="rounded-md px-5 py-3 text-base font-semibold text-white shadow-sm transition-colors duration-300"
+                  @mouseover="signupHover = true"
+                  @mouseleave="signupHover = false"
+                  :style="{
+                    backgroundColor: signupHover ? '#28BBDD' : '#135CA5',
+                  }"
+                >
+                  Get started
+                </router-link>
                 <a
                   href="#how-it-works"
                   class="text-base font-semibold transition-colors duration-300"
@@ -306,15 +245,17 @@ const navigateToDashboard = () => {
       </div>
     </div>
 
-    <!-- Browse Section -->
-    <div id="browse" class="bg-gray-50 py-16 sm:py-20">
-      <div class="mx-auto max-w-7xl px-6 lg:px-6">
+    <!-- Featured Items Section -->
+    <div class="bg-gray-50 py-24 sm:py-32">
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
         <div class="mx-auto max-w-2xl text-center">
-          <h2 class="text-3xl font-bold tracking-tight text-[#135CA5] sm:text-4xl">
-            Featured Items
+          <h2
+            class="text-3xl font-bold tracking-tight text-[#135CA5] sm:text-4xl"
+          >
+            Featured items
           </h2>
           <p class="mt-4 text-lg text-gray-600">
-            Check out some of our most popular items for rent
+            Our most popular rental items this week.
           </p>
         </div>
 
@@ -379,10 +320,12 @@ const navigateToDashboard = () => {
     </div>
 
     <!-- How It Works Section -->
-    <div id="how-it-works" class="bg-white py-16 sm:py-20">
-      <div class="mx-auto max-w-7xl px-6 lg:px-6">
+    <div id="how-it-works" class="bg-white py-24 sm:py-32">
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
         <div class="mx-auto max-w-2xl text-center">
-          <h2 class="text-3xl font-bold tracking-tight text-[#135CA5] sm:text-4xl">
+          <h2
+            class="text-3xl font-bold tracking-tight text-[#135CA5] sm:text-4xl"
+          >
             How it works
           </h2>
           <p class="mt-4 text-lg text-gray-600">
@@ -390,7 +333,7 @@ const navigateToDashboard = () => {
             started.
           </p>
         </div>
-        <div class="mx-auto mt-12 max-w-2xl sm:mt-16 lg:mt-16 lg:max-w-none">
+        <div class="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
           <dl
             class="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3"
           >
@@ -441,84 +384,22 @@ const navigateToDashboard = () => {
       </div>
     </div>
 
-    <!-- About Us Section -->
-    <div id="about" class="bg-gray-50 py-16 sm:py-20">
-      <div class="mx-auto max-w-7xl px-6 lg:px-6">
-        <div class="mx-auto max-w-2xl text-center">
-          <h2 class="text-3xl font-bold tracking-tight text-[#135CA5] sm:text-4xl">
-            About RentEase
-          </h2>
-          <p class="mt-4 text-lg text-gray-600">
-            Our mission is to make renting simple, affordable, and accessible for everyone
-          </p>
-        </div>
-        <div class="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
-          <div>
-            <h3 class="text-xl font-semibold text-[#135CA5]">Our Story</h3>
-            <p class="mt-4 text-gray-600">
-              RentEase was founded with a simple idea: people shouldn't have to buy expensive items they only use occasionally. 
-              Our platform connects people who own useful items with those who need them temporarily, creating a community of 
-              sharing that benefits everyone.
-            </p>
-            <p class="mt-4 text-gray-600">
-              Since our launch, we've helped thousands of people save money and reduce waste by facilitating easy, 
-              secure item rentals in communities across the country.
-            </p>
-          </div>
-          <div>
-            <h3 class="text-xl font-semibold text-[#135CA5]">Our Values</h3>
-            <ul class="mt-4 space-y-4">
-              <li class="flex gap-3">
-                <div class="flex-shrink-0 rounded-full bg-[#28BBDD] p-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-white">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <p class="font-medium text-gray-800">Sustainability</p>
-                  <p class="text-gray-600">Reducing waste by sharing resources</p>
-                </div>
-              </li>
-              <li class="flex gap-3">
-                <div class="flex-shrink-0 rounded-full bg-[#28BBDD] p-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-white">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <p class="font-medium text-gray-800">Community</p>
-                  <p class="text-gray-600">Building connections through collaborative consumption</p>
-                </div>
-              </li>
-              <li class="flex gap-3">
-                <div class="flex-shrink-0 rounded-full bg-[#28BBDD] p-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-white">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <p class="font-medium text-gray-800">Trust & Safety</p>
-                  <p class="text-gray-600">Creating secure and reliable rental experiences</p>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Testimonials Section -->
-    <div id="testimonials" class="bg-white py-16 sm:py-20">
-      <div class="mx-auto max-w-7xl px-6 lg:px-6">
+    <div id="testimonials" class="bg-gray-50 py-24 sm:py-32">
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
         <div class="mx-auto max-w-2xl text-center">
-          <h2 class="text-3xl font-bold tracking-tight text-[#135CA5] sm:text-4xl">
-            What our customers are saying
+          <h2
+            class="text-3xl font-bold tracking-tight text-[#135CA5] sm:text-4xl"
+          >
+            What our users say
           </h2>
           <p class="mt-4 text-lg text-gray-600">
-            Don't just take our word for it—hear from our community
+            Don't just take our word for it - hear from our happy users.
           </p>
         </div>
-        <div class="mx-auto mt-12 grid max-w-2xl grid-cols-1 gap-6 sm:mt-16 lg:mt-16 lg:max-w-none lg:grid-cols-2">
+        <div
+          class="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-2"
+        >
           <div
             v-for="testimonial in testimonials"
             :key="testimonial.id"
@@ -543,42 +424,11 @@ const navigateToDashboard = () => {
       </div>
     </div>
 
-    <!-- Call to Action Section -->
-    <div class="bg-gray-50 py-16 sm:py-20">
-      <div class="mx-auto max-w-7xl px-6 lg:px-6">
-        <div class="mx-auto max-w-2xl text-center">
-          <h2 class="text-3xl font-bold tracking-tight text-[#135CA5] sm:text-4xl">
-            Ready to get started?
-          </h2>
-          <p class="mt-4 text-lg text-gray-600">
-            Join thousands of users who are already saving money and finding what
-            they need on our platform.
-          </p>
-          <div class="mt-8">
-            <template v-if="!isAuthenticated">
-              <router-link
-                :to="{ name: 'Signup' }"
-                class="inline-block rounded-md px-5 py-3 text-base font-semibold text-white shadow-sm transition-colors duration-300 bg-[#135CA5] hover:bg-[#28BBDD]"
-              >
-                Sign up now
-              </router-link>
-            </template>
-            <template v-else>
-              <button
-                @click="navigateToDashboard"
-                class="inline-block rounded-md px-5 py-3 text-base font-semibold text-white shadow-sm transition-colors duration-300 bg-[#135CA5] hover:bg-[#28BBDD]"
-              >
-                {{ isLessor ? 'Go to Lessor Dashboard' : 'Browse Products' }}
-              </button>
-            </template>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Footer -->
-    <footer class="bg-[#135CA5] text-white py-12">
-      <div class="mx-auto max-w-7xl px-6 lg:px-6">
+    <footer class="bg-[#002D4A]">
+      <div
+        class="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8"
+      >
         <div class="flex justify-center space-x-6 md:order-2">
           <a href="#" class="text-gray-400 hover:text-[#28BBDD]">
             <span class="sr-only">Facebook</span>
