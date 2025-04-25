@@ -13,7 +13,9 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ResetPassController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\AdminAddController;
 use App\Http\Controllers\Reviews\ReviewController;
 use App\Http\Controllers\Admin\AdminLoginController;
@@ -94,5 +96,6 @@ Route::middleware('auth:admin')->apiResource('/users', UsersController::class);
 Route::middleware('auth:admin')->apiResource('/admins', AdminController::class); 
 Route::middleware('auth:admin')->post('/add-admin', AdminAddController::class);
 
-// payment
-Route::middleware('auth:sanctum')->post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
+Route::middleware('auth:sanctum')->post('/users/update-device-token', [DeviceTokenController::class, 'updateDeviceToken']);
+
+Route::middleware('auth:sanctum')->post('/send-test-notification', [NotificationController::class, 'sendTest']);

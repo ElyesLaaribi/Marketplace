@@ -31,4 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'firebase' => [
+        'url' => env('FIREBASE_URL', 'https://fcm.googleapis.com/fcm/send'),
+        'server_key' => env('FIREBASE_SERVER_KEY'),
+    ],
+
 ];

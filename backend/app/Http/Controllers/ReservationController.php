@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Reservation;
 use App\Models\Listing;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Resources\ReservationResource;
 use App\Http\Requests\StoreReservationRequest;
 use Carbon\Carbon;
+use App\Jobs\SendReservationNotification;
 
 class ReservationController extends Controller
 {
@@ -40,14 +42,13 @@ class ReservationController extends Controller
         $endDate = $validated['end_date'];
 
         $listing = Listing::findOrFail($listingId);
+        $user = User::findOrFail(auth()->id());
 
         $startDateTime = Carbon::parse($startDate);
         $endDateTime = Carbon::parse($endDate);
         $days = $endDateTime->diffInDays($startDateTime);
         
-
         $days = max(1, $days);
-        
         $totalPrice = $listing->price * $days;
 
         $overlappingReservations = Reservation::where('listing_id', $listingId)
@@ -73,6 +74,21 @@ class ReservationController extends Controller
             'status' => 'payed',
             'price' => $totalPrice + 10, 
         ]);
+
+        // Send notification to the user
+        if ($user->device_token) {
+            SendReservationNotification::dispatch(
+                $user->device_token,
+                'New Reservation',
+                "Your reservation for {$listing->name} has been confirmed!",
+                [
+                    'rental_id' => (string) $reservation->id,
+                    'listing_name' => $listing->name,
+                    'start_date' => $startDate,
+                    'type' => 'rental_reminder'
+                ]
+            );
+        }
     
         return response()->json(['message' => 'Reservation created successfully.', 'reservation' => $reservation], 201);
     }
@@ -85,6 +101,4 @@ class ReservationController extends Controller
         $this->authorize('view', $reservation);
         return ReservationResource::make($reservation);
     }
-
-   
 }
