@@ -101,6 +101,7 @@ const fetchProducts = async (filters = {}, options = { skipPriceRangeUpdate: tru
 
 onMounted(() => {
   fetchCategories();
+  selectedCategory.value = null;
   fetchProducts({}, { skipPriceRangeUpdate: false });
 });
 
@@ -142,15 +143,19 @@ const applyPriceFilter = () => {
 };
 
 const resetFilters = () => {
+  // Reset all filter values
   selectedCategory.value = null;
   searchQuery.value = "";
   searchInput.value = "";
-  fetchProducts({}, { skipPriceRangeUpdate: false })
-    .then(() => {
-      priceRange.value.current = [priceRange.value.min, priceRange.value.max];
-      priceRange.value.temp = [priceRange.value.min, priceRange.value.max];
-    });
   currentPage.value = 1;
+  
+  // First reset price range to current min/max
+  priceRange.value.current = [priceRange.value.min, priceRange.value.max];
+  priceRange.value.temp = [priceRange.value.min, priceRange.value.max];
+  
+  // Then explicitly fetch products with skipPriceRangeUpdate: false
+  // This ensures products are fetched immediately after filters are reset
+  fetchProducts({}, { skipPriceRangeUpdate: false });
 };
 
 const priceMinValue = computed(() => priceRange.value.current[0]);
@@ -442,7 +447,7 @@ const resetPriceFilter = () => {
                 @change="handleCategorySelect(selectedCategory)"
                 class="border border-gray-300 rounded px-3 py-2 w-full"
               >
-                <option value="">All</option>
+                <option value="" selected>All</option>
                 <option
                   v-for="category in categories"
                   :key="category"
