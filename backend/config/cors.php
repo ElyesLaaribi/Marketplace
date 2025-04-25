@@ -19,7 +19,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'http://localhost:5173',
+        'http://localhost:8000'
+    ],
 
     'allowed_origins_patterns' => [],
 
@@ -30,5 +33,11 @@ return [
     'max_age' => 0,
 
     'supports_credentials' => true,
+
+    'domain' => null,
+
+    'same_site' => 'lax',
+
+    'secure' => true,
 
 ];

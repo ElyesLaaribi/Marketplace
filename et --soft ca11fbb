@@ -1,0 +1,163 @@
+[33m82d3ede[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{0}: reset: moving to 82d3ede
+[33mbe86c70[m HEAD@{1}: reset: moving to HEAD~4
+[33mca11fbb[m[33m ([m[1;31morigin/main[m[33m)[m HEAD@{2}: reset: moving to HEAD~4
+[33m82d3ede[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{3}: commit: update
+[33m2e09f2a[m HEAD@{4}: commit: logging.php fix
+[33m7ed6a37[m HEAD@{5}: commit: packages update
+[33m17dbd4d[m HEAD@{6}: commit: deploying
+[33mca11fbb[m[33m ([m[1;31morigin/main[m[33m)[m HEAD@{7}: commit: udpated landing page design and behavior when user is logged in and opens it it redirects him to his home page and removes login and signup buttons
+[33m7d79482[m HEAD@{8}: commit: fixed clear all filters bug
+[33mefc43e7[m HEAD@{9}: commit: consumed backend filters to frontend
+[33mb0924b1[m HEAD@{10}: commit: added backend filters
+[33mbe86c70[m HEAD@{11}: commit: update
+[33m2e3dd5c[m HEAD@{12}: reset: moving to HEAD~8
+[33md602973[m HEAD@{13}: commit: update files structure
+[33m2772083[m HEAD@{14}: commit: udpate host
+[33md3df44c[m HEAD@{15}: commit: u
+[33m93edb31[m HEAD@{16}: commit: udpate
+[33m81dadee[m HEAD@{17}: commit: update 3
+[33m690b2b2[m HEAD@{18}: commit: update 2
+[33m108bf52[m HEAD@{19}: commit: update
+[33m3093b58[m HEAD@{20}: commit: udpate
+[33m2e3dd5c[m HEAD@{21}: commit: update
+[33m38c4778[m HEAD@{22}: commit: deploying
+[33m0b2d664[m HEAD@{23}: commit: added public folder
+[33m5967c2f[m HEAD@{24}: commit: Added firebase real time notifications to frontend
+[33m98d5e70[m HEAD@{25}: commit: added firebase real time notifications to backend
+[33mf3cc027[m HEAD@{26}: commit: added phone to listing api
+[33m996fa60[m HEAD@{27}: commit: consumed stats api
+[33m295e816[m HEAD@{28}: commit: added api's for stats
+[33mab1f1eb[m HEAD@{29}: commit: updated reservations api to fetch price
+[33m099af24[m HEAD@{30}: commit: added rental records for clients
+[33m6c5ef8b[m HEAD@{31}: commit: updated admin login page
+[33ma00b154[m HEAD@{32}: commit: updated admin dashboard
+[33m24d2718[m HEAD@{33}: commit: udpated forget and reset password pages as well as website icon
+[33m4998455[m HEAD@{34}: commit: update in ui
+[33me587826[m HEAD@{35}: commit: fixed ui
+[33ma5b6030[m HEAD@{36}: commit: rentEase 1.0 with reservation
+[33ma65744d[m HEAD@{37}: commit: added reservation frontend
+[33m5f310e4[m HEAD@{38}: commit: api sending reservation dates
+[33m788aea2[m HEAD@{39}: commit: fixed reservation api
+[33m2db5b73[m HEAD@{40}: commit: fxed image and price bug
+[33m8e72e03[m HEAD@{41}: commit: added checkout interface
+[33m60933be[m HEAD@{42}: commit: added stripe api
+[33me328905[m HEAD@{43}: commit: consumed showing reservations api
+[33m7c8508d[m HEAD@{44}: commit: authorizing resources to users
+[33m751f17c[m HEAD@{45}: commit: reservation REST api
+[33m9fd01d6[m HEAD@{46}: commit: reservations table
+[33mfff8053[m HEAD@{47}: commit: added reservation api
+[33mb455997[m HEAD@{48}: commit: consumed location api
+[33m95068f2[m HEAD@{49}: commit: user store review
+[33mb162ba2[m HEAD@{50}: commit: ui update
+[33me90276b[m HEAD@{51}: commit: ui update
+[33ma95b0fe[m HEAD@{52}: commit: ui update
+[33m67adb4d[m HEAD@{53}: commit: ui update
+[33m7111c45[m HEAD@{54}: commit: updated landing page
+[33mb72bba0[m HEAD@{55}: commit: fixed reset password page
+[33m1eef4f8[m HEAD@{56}: commit: updated forgetpassword page
+[33m46967b8[m HEAD@{57}: commit: updated signup pages
+[33m62150ff[m HEAD@{58}: commit: updated login page
+[33md7b4366[m HEAD@{59}: commit: review api consumed
+[33m75eb76d[m HEAD@{60}: commit: added maps ui
+[33mb7f4c00[m HEAD@{61}: commit: added maps config
+[33m1c936d7[m HEAD@{62}: commit: fixed update listing location api
+[33me331546[m HEAD@{63}: commit: fixed front location
+[33m94cbfd0[m HEAD@{64}: commit: added location to listings
+[33mefa551a[m HEAD@{65}: commit: maps
+[33m95a7e95[m HEAD@{66}: commit: fixed REST api
+[33m001d28c[m HEAD@{67}: commit: added maps
+[33m5da5722[m HEAD@{68}: commit: added user reviews REST api
+[33mcbd95de[m HEAD@{69}: commit: ui update
+[33mf73d8ba[m HEAD@{70}: commit: minor ui change
+[33m704810c[m HEAD@{71}: commit: ui udpate
+[33ma1bfc32[m HEAD@{72}: commit: added toasted notification
+[33m4e33da0[m HEAD@{73}: commit: added success message
+[33mdf2b6aa[m HEAD@{74}: commit: forgot password ui update
+[33mc02b7a9[m HEAD@{75}: commit: updated ui signup page
+[33m451a50c[m HEAD@{76}: commit: ui minor update
+[33m0c66634[m HEAD@{77}: commit: consumed listing overview api
+[33mbdcf08a[m HEAD@{78}: commit: product overview api
+[33me538c34[m HEAD@{79}: commit: pagination
+[33medc2e34[m HEAD@{80}: revert: Revert "added location to api"
+[33m55a999f[m HEAD@{81}: revert: Revert "added location filters"
+[33mc927bd1[m HEAD@{82}: revert: Revert "minor change to location api"
+[33m7404d81[m HEAD@{83}: commit: reverting
+[33m9b230a0[m HEAD@{84}: revert: Revert "minor change to location api"
+[33m12cdcf5[m HEAD@{85}: commit: password
+[33m853df59[m HEAD@{86}: commit: minor change to location api
+[33md64c5ec[m HEAD@{87}: commit: added location filters
+[33md9e0ca0[m HEAD@{88}: commit: added location to api
+[33meab5154[m HEAD@{89}: commit: fixed reset password bug
+[33me086230[m HEAD@{90}: commit: added category filters
+[33mb4c8bcf[m HEAD@{91}: commit: udpated rest api
+[33m8f5abde[m HEAD@{92}: commit: fixed bugs
+[33m6e362ce[m HEAD@{93}: commit: updated guest ui
+[33mbe86472[m HEAD@{94}: commit: minor ui update
+[33mf82b13b[m HEAD@{95}: commit: udpated ui
+[33m885a5c1[m HEAD@{96}: commit: ui update
+[33md4a3d43[m HEAD@{97}: commit: minor changes
+[33m66fe20f[m HEAD@{98}: commit: added search and categoires bar to home page
+[33mc6168ce[m HEAD@{99}: commit: UI client browse all
+[33m81fdb3f[m HEAD@{100}: commit: fixed REST api
+[33mcf7306b[m HEAD@{101}: commit: consumed images api
+[33mb1cbb6f[m HEAD@{102}: commit: added multiple image upload api
+[33mb7bb231[m HEAD@{103}: commit: berowse all page
+[33m4ec5de6[m HEAD@{104}: commit: listings clients api
+[33mdf964d4[m HEAD@{105}: commit: UI update
+[33mf02f0b8[m HEAD@{106}: commit: authorized resources
+[33mb2d7132[m HEAD@{107}: commit: created first policy
+[33md6a3e3f[m HEAD@{108}: commit: linked users to listings
+[33m9a905e5[m HEAD@{109}: commit: listing REST API consume
+[33m1b00a98[m HEAD@{110}: commit: updated ui
+[33md448ef0[m HEAD@{111}: commit: consumed listings REST api
+[33m9f83f2b[m HEAD@{112}: commit: added REST api for listing
+[33m441b8ff[m HEAD@{113}: commit: added listing api
+[33m278f172[m HEAD@{114}: commit: protected api's
+[33m1faa447[m HEAD@{115}: commit: consumed category add api
+[33m24e15b5[m HEAD@{116}: commit: last running version
+[33ma9527d5[m HEAD@{117}: commit: category and listings api
+[33m5c295de[m HEAD@{118}: commit: consumer update profile api
+[33m8bfde9b[m HEAD@{119}: commit: profile update api
+[33me4a9537[m HEAD@{120}: commit: udpated profile section
+[33mb045e8e[m HEAD@{121}: commit: password change api
+[33m412a487[m HEAD@{122}: commit: get profile api
+[33m9098a59[m HEAD@{123}: commit: updated ui
+[33m44763f0[m HEAD@{124}: commit:
+[33mf805a16[m HEAD@{125}: commit: consumed register api new attributes
+[33md6b21af[m HEAD@{126}: commit: added new attributes to user api
+[33m1582967[m HEAD@{127}: commit: fixed a bug
+[33m78af908[m HEAD@{128}: commit: added getting user profile api
+[33m0ea4f3e[m HEAD@{129}: commit: fixed a bug
+[33m583d952[m HEAD@{130}: commit: minor change in ui
+[33me437514[m HEAD@{131}: commit: consumed admin add api
+[33m7e160eb[m HEAD@{132}: commit: added new admin api
+[33mc98a078[m HEAD@{133}: commit: consumed admin list api
+[33mcf62cfe[m HEAD@{134}: commit: consumed delete user api
+[33mb8d3bc6[m HEAD@{135}: commit: added search filter for admin
+[33mc030451[m HEAD@{136}: commit: created users crud api
+[33ma3b1573[m HEAD@{137}: commit: fixed a bug
+[33m0368292[m HEAD@{138}: commit: Consumed admin api
+[33m9384bd1[m HEAD@{139}: commit: Added admin logout api
+[33m4867e0c[m HEAD@{140}: commit: Added admin api
+[33m696dcfe[m HEAD@{141}: reset: moving to HEAD
+[33m696dcfe[m HEAD@{142}: commit: UI update
+[33m24285a7[m HEAD@{143}: commit: Lessor UI update
+[33m6668f58[m HEAD@{144}: commit: consumed reset pass api
+[33ma041b08[m HEAD@{145}: commit: added reset password api
+[33m3a66edf[m HEAD@{146}: commit: readme
+[33mce9f236[m HEAD@{147}: commit: Your commit message
+[33m79e1dfd[m[33m ([m[1;31mgithub/main[m[33m)[m HEAD@{148}: commit: protecting user pages
+[33m8e143ee[m HEAD@{149}: commit: protected user pages
+[33m13acd2d[m HEAD@{150}: checkout: moving from master to main
+[33mb5a33df[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{151}: checkout: moving from main to master
+[33m13acd2d[m HEAD@{152}: commit: fixed bugs
+[33m16badb5[m HEAD@{153}: commit: updated signup page
+[33m5d2fe10[m HEAD@{154}: commit: updated auth api
+[33mb54f3bd[m HEAD@{155}: commit: updated signup
+[33mde93a41[m HEAD@{156}: pull origin main --allow-unrelated-histories: Merge made by the 'ort' strategy.
+[33m8330a9d[m HEAD@{157}: checkout: moving from master to main
+[33mb5a33df[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{158}: checkout: moving from main to master
+[33m8330a9d[m HEAD@{159}: checkout: moving from main to main
+[33m8330a9d[m HEAD@{160}: commit: Auth update
+[33mb5a33df[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{161}: checkout: moving from master to main
+[33mb5a33df[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{162}: commit (initial): initial commit
