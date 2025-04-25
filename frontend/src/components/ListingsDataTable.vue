@@ -245,7 +245,9 @@ const editListing = (item) => {
 
   if (item.image_paths && item.image_paths.length > 0) {
     existingImages.value = item.image_paths.map((path) =>
-      path.startsWith("http") ? path : `http://localhost:8000/storage/${path}`
+      path.startsWith("http")
+        ? path
+        : `marketplace-production-376c.up.railway.app/storage/${path}`
     );
 
     imagePreview.value = [...existingImages.value];
@@ -277,7 +279,10 @@ const submit = async () => {
     });
 
     imagesToRemove.value.forEach((img) => {
-      const relativePath = img.replace("http://localhost:8000/storage/", "");
+      const relativePath = img.replace(
+        "marketplace-production-376c.up.railway.app/storage/",
+        ""
+      );
       formData.append("deleted_images[]", relativePath);
     });
 
