@@ -1,0 +1,20 @@
+Starting to send rental reminders at 2025-04-26 00:20:00
+Date range for notification: 2025-04-26 00:20:00 to 2025-04-27 00:20:00
+Found 3 rentals that need reminders
+Total reservations in database: 20
+Processing rental #33 for user #18, start date: 2025-04-27 00:00:00
+Skipping reminder for rental #33 - No device token for user #18
+Processing rental #209 for user #3, start date: 2025-04-27 00:00:00
+Sending notification to user #3 with token: crA9GtkoJD...
+Successfully sent reminder for rental #209
+Processing rental #210 for user #3, start date: 2025-04-27 00:00:00
+Sending notification to user #3 with token: crA9GtkoJD...
+Successfully sent reminder for rental #210
+Reminder notifications summary at 2025-04-26 00:20:01: 2 sent successfully, 0 failed
+Starting to send rental reminders at 2025-04-26 00:21:00
+Date range for notification: 2025-04-26 00:21:00 to 2025-04-27 00:21:00
+Found 1 rentals that need reminders
+Total reservations in database: 20
+Processing rental #33 for user #18, start date: 2025-04-27 00:00:00
+Skipping reminder for rental #33 - No device token for user #18
+Reminder notifications summary at 2025-04-26 00:21:00: 0 sent successfully, 0 failed

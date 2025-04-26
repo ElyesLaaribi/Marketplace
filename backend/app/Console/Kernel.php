@@ -30,5 +30,6 @@ class Kernel extends ConsoleKernel
 
     protected $commands = [
         Commands\SendRentalReminders::class,
+        Commands\CreateTestRental::class,
     ];
 }

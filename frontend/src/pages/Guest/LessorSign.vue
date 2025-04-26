@@ -46,6 +46,7 @@ const errors = ref({
   name: [],
   email: [],
   password: [],
+  password_confirmation: [],
   country: [],
   city: [],
   cin: [],
@@ -58,6 +59,7 @@ function submit() {
     name: [],
     email: [],
     password: [],
+    password_confirmation: [],
     country: [],
     city: [],
     cin: [],
@@ -88,7 +90,20 @@ function submit() {
 
       if (error.response) {
         if (error.response.status === 422) {
-          errors.value = error.response.data.errors;
+          // Safely handle validation errors
+          if (error.response.data && error.response.data.errors) {
+            // Merge received errors with the existing error structure
+            Object.keys(error.response.data.errors).forEach(field => {
+              if (errors.value.hasOwnProperty(field)) {
+                errors.value[field] = error.response.data.errors[field];
+              } else {
+                // Handle unexpected fields by showing them in the errorMessage
+                errorMessage.value = `Validation failed: ${error.response.data.errors[field][0]}`;
+              }
+            });
+          } else {
+            errorMessage.value = "Validation failed. Please check your input.";
+          }
         } else if (error.response.status === 401) {
           errorMessage.value = "Authentication failed. Please try again.";
         } else {
@@ -416,6 +431,7 @@ function hasError(field) {
                 v-model="data.password_confirmation"
                 placeholder="Confirm Password"
                 class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
+                :class="{ 'border-red-300': errors.password_confirmation && errors.password_confirmation.length }"
               />
               <div
                 class="absolute left-0 top-0 bottom-0 w-2 bg-[#135CA5] rounded-l-md"
@@ -430,6 +446,9 @@ function hasError(field) {
                 <EyeSlashIcon v-else class="h-5 w-5" />
               </button>
             </div>
+            <p v-if="errors.password_confirmation && errors.password_confirmation.length" class="mt-1 text-sm text-red-600">
+              {{ errors.password_confirmation[0] }}
+            </p>
           </div>
 
           <div class="pt-2">

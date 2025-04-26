@@ -6,12 +6,12 @@ import { useUserStore } from '../store/user';
 import { useRouter } from 'vue-router';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBvV4sh9NpR4u1WQZFB9B2t5z4d4K4qK4k",
-  authDomain: "rental-app-12345.firebaseapp.com",
-  projectId: "rental-app-12345",
-  storageBucket: "rental-app-12345.appspot.com",
+  apiKey: "AIzaSyDHHbtG6Ka7j_WzWECxT9VFq0eL_c65z5Q",
+  authDomain: "rentease-7d991.firebaseapp.com",
+  projectId: "rentease-7d991",
+  storageBucket: "rentease-7d991.firebasestorage.app",
   messagingSenderId: "977313734840",
-  appId: "1:977313734840:web:1234567890abcdef"
+  appId: "1:977313734840:web:fdc9d74b7a672981eed44d"
 };
 
 // Initialize Firebase app once
@@ -219,54 +219,78 @@ export function useFirebaseMessaging() {
       console.log('Requesting notification permission...');
       
       if (!('Notification' in window)) {
+        console.error('Browser doesn\'t support notifications');
         error.value = 'Browser doesn\'t support notifications';
         return;
       }
       
       const permission = await Notification.requestPermission();
       notificationPermission.value = permission;
+      console.log('Notification permission result:', permission);
       
       if (permission !== 'granted') {
-        console.log('Notification permission denied');
+        console.warn('Notification permission denied by user');
+        error.value = 'Notification permission denied';
         return;
       }
       
-      console.log('Notification permission granted, getting token...');
+      console.log('Notification permission granted, registering service worker...');
+      
+      // Register service worker if needed
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+            scope: '/'
+          });
+          console.log('Service Worker registered with scope:', registration.scope);
+        } catch (err) {
+          console.error('Service Worker registration failed:', err);
+        }
+      }
+      
+      console.log('Getting FCM token...');
       
       const vapidKey = 'BKvTfTSeLOnA3bb4v1SbulJdqR2fXvhgi2WvozfAL5mt57RO5YcQAD1hMAl6GiqXJIJ6Dr7uabTTnS3uS0dN3eo';
       
       // Check if service worker is already registered
       if ('serviceWorker' in navigator) {
         const serviceWorkerRegistration = await navigator.serviceWorker.ready;
+        console.log('Service Worker is ready for FCM');
         
-        const currentToken = await getToken(messaging, { 
-          vapidKey,
-          serviceWorkerRegistration
-        });
-        
-        if (currentToken) {
-          console.log('FCM registration token:', currentToken);
-          fcmToken.value = currentToken;
+        try {
+          const currentToken = await getToken(messaging, { 
+            vapidKey,
+            serviceWorkerRegistration
+          });
           
-          try {
-            await api.post('/api/users/update-device-token', { 
-              device_token: fcmToken.value 
-            });
-            console.log('Token sent to server');
-          } catch (serverError) {
-            console.error('Error sending token to server:', serverError);
-            error.value = 'Error sending token to server';
+          if (currentToken) {
+            console.log('FCM registration token obtained:', currentToken);
+            fcmToken.value = currentToken;
+            
+            try {
+              const response = await api.post('/api/users/update-device-token', { 
+                device_token: currentToken 
+              });
+              console.log('Token sent to server successfully:', response.data);
+            } catch (serverError) {
+              console.error('Error sending token to server:', serverError);
+              error.value = 'Error sending token to server: ' + serverError.message;
+            }
+          } else {
+            console.warn('No registration token available');
+            error.value = 'Failed to get notification token. Check your browser permissions.';
           }
-        } else {
-          console.log('No registration token available');
-          error.value = 'Check your notifications permissions';
+        } catch (tokenError) {
+          console.error('Error getting FCM token:', tokenError);
+          error.value = 'Error getting FCM token: ' + tokenError.message;
         }
       } else {
-        error.value = 'Service Worker not available';
+        console.error('Service Worker not available');
+        error.value = 'Service Worker not available in this browser';
       }
     } catch (err) {
-      console.error('FCM Error:', err);
-      error.value = `Notifications error: ${err.message}`;
+      console.error('FCM Setup Error:', err);
+      error.value = `Notifications setup error: ${err.message}`;
     }
   };
 

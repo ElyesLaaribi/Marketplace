@@ -14,14 +14,22 @@ import { useUserStore } from "../store/user.js";
 import { useFirebaseMessaging } from "../composables/useFirebaseMessaging";
 
 const showNotifications = ref(false);
+const mobileMenuOpen = ref(false);
 
-const { notifications, unreadCount, markAsRead, loadNotifications, markAllAsRead, clearAll } = useFirebaseMessaging();
+const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll, requestPermissionAndGetToken } =
+  useFirebaseMessaging();
 
 onMounted(async () => {
-  await loadNotifications();
-
   // Add event listener for clicking outside notification panel
   document.addEventListener("click", handleOutsideClick);
+  
+  // Request notification permissions when the layout loads
+  try {
+    await requestPermissionAndGetToken();
+    console.log("Notification permissions requested in DefaultLayout");
+  } catch (err) {
+    console.error("Error setting up notifications in DefaultLayout:", err);
+  }
 });
 
 onUnmounted(() => {
@@ -59,7 +67,7 @@ const onNotificationClick = (notification) => {
 
   // Navigate based on notification type
   if (notification.type === "rental_reminder" && notification.id) {
-    router.push(`/rental/${notification.id}`);
+    router.push(`/my-rentals`);
     showNotifications.value = false;
   }
 };
@@ -89,12 +97,16 @@ const navigation = ref([
 ]);
 
 // Watch for route changes to update current state
-watch(() => router.currentRoute.value.path, (newPath) => {
-  navigation.value = navigation.value.map(item => ({
-    ...item,
-    current: newPath === item.href
-  }));
-}, { immediate: true });
+watch(
+  () => router.currentRoute.value.path,
+  (newPath) => {
+    navigation.value = navigation.value.map((item) => ({
+      ...item,
+      current: newPath === item.href,
+    }));
+  },
+  { immediate: true }
+);
 
 function logout() {
   api
@@ -225,7 +237,7 @@ function logout() {
                     </div>
                   </div>
 
-                  <!-- List -->
+                  <!-- Notification List -->
                   <div class="max-h-60 overflow-y-auto">
                     <div
                       v-if="notifications.length === 0"

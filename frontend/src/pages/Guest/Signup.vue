@@ -88,7 +88,27 @@ function submit() {
 
       if (error.response) {
         if (error.response.status === 422) {
-          errors.value = error.response.data.errors;
+          const serverErrors = error.response.data.errors || {};
+          
+          const safeErrors = {
+            name: [],
+            email: [],
+            country: [],
+            city: [],
+            cin: [],
+            phone: [],
+            password: [],
+          };
+          
+          Object.keys(safeErrors).forEach(field => {
+            if (serverErrors[field]) {
+              safeErrors[field] = Array.isArray(serverErrors[field]) 
+                ? serverErrors[field] 
+                : [serverErrors[field]];
+            }
+          });
+          
+          errors.value = safeErrors;
         } else if (error.response.status === 401) {
           errorMessage.value = "Authentication failed. Please try again.";
         } else {
@@ -233,14 +253,14 @@ function submit() {
                 v-model="data.name"
                 placeholder="Full Name"
                 class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
-                :class="{ 'border-red-300': errors.name.length }"
+                :class="{ 'border-red-300': errors.name && errors.name.length }"
               />
               <div
                 class="absolute left-0 top-0 bottom-0 w-2 bg-[#135CA5] rounded-l-md"
                 v-if="data.name"
               ></div>
             </div>
-            <p v-if="errors.name.length" class="mt-1 text-sm text-red-600">
+            <p v-if="errors.name && errors.name.length" class="mt-1 text-sm text-red-600">
               {{ errors.name[0] }}
             </p>
           </div>
@@ -256,14 +276,14 @@ function submit() {
                 v-model="data.email"
                 placeholder="Email ID"
                 class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
-                :class="{ 'border-red-300': errors.email.length }"
+                :class="{ 'border-red-300': errors.email && errors.email.length }"
               />
               <div
                 class="absolute left-0 top-0 bottom-0 w-2 bg-[#135CA5] rounded-l-md"
                 v-if="data.email"
               ></div>
             </div>
-            <p v-if="errors.email.length" class="mt-1 text-sm text-red-600">
+            <p v-if="errors.email && errors.email.length" class="mt-1 text-sm text-red-600">
               {{ errors.email[0] }}
             </p>
           </div>
@@ -278,7 +298,7 @@ function submit() {
                   name="country"
                   v-model="data.country"
                   class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
-                  :class="{ 'border-red-300': errors.country.length }"
+                  :class="{ 'border-red-300': errors.country && errors.country.length }"
                 >
                   <option value="" disabled selected>Select Country</option>
                   <option>Tunisia</option>
@@ -294,7 +314,7 @@ function submit() {
                   v-if="data.country"
                 ></div>
               </div>
-              <p v-if="errors.country.length" class="mt-1 text-sm text-red-600">
+              <p v-if="errors.country && errors.country.length" class="mt-1 text-sm text-red-600">
                 {{ errors.country[0] }}
               </p>
             </div>
@@ -309,14 +329,14 @@ function submit() {
                   v-model="data.city"
                   placeholder="City"
                   class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
-                  :class="{ 'border-red-300': errors.city.length }"
+                  :class="{ 'border-red-300': errors.city && errors.city.length }"
                 />
                 <div
                   class="absolute left-0 top-0 bottom-0 w-2 bg-[#135CA5] rounded-l-md"
                   v-if="data.city"
                 ></div>
               </div>
-              <p v-if="errors.city.length" class="mt-1 text-sm text-red-600">
+              <p v-if="errors.city && errors.city.length" class="mt-1 text-sm text-red-600">
                 {{ errors.city[0] }}
               </p>
             </div>
@@ -334,14 +354,14 @@ function submit() {
                   v-model="data.cin"
                   placeholder="ID Card Number"
                   class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
-                  :class="{ 'border-red-300': errors.cin.length }"
+                  :class="{ 'border-red-300': errors.cin && errors.cin.length }"
                 />
                 <div
                   class="absolute left-0 top-0 bottom-0 w-2 bg-[#135CA5] rounded-l-md"
                   v-if="data.cin"
                 ></div>
               </div>
-              <p v-if="errors.cin.length" class="mt-1 text-sm text-red-600">
+              <p v-if="errors.cin && errors.cin.length" class="mt-1 text-sm text-red-600">
                 {{ errors.cin[0] }}
               </p>
             </div>
@@ -356,14 +376,14 @@ function submit() {
                   v-model="data.phone"
                   placeholder="Phone Number"
                   class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
-                  :class="{ 'border-red-300': errors.phone.length }"
+                  :class="{ 'border-red-300': errors.phone && errors.phone.length }"
                 />
                 <div
                   class="absolute left-0 top-0 bottom-0 w-2 bg-[#135CA5] rounded-l-md"
                   v-if="data.phone"
                 ></div>
               </div>
-              <p v-if="errors.phone.length" class="mt-1 text-sm text-red-600">
+              <p v-if="errors.phone && errors.phone.length" class="mt-1 text-sm text-red-600">
                 {{ errors.phone[0] }}
               </p>
             </div>
@@ -380,7 +400,7 @@ function submit() {
                 v-model="data.password"
                 placeholder="Password"
                 class="w-full p-2 border-2 border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:outline-none focus:border-[#135CA5]"
-                :class="{ 'border-red-300': errors.password.length }"
+                :class="{ 'border-red-300': errors.password && errors.password.length }"
               />
               <div
                 class="absolute left-0 top-0 bottom-0 w-2 bg-[#135CA5] rounded-l-md"
@@ -395,7 +415,7 @@ function submit() {
                 <EyeSlashIcon v-else class="h-5 w-5" />
               </button>
             </div>
-            <p v-if="errors.password.length" class="mt-1 text-sm text-red-600">
+            <p v-if="errors.password && errors.password.length" class="mt-1 text-sm text-red-600">
               {{ errors.password[0] }}
             </p>
           </div>

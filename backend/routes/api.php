@@ -100,3 +100,4 @@ Route::middleware('auth:admin')->post('/add-admin', AdminAddController::class);
 Route::middleware('auth:sanctum')->post('/users/update-device-token', [DeviceTokenController::class, 'updateDeviceToken']);
 
 Route::middleware('auth:sanctum')->post('/send-test-notification', [NotificationController::class, 'sendTest']);
+Route::middleware('auth:sanctum')->post('/test-direct-fcm', [NotificationController::class, 'testDirectFCM']);
