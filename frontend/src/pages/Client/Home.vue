@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed, watch } from "vue";
+import { onMounted, ref, computed, watch, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import DefaultLayout from "../../components/DefaultLayout.vue";
 import api from "../../axios";
@@ -28,6 +28,31 @@ const currentPage = ref(1);
 const itemsPerPage = ref(12);
 const totalItems = ref(0);
 const statusMessage = ref("");
+
+const showFilters = ref(false);
+const windowWidth = ref(window.innerWidth);
+
+// Function to update window width
+const updateWindowWidth = () => {
+  windowWidth.value = window.innerWidth;
+  if (windowWidth.value >= 1024) {
+    showFilters.value = true;
+  }
+};
+
+// Add resize event listener
+onMounted(() => {
+  window.addEventListener('resize', updateWindowWidth);
+  updateWindowWidth(); // Initialize on mount
+  fetchCategories();
+  selectedCategory.value = null;
+  fetchProducts({}, { skipPriceRangeUpdate: false });
+});
+
+// Remove event listener on component unmount
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateWindowWidth);
+});
 
 const navigateToProduct = (productId) => {
   router.push(`/product-overview/${productId}`);
@@ -97,13 +122,6 @@ const fetchProducts = async (filters = {}, options = { skipPriceRangeUpdate: tru
     isLoading.value = false;
   }
 };
-
-
-onMounted(() => {
-  fetchCategories();
-  selectedCategory.value = null;
-  fetchProducts({}, { skipPriceRangeUpdate: false });
-});
 
 const handleSearchFilter = () => {
   currentPage.value = 1;
@@ -258,10 +276,10 @@ const resetPriceFilter = () => {
       ></div>
 
       <div
-        class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24 text-center z-10"
+        class="relative mx-auto max-w-7xl px-4 py-12 sm:py-16 lg:py-24 text-center z-10"
       >
         <h1
-          class="text-4xl font-bold mb-6 sm:text-5xl lg:text-6xl tracking-tight"
+          class="text-3xl font-bold mb-4 sm:text-4xl lg:text-6xl tracking-tight"
         >
           Find What You Need
           <span
@@ -269,7 +287,7 @@ const resetPriceFilter = () => {
             >Today</span
           >
         </h1>
-        <p class="text-xl mb-8 max-w-2xl mx-auto opacity-90">
+        <p class="text-lg sm:text-xl mb-6 sm:mb-8 max-w-2xl mx-auto opacity-90">
           Rent quality items at affordable daily rates
         </p>
 
@@ -282,7 +300,7 @@ const resetPriceFilter = () => {
             @keyup.enter="triggerSearch"
             type="text"
             placeholder="Search products..."
-            class="bg-transparent flex-grow px-5 py-3 text-white placeholder-white/70 focus:outline-none"
+            class="bg-transparent flex-grow px-3 sm:px-5 py-3 text-white placeholder-white/70 focus:outline-none w-full"
           />
           <button
             @click="triggerSearch"
@@ -332,97 +350,16 @@ const resetPriceFilter = () => {
       <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <!-- Filter sidebar and product grid container -->
         <div class="flex flex-col lg:flex-row gap-8">
-          <!-- Filter sidebar -->
-          <div
-            class="lg:w-1/4 bg-white rounded-2xl shadow-sm p-6 h-fit sticky top-24 border border-gray-300 sm-shadow"
-          >
-            <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-              <svg
-                class="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                ></path>
-              </svg>
-              Filters
-            </h2>
-
-            <!-- Active filters display -->
-            <div
-              v-if="
-                selectedCategory ||
-                searchQuery ||
-                priceRange.current[0] > priceRange.min ||
-                priceRange.current[1] < priceRange.max
-              "
-              class="mb-8"
+          <!-- Filter sidebar - Collapsible on mobile -->
+          <div class="lg:w-1/4 relative">
+            <!-- Mobile filter toggle button -->
+            <button 
+              @click="showFilters = !showFilters" 
+              class="lg:hidden w-full flex items-center justify-between bg-white rounded-xl shadow-sm p-4 mb-4 border border-gray-300"
             >
-              <h3 class="text-md font-medium text-gray-700 mb-3">
-                Active Filters
-              </h3>
-              <div class="flex flex-wrap gap-2">
-                <div
-                  v-if="selectedCategory"
-                  class="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-1 flex items-center"
-                >
-                  <span class="text-white text-sm">{{ selectedCategory }}</span>
-                  <button
-                    @click="resetCategoryFilter"
-                    class="ml-2 text-white hover:bg-white/20 rounded-full h-5 w-5 flex items-center justify-center"
-                    title="Clear category filter"
-                  >
-                    &times;
-                  </button>
-                </div>
-
-                <div
-                  v-if="searchQuery"
-                  class="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-1 flex items-center"
-                >
-                  <span class="text-white text-sm">"{{ searchQuery }}"</span>
-                  <button
-                    @click="resetSearchFilter"
-                    class="ml-2 text-white hover:bg-white/20 rounded-full h-5 w-5 flex items-center justify-center"
-                    title="Clear search filter"
-                  >
-                    &times;
-                  </button>
-                </div>
-
-                <div
-                  v-if="
-                    priceRange.current[0] > priceRange.min ||
-                    priceRange.current[1] < priceRange.max
-                  "
-                  class="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-1 flex items-center"
-                >
-                  <span class="text-white text-sm"
-                    >{{ priceRange.current[0] }} -
-                    {{ priceRange.current[1] }} TND</span
-                  >
-                  <button
-                    @click="resetPriceFilter"
-                    class="ml-2 text-white hover:bg-white/20 rounded-full h-5 w-5 flex items-center justify-center"
-                    title="Clear price filter"
-                  >
-                    &times;
-                  </button>
-                </div>
-              </div>
-
-              <button
-                @click="resetFilters"
-                class="mt-4 flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
-              >
+              <span class="font-medium flex items-center">
                 <svg
-                  class="w-4 h-4 mr-1"
+                  class="w-5 h-5 mr-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -432,151 +369,268 @@ const resetPriceFilter = () => {
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
                   ></path>
                 </svg>
-                Clear all filters
-              </button>
-            </div>
-
-            <!-- Categories section -->
-            <div class="mb-8">
-              <h3 class="text-md font-medium text-gray-700 mb-3">Categories</h3>
-              <select
-                v-model="selectedCategory"
-                @change="handleCategorySelect(selectedCategory)"
-                class="border border-gray-300 rounded px-3 py-2 w-full"
+                Filters
+              </span>
+              <svg 
+                class="w-5 h-5 transition-transform" 
+                :class="{ 'rotate-180': showFilters }"
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
               >
-                <option value="" selected>All</option>
-                <option
-                  v-for="category in categories"
-                  :key="category"
-                  :value="category"
-                >
-                  {{ category }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Price range filter with modern slider -->
-            <div class="mb-8">
-              <h3 class="text-md font-medium text-gray-700 mb-2">
-                Price Range (TND)
-              </h3>
-
-              <!-- Modern range slider -->
-              <div class="px-2 mb-3">
-                <div class="relative h-10">
-                  <!-- Track background -->
-                  <div
-                    class="absolute top-1/2 w-full h-1 bg-gray-200 rounded-full transform -translate-y-1/2"
-                  ></div>
-
-                  <!-- Selected range fill -->
-                  <div
-                    class="absolute top-1/2 h-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full transform -translate-y-1/2"
-                    :style="{
-                      left: minThumbPosition + '%',
-                      width: maxThumbPosition - minThumbPosition + '%',
-                    }"
-                  ></div>
-
-                  <!-- Min Thumb Input -->
-                  <input
-                    type="range"
-                    :min="priceRange.min"
-                    :max="priceRange.max"
-                    v-model.number="priceRange.temp[0]"
-                    class="range-thumb"
-                    :style="{
-                      zIndex: priceRange.temp[0] > priceRange.temp[1] - 10 ? 40 : 30,
-                    }"
-                    @input="handleMinChange"
-                  />
-
-                  <!-- Max Thumb Input -->
-                  <input
-                    type="range"
-                    :min="priceRange.min"
-                    :max="priceRange.max"
-                    v-model.number="priceRange.temp[1]"
-                    class="range-thumb"
-                    :style="{
-                      zIndex: priceRange.temp[1] <= priceRange.temp[0] + 10 ? 30 : 40,
-                    }"
-                    @input="handleMaxChange"
-                  />
-                </div>
-              </div>
-
-              <!-- Price inputs -->
-              <div class="flex items-center justify-between mb-3">
-                <div class="w-24">
-                  <input
-                    type="number"
-                    :min="priceRange.min"
-                    :max="priceRange.max"
-                    v-model.number="priceRange.temp[0]"
-                    @input="handleMinChange"
-                    class="w-full p-2 border border-gray-300 rounded-md text-sm"
-                    placeholder="Min"
-                  />
-                </div>
-                <div class="text-gray-400">—</div>
-                <div class="w-24">
-                  <input
-                    type="number"
-                    :min="priceRange.min"
-                    :max="priceRange.max"
-                    v-model.number="priceRange.temp[1]"
-                    @input="handleMaxChange"
-                    class="w-full p-2 border border-gray-300 rounded-md text-sm"
-                    placeholder="Max"
-                  />
-                </div>
-              </div>
-
-              <!-- Apply Price Filter Button -->
-              <button
-                @click="applyPriceFilter"
-                class="mt-3 w-full py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-medium text-sm transition-all hover:shadow-md flex items-center justify-center gap-2"
-              >
-                <span>Apply Price Filter</span>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            
+            <!-- Filter content -->
+            <div 
+              :class="{ 'hidden': !showFilters && windowWidth < 1024 }"
+              class="lg:block bg-white rounded-2xl shadow-sm p-6 h-fit lg:sticky lg:top-24 border border-gray-300 sm-shadow"
+            >
+              <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
                 <svg
-                  class="w-4 h-4"
+                  class="w-5 h-5 mr-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M5 13l4 4L19 7"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
                   ></path>
                 </svg>
-              </button>
+                Filters
+              </h2>
+
+              <!-- Active filters display -->
+              <div
+                v-if="
+                  selectedCategory ||
+                  searchQuery ||
+                  priceRange.current[0] > priceRange.min ||
+                  priceRange.current[1] < priceRange.max
+                "
+                class="mb-8"
+              >
+                <h3 class="text-md font-medium text-gray-700 mb-3">
+                  Active Filters
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  <div
+                    v-if="selectedCategory"
+                    class="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-1 flex items-center"
+                  >
+                    <span class="text-white text-sm">{{ selectedCategory }}</span>
+                    <button
+                      @click="resetCategoryFilter"
+                      class="ml-2 text-white hover:bg-white/20 rounded-full h-5 w-5 flex items-center justify-center"
+                      title="Clear category filter"
+                    >
+                      &times;
+                    </button>
+                  </div>
+
+                  <div
+                    v-if="searchQuery"
+                    class="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-1 flex items-center"
+                  >
+                    <span class="text-white text-sm">"{{ searchQuery }}"</span>
+                    <button
+                      @click="resetSearchFilter"
+                      class="ml-2 text-white hover:bg-white/20 rounded-full h-5 w-5 flex items-center justify-center"
+                      title="Clear search filter"
+                    >
+                      &times;
+                    </button>
+                  </div>
+
+                  <div
+                    v-if="
+                      priceRange.current[0] > priceRange.min ||
+                      priceRange.current[1] < priceRange.max
+                    "
+                    class="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-1 flex items-center"
+                  >
+                    <span class="text-white text-sm"
+                      >{{ priceRange.current[0] }} -
+                      {{ priceRange.current[1] }} TND</span
+                    >
+                    <button
+                      @click="resetPriceFilter"
+                      class="ml-2 text-white hover:bg-white/20 rounded-full h-5 w-5 flex items-center justify-center"
+                      title="Clear price filter"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  @click="resetFilters"
+                  class="mt-4 flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
+                >
+                  <svg
+                    class="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    ></path>
+                  </svg>
+                  Clear all filters
+                </button>
+              </div>
+
+              <!-- Categories section -->
+              <div class="mb-8">
+                <h3 class="text-md font-medium text-gray-700 mb-3">Categories</h3>
+                <select
+                  v-model="selectedCategory"
+                  @change="handleCategorySelect(selectedCategory)"
+                  class="border border-gray-300 rounded px-3 py-2 w-full"
+                >
+                  <option value="" selected>All</option>
+                  <option
+                    v-for="category in categories"
+                    :key="category"
+                    :value="category"
+                  >
+                    {{ category }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Price range filter with modern slider -->
+              <div class="mb-8">
+                <h3 class="text-md font-medium text-gray-700 mb-2">
+                  Price Range (TND)
+                </h3>
+
+                <!-- Modern range slider -->
+                <div class="px-2 mb-3">
+                  <div class="relative h-10">
+                    <!-- Track background -->
+                    <div
+                      class="absolute top-1/2 w-full h-1 bg-gray-200 rounded-full transform -translate-y-1/2"
+                    ></div>
+
+                    <!-- Selected range fill -->
+                    <div
+                      class="absolute top-1/2 h-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full transform -translate-y-1/2"
+                      :style="{
+                        left: minThumbPosition + '%',
+                        width: maxThumbPosition - minThumbPosition + '%',
+                      }"
+                    ></div>
+
+                    <!-- Min Thumb Input -->
+                    <input
+                      type="range"
+                      :min="priceRange.min"
+                      :max="priceRange.max"
+                      v-model.number="priceRange.temp[0]"
+                      class="range-thumb"
+                      :style="{
+                        zIndex: priceRange.temp[0] > priceRange.temp[1] - 10 ? 40 : 30,
+                      }"
+                      @input="handleMinChange"
+                    />
+
+                    <!-- Max Thumb Input -->
+                    <input
+                      type="range"
+                      :min="priceRange.min"
+                      :max="priceRange.max"
+                      v-model.number="priceRange.temp[1]"
+                      class="range-thumb"
+                      :style="{
+                        zIndex: priceRange.temp[1] <= priceRange.temp[0] + 10 ? 30 : 40,
+                      }"
+                      @input="handleMaxChange"
+                    />
+                  </div>
+                </div>
+
+                <!-- Price inputs -->
+                <div class="flex items-center justify-between mb-3">
+                  <div class="w-24">
+                    <input
+                      type="number"
+                      :min="priceRange.min"
+                      :max="priceRange.max"
+                      v-model.number="priceRange.temp[0]"
+                      @input="handleMinChange"
+                      class="w-full p-2 border border-gray-300 rounded-md text-sm"
+                      placeholder="Min"
+                    />
+                  </div>
+                  <div class="text-gray-400">—</div>
+                  <div class="w-24">
+                    <input
+                      type="number"
+                      :min="priceRange.min"
+                      :max="priceRange.max"
+                      v-model.number="priceRange.temp[1]"
+                      @input="handleMaxChange"
+                      class="w-full p-2 border border-gray-300 rounded-md text-sm"
+                      placeholder="Max"
+                    />
+                  </div>
+                </div>
+
+                <!-- Apply Price Filter Button -->
+                <button
+                  @click="applyPriceFilter"
+                  class="mt-3 w-full py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-medium text-sm transition-all hover:shadow-md flex items-center justify-center gap-2"
+                >
+                  <span>Apply Price Filter</span>
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 13l4 4L19 7"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
 
           <!-- Products section -->
           <div class="lg:w-3/4 products-container">
             <div
-              class="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-gray-300 sm-shadow"
+              class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 mb-8 border border-gray-300 sm-shadow"
             >
               <div
-                class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4"
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4"
               >
-                <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
                   <span class="mr-2">
                     {{ selectedCategory ? selectedCategory : "Today's picks" }}
                   </span>
-                 
                 </h2>
               </div>
 
               <!-- Loading or error states -->
-              <div v-if="isLoading || error || statusMessage" class="py-12 text-center">
+              <div v-if="isLoading || error || statusMessage" class="py-8 sm:py-12 text-center">
                 <div
                   v-if="isLoading"
                   class="animate-pulse flex flex-col items-center"
@@ -589,10 +643,10 @@ const resetPriceFilter = () => {
               </div>
 
               <!-- No products message -->
-              <div v-else-if="products.length === 0" class="py-12 text-center">
+              <div v-else-if="products.length === 0" class="py-8 sm:py-12 text-center">
                 <div class="flex flex-col items-center">
                   <svg 
-                    class="w-16 h-16 text-gray-300 mb-4" 
+                    class="w-12 sm:w-16 h-12 sm:h-16 text-gray-300 mb-4" 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -604,8 +658,8 @@ const resetPriceFilter = () => {
                       d="M4 7h16M4 11h16M4 15h8"
                     />
                   </svg>
-                  <h3 class="text-xl font-medium text-gray-700 mb-2">No products found</h3>
-                  <p class="text-gray-500 max-w-md">
+                  <h3 class="text-lg sm:text-xl font-medium text-gray-700 mb-2">No products found</h3>
+                  <p class="text-sm sm:text-base text-gray-500 max-w-md px-4">
                     <span v-if="selectedCategory && searchQuery">
                       No products matching "<strong>{{ searchQuery }}</strong>" were found in the "<strong>{{ selectedCategory }}</strong>" category.
                     </span>
@@ -620,7 +674,7 @@ const resetPriceFilter = () => {
                     </span>
                     <span> Try adjusting your filters or check back later.</span>
                   </p>
-                  <div class="mt-6 flex flex-wrap gap-3 justify-center">
+                  <div class="mt-6 flex flex-wrap gap-3 justify-center px-4">
                     <button
                       v-if="selectedCategory && searchQuery"
                       @click="resetCategoryFilter"
@@ -657,11 +711,11 @@ const resetPriceFilter = () => {
                   </div>
                 </div>
               </div>
-
+              
               <!-- Product grid with modern cards -->
               <div
                 v-else
-                class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3"
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-x-6 sm:gap-y-10"
               >
                 <div
                   v-for="product in products"
@@ -691,10 +745,10 @@ const resetPriceFilter = () => {
                     />
                   </div>
 
-                  <div class="p-5">
+                  <div class="p-4 sm:p-5">
                     <div class="flex justify-between items-start mb-2">
                       <h3
-                        class="text-lg font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors"
+                        class="text-base sm:text-lg font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors"
                       >
                         {{ product.name }}
                       </h3>
@@ -727,9 +781,9 @@ const resetPriceFilter = () => {
                     </p>
 
                     <div class="flex justify-between items-center">
-                      <p class="text-lg font-bold text-[#002D4A]">
+                      <p class="text-base sm:text-lg font-bold text-[#002D4A]">
                         {{ product.formattedPrice ?? product.price }}
-                        <span class="text-sm font-normal text-gray-500"
+                        <span class="text-xs sm:text-sm font-normal text-gray-500"
                           >TND/day</span
                         >
                       </p>
@@ -785,28 +839,28 @@ const resetPriceFilter = () => {
               :perPageOptions="[12, 24, 36, 48]"
               @page-change="handlePageChange"
               @per-page-change="handlePerPageChange"
-              class="mb-12"
+              class="mb-6 sm:mb-12"
             />
           </div>
         </div>
       </div>
 
       <!-- Features section -->
-      <div class="bg-white py-16">
+      <div class="bg-white py-12 sm:py-16">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-gray-900">Why Rent With Us?</h2>
-            <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+          <div class="text-center mb-8 sm:mb-12">
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Why Rent With Us?</h2>
+            <p class="mt-3 sm:mt-4 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
               We make renting easy, affordable, and sustainable
             </p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <!-- Feature 1 -->
-            <div class="flex flex-col items-center p-6 text-center">
+            <div class="flex flex-col items-center p-4 sm:p-6 text-center">
               <div class="bg-blue-100 p-3 rounded-full mb-4">
                 <svg
-                  class="w-8 h-8 text-blue-600"
+                  class="w-7 h-7 sm:w-8 sm:h-8 text-blue-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -819,18 +873,18 @@ const resetPriceFilter = () => {
                   ></path>
                 </svg>
               </div>
-              <h3 class="text-xl font-semibold mb-2">Fast Delivery</h3>
-              <p class="text-gray-600">
+              <h3 class="text-lg sm:text-xl font-semibold mb-2">Fast Delivery</h3>
+              <p class="text-sm sm:text-base text-gray-600">
                 Get your rentals quickly with our same-day delivery service in
                 select areas.
               </p>
             </div>
 
             <!-- Feature 2 -->
-            <div class="flex flex-col items-center p-6 text-center">
+            <div class="flex flex-col items-center p-4 sm:p-6 text-center">
               <div class="bg-blue-100 p-3 rounded-full mb-4">
                 <svg
-                  class="w-8 h-8 text-blue-600"
+                  class="w-7 h-7 sm:w-8 sm:h-8 text-blue-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -843,18 +897,18 @@ const resetPriceFilter = () => {
                   ></path>
                 </svg>
               </div>
-              <h3 class="text-xl font-semibold mb-2">Quality Guaranteed</h3>
-              <p class="text-gray-600">
+              <h3 class="text-lg sm:text-xl font-semibold mb-2">Quality Guaranteed</h3>
+              <p class="text-sm sm:text-base text-gray-600">
                 All our products are thoroughly checked and maintained to ensure
                 top quality.
               </p>
             </div>
 
             <!-- Feature 3 -->
-            <div class="flex flex-col items-center p-6 text-center">
+            <div class="flex flex-col items-center p-4 sm:p-6 text-center">
               <div class="bg-blue-100 p-3 rounded-full mb-4">
                 <svg
-                  class="w-8 h-8 text-blue-600"
+                  class="w-7 h-7 sm:w-8 sm:h-8 text-blue-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -867,8 +921,8 @@ const resetPriceFilter = () => {
                   ></path>
                 </svg>
               </div>
-              <h3 class="text-xl font-semibold mb-2">Affordable Pricing</h3>
-              <p class="text-gray-600">
+              <h3 class="text-lg sm:text-xl font-semibold mb-2">Affordable Pricing</h3>
+              <p class="text-sm sm:text-base text-gray-600">
                 Save money by renting exactly what you need for as long as you
                 need it.
               </p>
