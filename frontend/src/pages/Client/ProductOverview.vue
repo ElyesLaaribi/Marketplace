@@ -378,6 +378,13 @@ const prevImage = () => {
 
 const toggleGallery = () => {
   showAllImages.value = !showAllImages.value;
+  
+  // Prevent body scrolling when gallery is open
+  if (showAllImages.value) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
 };
 
 const setActiveImage = (index) => {
@@ -563,59 +570,162 @@ const handleReserveClick = () => {
                 </span>
               </div>
             </div>
+            
+            <!-- Show all photos button -->
+            <button
+              @click="toggleGallery"
+              class="bg-white px-4 py-2 rounded-lg text-sm font-medium text-gray-900 shadow-md hover:bg-gray-100 transition-colors duration-200 flex items-center"
+            >
+              <span>Show all photos</span>
+            </button>
           </div>
         </div>
 
         <!--  Image Gallery -->
-        <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8 mt-4">
+        <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8 mt-6">
           <!-- Regular gallery view -->
           <div v-if="!showAllImages" class="relative">
-            <!-- Gallery Grid Layout (Airbnb style) -->
-            <div class="grid grid-cols-4 gap-2 rounded-xl overflow-hidden h-96">
-              <!-- Main large image -->
-              <div class="col-span-2 row-span-2 relative">
+            <!-- Gallery Grid Layout - Responsive to number of images -->
+            <div 
+              class="grid gap-4 rounded-2xl overflow-hidden h-[28rem]"
+              :class="{
+                'grid-cols-1 md:grid-cols-1': listingData.images.length === 1,
+                'grid-cols-1 md:grid-cols-2': listingData.images.length === 2,
+                'grid-cols-1 md:grid-cols-5': listingData.images.length === 3,
+                'grid-cols-1 md:grid-cols-2 md:grid-rows-2': listingData.images.length === 4,
+                'grid-cols-1 md:grid-cols-12': listingData.images.length >= 5
+              }"
+            >
+              <!-- Single image case -->
+              <div 
+                v-if="listingData.images.length === 1" 
+                class="relative h-full overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-[1.02] group"
+              >
                 <img
                   :src="listingData.images[0].src"
                   :alt="listingData.images[0].alt"
-                  class="h-full w-full object-cover object-center"
+                  class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                   loading="eager"
                 />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
+              
+              <!-- Two images case - split container into two equal parts -->
+              <template v-if="listingData.images.length === 2">
+                <div 
+                  v-for="(image, index) in listingData.images" 
+                  :key="index"
+                  class="relative h-full overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-[1.02] group"
+                >
+                  <img
+                    :src="image.src"
+                    :alt="image.alt"
+                    class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+              </template>
+              
+              <!-- Three images case - matches the screenshot layout exactly -->
+              <template v-if="listingData.images.length === 3">
+                <!-- Main large image - takes up 3/5 of the width -->
+                <div class="md:col-span-3 h-full">
+                  <div class="relative h-full overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-[1.02] group">
+                    <img
+                      :src="listingData.images[0].src"
+                      :alt="listingData.images[0].alt"
+                      class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                      loading="eager"
+                    />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                </div>
+                
+                <!-- Right column with stacked images - takes up 2/5 of the width -->
+                <div class="md:col-span-2 grid grid-rows-2 gap-4 h-full">
+                  <!-- Top right image -->
+                  <div class="relative h-full overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-[1.02] group">
+                    <img
+                      :src="listingData.images[1].src"
+                      :alt="listingData.images[1].alt"
+                      class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                  
+                  <!-- Bottom right image -->
+                  <div class="relative h-full overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-[1.02] group">
+                    <img
+                      :src="listingData.images[2].src"
+                      :alt="listingData.images[2].alt"
+                      class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                </div>
+              </template>
+              
+              <!-- Four images case - 2x2 grid -->
+              <template v-if="listingData.images.length === 4">
+                <div 
+                  v-for="(image, index) in listingData.images" 
+                  :key="index"
+                  class="relative overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-[1.02] group"
+                >
+                  <img
+                    :src="image.src"
+                    :alt="image.alt"
+                    class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+              </template>
+              
+              <!-- Five or more images - feature first image larger with 2x2 grid on right -->
+              <template v-if="listingData.images.length >= 5">
+                <!-- Main large image -->
+                <div class="md:col-span-6 md:row-span-2 relative h-full overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-[1.02] group">
+                  <img
+                    :src="listingData.images[0].src"
+                    :alt="listingData.images[0].alt"
+                    class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                    loading="eager"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
 
-              <!-- Secondary images -->
-              <div
-                v-for="(image, index) in listingData.images.slice(1, 5)"
-                :key="index"
-                class="overflow-hidden"
-              >
-                <img
-                  :src="image.src"
-                  :alt="image.alt"
-                  class="h-full w-full object-cover object-center"
-                  loading="lazy"
-                />
-              </div>
-
-              <!-- Show all photos button -->
-              <button
-                @click="toggleGallery"
-                class="absolute bottom-4 right-4 bg-white px-4 py-2 rounded-lg text-sm font-medium text-gray-900 shadow-md hover:bg-gray-100 transition-colors duration-200 flex items-center"
-              >
-                <span>Show all photos</span>
-              </button>
+                <!-- Secondary images grid - Show remaining images up to 4 more -->
+                <div 
+                  v-for="(image, index) in listingData.images.slice(1, 5)" 
+                  :key="index"
+                  class="hidden md:block md:col-span-3 relative overflow-hidden rounded-2xl transition-transform duration-300 hover:scale-[1.02] group"
+                >
+                  <img
+                    :src="image.src"
+                    :alt="image.alt"
+                    class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+              </template>
             </div>
           </div>
 
           <!-- Fullscreen gallery modal -->
           <div
             v-if="showAllImages"
-            class="fixed inset-0 bg-black z-50 flex flex-col overflow-auto"
+            class="fixed inset-0 bg-black z-50 flex flex-col"
           >
             <!-- Gallery header -->
             <div class="p-4 flex justify-between items-center">
               <button
                 @click="toggleGallery"
-                class="text-white font-medium flex items-center hover:text-gray-300"
+                class="text-white font-medium flex items-center hover:text-gray-300 transition-colors"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -638,20 +748,18 @@ const handleReserveClick = () => {
               </div>
             </div>
 
-            <!-- Main image slide -->
-            <div
-              class="flex-grow flex items-center justify-center p-4 relative"
-            >
+            <!-- Main image slide - restrict height and handle overflow -->
+            <div class="flex-grow flex items-center justify-center p-4 relative overflow-hidden">
               <img
                 :src="listingData.images[activeImageIndex].src"
                 :alt="listingData.images[activeImageIndex].alt"
-                class="max-h-full max-w-full object-contain"
+                class="max-h-[70vh] max-w-full object-contain shadow-2xl"
               />
 
               <!-- Navigation buttons -->
               <button
                 @click="prevImage"
-                class="absolute left-6 p-2 rounded-full bg-white/30 hover:bg-white/50 text-black"
+                class="absolute left-6 p-3 rounded-full bg-white/30 hover:bg-white/60 text-black transition-colors duration-200"
                 aria-label="Previous image"
               >
                 <svg
@@ -671,7 +779,7 @@ const handleReserveClick = () => {
               </button>
               <button
                 @click="nextImage"
-                class="absolute right-6 p-2 rounded-full bg-white/30 hover:bg-white/50 text-black"
+                class="absolute right-6 p-3 rounded-full bg-white/30 hover:bg-white/60 text-black transition-colors duration-200"
                 aria-label="Next image"
               >
                 <svg
@@ -692,14 +800,14 @@ const handleReserveClick = () => {
             </div>
 
             <!-- Thumbnail navigation -->
-            <div class="p-4 overflow-x-auto">
-              <div class="flex space-x-2">
+            <div class="p-6 bg-black/40">
+              <div class="flex space-x-3 justify-center overflow-x-auto pb-2 hide-scrollbar">
                 <button
                   v-for="(image, index) in listingData.images"
                   :key="index"
                   @click="setActiveImage(index)"
-                  class="flex-shrink-0 w-16 h-16 overflow-hidden rounded"
-                  :class="activeImageIndex === index ? 'ring-2 ring-white' : ''"
+                  class="flex-shrink-0 w-20 h-20 overflow-hidden rounded-lg transition-transform duration-200 hover:scale-105"
+                  :class="activeImageIndex === index ? 'ring-2 ring-white scale-105' : 'opacity-70 hover:opacity-100'"
                 >
                   <img
                     :src="image.src"
@@ -1222,5 +1330,14 @@ const handleReserveClick = () => {
   background-color: #ff5c5c !important;
   border-color: #ff5c5c !important;
   cursor: not-allowed;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
 }
 </style>

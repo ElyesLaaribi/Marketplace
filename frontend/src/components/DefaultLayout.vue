@@ -16,13 +16,19 @@ import { useFirebaseMessaging } from "../composables/useFirebaseMessaging";
 const showNotifications = ref(false);
 const mobileMenuOpen = ref(false);
 
-const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll, requestPermissionAndGetToken } =
-  useFirebaseMessaging();
+const {
+  notifications,
+  unreadCount,
+  markAsRead,
+  markAllAsRead,
+  clearAll,
+  requestPermissionAndGetToken,
+} = useFirebaseMessaging();
 
 onMounted(async () => {
   // Add event listener for clicking outside notification panel
   document.addEventListener("click", handleOutsideClick);
-  
+
   // Request notification permissions when the layout loads
   try {
     await requestPermissionAndGetToken();
@@ -212,11 +218,11 @@ function logout() {
               >
                 <div
                   v-if="showNotifications"
-                  class="notification-container absolute right-0 mt-2 w-80 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-10"
+                  class="notification-container absolute right-0 mt-2 w-80 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-gray-500 ring-opacity-5 z-10"
                 >
                   <!-- Header -->
                   <div
-                    class="px-4 py-2 flex justify-between items-center border-b"
+                    class="px-4 py-2 flex justify-between items-center border-b border-gray-500"
                   >
                     <span class="font-medium">Notifications</span>
                     <div class="flex space-x-2">
