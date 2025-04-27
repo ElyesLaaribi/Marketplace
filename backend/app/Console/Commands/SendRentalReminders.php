@@ -60,7 +60,8 @@ class SendRentalReminders extends Command
                         'rental_id' => (string) $rental->id,
                         'listing_name' => $rental->listing ? $rental->listing->name : 'Your rental',
                         'start_date' => $startDate,
-                        'message' => "Your rental" . ($rental->listing ? " for {$rental->listing->name}" : "") . " starts " . ($daysAhead == 1 ? "tomorrow" : "soon") . "!" 
+                        'message' => "Your rental" . ($rental->listing ? " for {$rental->listing->name}" : "") . " starts " . ($daysAhead == 1 ? "tomorrow" : "soon") . "!",
+                        'user_id' => (string) $rental->user->id
                     ];
 
                     $firebaseService->sendNotification(

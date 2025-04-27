@@ -40,7 +40,8 @@ class NotificationController extends Controller
             $data = [
                 'type' => 'test_notification',
                 'message' => 'This is a test notification!',
-                'timestamp' => now()->toIso8601String()
+                'timestamp' => now()->toIso8601String(),
+                'user_id' => (string) $user->id
             ];
             
             $this->firebaseService->sendNotification(
@@ -93,7 +94,8 @@ class NotificationController extends Controller
                 'data' => [
                     'type' => 'test_direct',
                     'message' => 'This is a direct FCM test',
-                    'timestamp' => now()->toIso8601String()
+                    'timestamp' => now()->toIso8601String(),
+                    'user_id' => (string) $user->id
                 ]
             ];
             

@@ -20,7 +20,8 @@ const messaging = getMessaging(firebaseApp);
 
 // Initialize IndexedDB
 let db;
-const request = indexedDB.open('notificationsDB', 1);
+let dbReady = false;
+const request = indexedDB.open('notificationsDB', 2);
 
 request.onerror = (event) => {
     console.error('Error opening IndexedDB:', event.target.error);
@@ -28,6 +29,8 @@ request.onerror = (event) => {
 
 request.onsuccess = (event) => {
     db = event.target.result;
+    dbReady = true;
+    console.log('IndexedDB initialized successfully');
 };
 
 request.onupgradeneeded = (event) => {
@@ -37,10 +40,10 @@ request.onupgradeneeded = (event) => {
     }
 };
 
-// Function to get all notifications from IndexedDB
-function getAllNotifications() {
+// Function to get all notifications from IndexedDB for the current user
+function getAllNotifications(userId) {
     return new Promise((resolve, reject) => {
-        if (!db) {
+        if (!db || !dbReady) {
             reject(new Error('IndexedDB not initialized'));
             return;
         }
@@ -50,7 +53,16 @@ function getAllNotifications() {
         const request = store.getAll();
 
         request.onsuccess = () => {
-            resolve(request.result);
+            // Filter notifications by user_id - only return notifications for current user
+            const notifications = request.result || [];
+            // If we have a userId, filter by it - otherwise return all (no filtering)
+            const filteredNotifications = userId 
+                ? notifications.filter(n => {
+                    // If the notification has a user_id, ensure it matches current user
+                    return !n.user_id || String(n.user_id) === String(userId);
+                })
+                : notifications;
+            resolve(filteredNotifications);
         };
 
         request.onerror = (event) => {
@@ -62,7 +74,7 @@ function getAllNotifications() {
 // Function to add notification to IndexedDB
 function addNotification(notification) {
     return new Promise((resolve, reject) => {
-        if (!db) {
+        if (!db || !dbReady) {
             reject(new Error('IndexedDB not initialized'));
             return;
         }
@@ -84,7 +96,7 @@ function addNotification(notification) {
 // Function to mark notification as read in IndexedDB
 function markNotificationAsRead(id) {
     return new Promise((resolve, reject) => {
-        if (!db) {
+        if (!db || !dbReady) {
             reject(new Error('IndexedDB not initialized'));
             return;
         }
@@ -124,7 +136,24 @@ export function useFirebaseMessaging() {
   // Load notifications from IndexedDB
   const loadNotifications = async () => {
     try {
-      const storedNotifications = await getAllNotifications();
+      // Safely access user.id - handle the case where user might be null/undefined
+      const currentUserId = userStore.user?.id;
+      
+      // Skip loading if no user is logged in
+      if (!currentUserId) {
+        console.log('No user logged in, skipping notification loading');
+        return;
+      }
+      
+      // Check if database is ready
+      if (!dbReady) {
+        console.log('Database not ready yet, waiting...');
+        // Retry after a short delay
+        setTimeout(() => loadNotifications(), 500);
+        return;
+      }
+      
+      const storedNotifications = await getAllNotifications(currentUserId);
       if (storedNotifications.length > 0) {
         notifications.value = storedNotifications;
         updateUnreadCount();
@@ -157,8 +186,19 @@ export function useFirebaseMessaging() {
       const notificationData = payload.notification || {};
       const data = payload.data || {};
       
+      // Get the target user ID from the payload
+      const targetUserId = data.user_id || payload.user_id;
+      const currentUserId = userStore.user?.id;
+      
+      // Skip notifications not meant for this user
+      if (targetUserId && currentUserId && String(targetUserId) !== String(currentUserId)) {
+        console.log(`Notification for user ${targetUserId} skipped (current user: ${currentUserId})`);
+        return null;
+      }
+      
       const newNotification = {
         id: data.rental_id || payload.id || `msg-${Date.now()}`,
+        user_id: currentUserId ? String(currentUserId) : undefined, // Add user_id if user is logged in
         title: notificationData.title || payload.title || "New Rental Reminder",
         body: data.message || notificationData.body || payload.body || "",
         listingName: data.listing_name || payload.listingName || "",
@@ -300,6 +340,19 @@ export function useFirebaseMessaging() {
     processNotification(newMessage);
   });
 
+  // Watch for user login/logout
+  watch(() => userStore.user?.id, (newUserId, oldUserId) => {
+    console.log('User ID changed:', oldUserId, '->', newUserId);
+    if (newUserId) {
+      // User logged in - load their notifications
+      loadNotifications();
+    } else {
+      // User logged out - clear notifications
+      notifications.value = [];
+      unreadCount.value = 0;
+    }
+  });
+
   onMounted(async () => {
     // Load existing notifications
     await loadNotifications();
@@ -331,6 +384,19 @@ export function useFirebaseMessaging() {
     requestPermissionAndGetToken,
     markAllAsRead: async () => {
       try {
+        const currentUserId = userStore.user?.id;
+        
+        // Skip if no user is logged in or DB not ready
+        if (!currentUserId) {
+          console.warn('Cannot mark notifications as read: No user logged in');
+          return;
+        }
+        
+        if (!dbReady) {
+          console.warn('Cannot mark notifications as read: Database not ready');
+          return;
+        }
+        
         // Update all notifications in IndexedDB
         const transaction = db.transaction(['notifications'], 'readwrite');
         const store = transaction.objectStore('notifications');
@@ -339,27 +405,46 @@ export function useFirebaseMessaging() {
         getAllRequest.onsuccess = async () => {
           const allNotifications = getAllRequest.result;
           for (const notification of allNotifications) {
-            notification.read = true;
-            await new Promise((resolve, reject) => {
-              const updateRequest = store.put(notification);
-              updateRequest.onsuccess = () => resolve();
-              updateRequest.onerror = (event) => reject(event.target.error);
-            });
+            // Only update notifications belonging to current user
+            if (!notification.user_id || String(notification.user_id) === String(currentUserId)) {
+              notification.read = true;
+              await new Promise((resolve, reject) => {
+                const updateRequest = store.put(notification);
+                updateRequest.onsuccess = () => resolve();
+                updateRequest.onerror = (event) => reject(event.target.error);
+              });
+            }
           }
         };
 
-        // Update local state
-        notifications.value = notifications.value.map(n => ({...n, read: true}));
-        unreadCount.value = 0;
+        // Update local state - only mark current user's notifications as read
+        notifications.value = notifications.value.map(n => {
+          if (!n.user_id || String(n.user_id) === String(currentUserId)) {
+            return {...n, read: true};
+          }
+          return n;
+        });
+        updateUnreadCount();
       } catch (error) {
         console.error('Error marking all notifications as read:', error);
       }
     },
     markAsRead: async (id) => {
       try {
+        const currentUserId = userStore.user?.id;
+        
+        // Skip if no user is logged in
+        if (!currentUserId) {
+          console.warn('Cannot mark notification as read: No user logged in');
+          return;
+        }
+        
         await markNotificationAsRead(id);
         const notification = notifications.value.find(n => n.id === id);
-        if (notification && !notification.read) {
+        
+        // Only mark if it's current user's notification
+        if (notification && !notification.read && 
+            (!notification.user_id || String(notification.user_id) === String(currentUserId))) {
           notification.read = true;
           updateUnreadCount();
         }
@@ -369,24 +454,46 @@ export function useFirebaseMessaging() {
     },
     clearAll: async () => {
       try {
-        // Clear all notifications from IndexedDB
+        const currentUserId = userStore.user?.id;
+        
+        // Skip if no user is logged in or DB not ready
+        if (!currentUserId) {
+          console.warn('Cannot clear notifications: No user logged in');
+          return;
+        }
+        
+        if (!dbReady) {
+          console.warn('Cannot clear notifications: Database not ready');
+          return;
+        }
+        
+        // Get all notifications from IndexedDB
         const transaction = db.transaction(['notifications'], 'readwrite');
         const store = transaction.objectStore('notifications');
-        const clearRequest = store.clear();
-
-        clearRequest.onsuccess = () => {
-          console.log('All notifications cleared from IndexedDB');
+        const getAllRequest = store.getAll();
+        
+        getAllRequest.onsuccess = async () => {
+          const allNotifications = getAllRequest.result;
+          
+          // Delete only current user's notifications
+          for (const notification of allNotifications) {
+            if (!notification.user_id || String(notification.user_id) === String(currentUserId)) {
+              await new Promise((resolve, reject) => {
+                const deleteRequest = store.delete(notification.id);
+                deleteRequest.onsuccess = () => resolve();
+                deleteRequest.onerror = (event) => reject(event.target.error);
+              });
+            }
+          }
         };
 
-        clearRequest.onerror = (event) => {
-          console.error('Error clearing notifications:', event.target.error);
-        };
-
-        // Update local state
-        notifications.value = [];
-        unreadCount.value = 0;
+        // Update local state - remove only current user's notifications
+        notifications.value = notifications.value.filter(n => 
+          n.user_id && String(n.user_id) !== String(currentUserId)
+        );
+        updateUnreadCount();
       } catch (error) {
-        console.error('Error clearing all notifications:', error);
+        console.error('Error clearing notifications:', error);
       }
     }
   };

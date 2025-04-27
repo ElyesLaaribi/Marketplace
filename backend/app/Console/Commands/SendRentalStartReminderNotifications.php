@@ -97,7 +97,8 @@ class SendRentalStartReminderNotifications extends Command
                         'listing_id' => $reservation->listing_id,
                         'listing_name' => $listingName,
                         'start_date' => $reservation->start_date,
-                        'url' => '/my-rentals'
+                        'url' => '/my-rentals',
+                        'user_id' => (string) $reservation->user->id
                     ]
                 );
 

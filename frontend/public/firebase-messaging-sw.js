@@ -27,9 +27,13 @@ messaging.onBackgroundMessage((payload) => {
   const notificationData = payload.notification || {};
   const data = payload.data || {};
   
+  // Get user_id from payload
+  const targetUserId = data.user_id;
+  
   // Create the notification object
   const notificationInfo = {
     id: data.rental_id || `msg-${Date.now()}`,
+    user_id: targetUserId, // Include user_id from backend
     title: notificationData.title || 'New Rental Reminder',
     body: notificationData.body || data.message || '',
     listingName: data.listing_name || "",
@@ -44,7 +48,7 @@ messaging.onBackgroundMessage((payload) => {
   // Broadcast the notification to the main app
   broadcastChannel.postMessage(notificationInfo);
   
-  // Also store in localStorage as a backup
+  // Also store in localStorage as a backup - store with user_id included
   try {
     const storedNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
     storedNotifications.unshift(notificationInfo);
@@ -61,6 +65,7 @@ messaging.onBackgroundMessage((payload) => {
     data: {
       url: data.url || '/', 
       rental_id: data.rental_id,
+      user_id: targetUserId, // Include user_id in the notification data
       listing_name: data.listing_name,
       start_date: data.start_date
     }

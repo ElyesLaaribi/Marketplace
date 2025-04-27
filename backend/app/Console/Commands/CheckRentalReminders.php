@@ -114,7 +114,8 @@ class CheckRentalReminders extends Command
                     'rental_id' => $data['rental_id'],
                     'listing_name' => $data['listing_name'],
                     'start_date' => $data['start_date'],
-                    'type' => $data['type']
+                    'type' => $data['type'],
+                    'user_id' => (string) $user->id
                 ]
             );
 
