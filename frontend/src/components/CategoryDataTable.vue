@@ -73,6 +73,14 @@ const editCategory = (item) => {
 const submit = async () => {
   loading.value = true;
   errors.value = { cat_title: [] };
+
+  // Check for empty category title
+  if (!data.value.cat_title.trim()) {
+    errors.value.cat_title = ['Category title is required'];
+    loading.value = false;
+    return;
+  }
+
   try {
     await api.get("/sanctum/csrf-cookie");
     console.log("Sending payload:", data.value);
@@ -123,6 +131,12 @@ const openNewCategoryForm = () => {
   };
   isEditMode.value = false;
   isOpen.value = true;
+  errors.value = { cat_title: [] };
+};
+
+const closeForm = () => {
+  isOpen.value = false;
+  errors.value = { cat_title: [] };
 };
 </script>
 
@@ -192,7 +206,7 @@ const openNewCategoryForm = () => {
               <button
                 type="button"
                 class="text-sm font-semibold text-gray-900"
-                @click="isOpen = false"
+                @click="closeForm"
               >
                 Cancel
               </button>
