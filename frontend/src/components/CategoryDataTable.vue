@@ -46,12 +46,16 @@ const handleSearch = (search) => {
 };
 
 const deleteCategory = async (id) => {
+  if (!confirm("Are you sure you want to delete this category? This action cannot be undone.")) return;
+
   try {
     isDeleting.value = true;
     await api.delete(`/api/categories/${id}`);
     emit("categoryDeleted", id);
     $toast.success("Category deleted successfully!");
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   } catch (error) {
     console.error("Error deleting category:", error);
     $toast.error("Failed to delete category. Please try again.");
@@ -129,7 +133,7 @@ const openNewCategoryForm = () => {
     <div class="flex items-center justify-between p-4">
       <SearchForm @search="handleSearch" />
       <button
-        class="rounded-md bg-[#135CA5] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#28BBDD] transition mr-14"
+        class="rounded-md bg-[#002D4A] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#036F8B] transition mr-14"
         @click="openNewCategoryForm"
       >
         Add category
@@ -194,7 +198,7 @@ const openNewCategoryForm = () => {
               </button>
               <button
                 type="submit"
-                class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                class="rounded-md bg-[#002D4A] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#036F8B] focus:outline-none focus:ring-2 focus:ring-indigo-600"
               >
                 {{ isEditMode ? "Update" : "Create" }}
               </button>
@@ -259,7 +263,7 @@ const openNewCategoryForm = () => {
             <div class="flex justify-center space-x-2">
               <button
                 @click="editCategory(item)"
-                class="text-indigo-600 hover:text-indigo-900"
+                class="text-[#002D4A] hover:text-[#036F8B]"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

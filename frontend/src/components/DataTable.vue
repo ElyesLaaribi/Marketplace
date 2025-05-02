@@ -44,14 +44,19 @@ const handleSearch = (search) => {
 };
 
 const deleteUser = async (id) => {
+  if (!confirm("Are you sure you want to delete this user? This action cannot be undone.")) return;
+
   try {
     isDeleting.value = true;
     await api.delete(`/api/users/${id}`);
     emit("userDeleted", id);
     $toast.success("User deleted successfully!");
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   } catch (error) {
     console.error("Error deleting user:", error);
-    $toast.error("Failed to delete user. Please try again.");
+    $toast.error("Error deleting user");
   } finally {
     isDeleting.value = false;
   }

@@ -55,11 +55,16 @@ const handleSearch = (search) => {
 };
 
 const deleteUser = async (id) => {
+  if (!confirm("Are you sure you want to delete this admin? This action cannot be undone.")) return;
+
   try {
     isDeleting.value = true;
     await api.delete(`/api/admins/${id}`);
     emit("userDeleted", id);
     $toast.success("Admin deleted successfully!");
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   } catch (error) {
     console.error("Error deleting user:", error);
     $toast.error("Error deleting user");
@@ -105,7 +110,7 @@ const submit = async () => {
     <div class="flex items-center justify-between p-4">
       <SearchForm @search="handleSearch" />
       <button
-        class="rounded-md bg-[#135CA5] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#28BBDD] transition mr-4"
+        class="rounded-md bg-[#002D4A] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#036F8B] transition mr-4"
         @click="isOpen = true"
       >
         Add admin
@@ -221,7 +226,7 @@ const submit = async () => {
               </button>
               <button
                 type="submit"
-                class="rounded-md bg-[#135CA5] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#28BBDD] focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                class="rounded-md bg-[#002D4A] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#036F8B] focus:outline-none focus:ring-2 focus:ring-indigo-600"
               >
                 Create
               </button>

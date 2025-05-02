@@ -222,7 +222,9 @@ const deleteListing = async (id) => {
     await api.delete(`/api/listings/${id}`);
     emit("listingDeleted", id);
     $toast.success("Listing deleted successfully!");
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   } catch (error) {
     console.error("Error deleting listing:", error);
     $toast.error("Failed to delete listing. Please try again.");
