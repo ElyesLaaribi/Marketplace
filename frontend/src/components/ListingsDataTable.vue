@@ -245,9 +245,7 @@ const editListing = (item) => {
 
   if (item.image_paths && item.image_paths.length > 0) {
     existingImages.value = item.image_paths.map((path) =>
-      path.startsWith("http")
-        ? path
-        : `http://localhost:8000/storage/${path}`
+      path.startsWith("http") ? path : `http://localhost:8000/storage/${path}`
     );
 
     imagePreview.value = [...existingImages.value];
@@ -281,10 +279,7 @@ const submit = async () => {
     });
 
     imagesToRemove.value.forEach((img) => {
-      const relativePath = img.replace(
-        "http://localhost:8000/storage/",
-        ""
-      );
+      const relativePath = img.replace("http://localhost:8000/storage/", "");
       formData.append("deleted_images[]", relativePath);
     });
 
@@ -298,9 +293,12 @@ const submit = async () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
     }
+    // notf
+    $toast.success("Listing updated successfully!");
 
-    resetForm();
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   } catch (error) {
     if (error.response?.status === 422) {
       errors.value = error.response.data.errors;
