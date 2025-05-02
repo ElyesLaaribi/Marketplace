@@ -22,9 +22,9 @@ class UpdateListingRequest extends FormRequest
             'deleted_images' => 'sometimes|array',
             'deleted_images.*' => 'string',
             'category_id' => 'sometimes|exists:categories,id',
-            'address' => 'required|string|max:255',
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180'
+            'address' => 'sometimes|string|max:255',
+            'latitude' => 'sometimes|numeric|between:-90,90',
+            'longitude' => 'sometimes|numeric|between:-180,180'
         ];
     }
 }

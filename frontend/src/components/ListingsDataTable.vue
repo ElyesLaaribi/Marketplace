@@ -269,10 +269,12 @@ const submit = async () => {
     formData.append("category_id", data.value.category_id);
     formData.append("description", data.value.description);
 
-    // Add location data to form
-    formData.append("address", address.value);
-    formData.append("latitude", lat.value);
-    formData.append("longitude", lng.value);
+    // Only add location data if address has been changed
+    if (address.value && address.value !== data.value.address) {
+      formData.append("address", address.value);
+      formData.append("latitude", lat.value);
+      formData.append("longitude", lng.value);
+    }
 
     imageFiles.value.forEach((file) => {
       formData.append("images[]", file);

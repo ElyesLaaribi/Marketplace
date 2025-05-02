@@ -221,7 +221,7 @@ const submit = async () => {
               </button>
               <button
                 type="submit"
-                class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                class="rounded-md bg-[#135CA5] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#28BBDD] focus:outline-none focus:ring-2 focus:ring-indigo-600"
               >
                 Create
               </button>
