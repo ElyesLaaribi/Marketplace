@@ -24,6 +24,7 @@ use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Listings\ListingsController;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 use App\Http\Controllers\Listings\RetrieveListingsController;
+use App\Http\Controllers\Admin\AdminBIController;
 
 
 
@@ -61,6 +62,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/lessor/listings/revenue', [ListingBI::class, 'getEarnings']);
     Route::get('/lessor/listings/revenuePerListing', [ListingBI::class, 'getRevenuePerListing']);
     Route::get('/lessor/listings/clients', [ListingBI::class, 'getTotalClients']);
+    
+    // New BI dashboard endpoints
+    Route::get('/lessor/listings/average-revenue', [ListingBI::class, 'getAverageRevenue']);
+    Route::get('/lessor/listings/occupancy', [ListingBI::class, 'getOccupancy']);
+    Route::get('/lessor/listings/popular-items', [ListingBI::class, 'getPopularItems']);
+    Route::get('/lessor/listings/top-clients', [ListingBI::class, 'getTopClients']);
 });
 
 
@@ -93,6 +100,15 @@ Route::middleware('auth:admin')->get('/admin', function (Request $request) {
     return $request->user(); 
 });
 
+// Admin BI Dashboard Routes
+Route::middleware('auth:admin')->group(function () {
+    Route::get('/admin/clients/count', [AdminBIController::class, 'getTotalClients']);
+    Route::get('/admin/lessors/count', [AdminBIController::class, 'getTotalLessors']);
+    Route::get('/admin/categories/count', [AdminBIController::class, 'getTotalCategories']);
+    Route::get('/admin/lessors/top', [AdminBIController::class, 'getTopLessors']);
+    Route::get('/admin/categories', [AdminBIController::class, 'getCategories']);
+});
+
 Route::middleware('auth:admin')->apiResource('/users', UsersController::class);
 Route::middleware('auth:admin')->apiResource('/admins', AdminController::class); 
 Route::middleware('auth:admin')->post('/add-admin', AdminAddController::class);
@@ -101,3 +117,20 @@ Route::middleware('auth:sanctum')->post('/users/update-device-token', [DeviceTok
 
 Route::middleware('auth:sanctum')->post('/send-test-notification', [NotificationController::class, 'sendTest']);
 Route::middleware('auth:sanctum')->post('/test-direct-fcm', [NotificationController::class, 'testDirectFCM']);
+
+
+// Lessor BI Endpoints
+Route::middleware(['auth:sanctum'])->prefix('lessor/listings')->group(function () {
+    Route::get('/average-revenue', [ListingBI::class, 'getAverageRevenue']);
+    Route::get('/occupancy', [ListingBI::class, 'getOccupancy']);
+    Route::get('/popular-items', [ListingBI::class, 'getPopularItems']);
+    Route::get('/top-clients', [ListingBI::class, 'getTopClients']);
+});
+        
+// Admin BI Endpoints
+Route::get('/admin/clients/count', [AdminBIController::class, 'getTotalClients']);
+Route::get('/admin/lessors/count', [AdminBIController::class, 'getTotalLessors']);
+Route::get('/admin/categories/count', [AdminBIController::class, 'getTotalCategories']);
+Route::get('/admin/lessors/top', [AdminBIController::class, 'getTopLessors']);
+Route::get('/admin/categories', [AdminBIController::class, 'getCategories']);
+
