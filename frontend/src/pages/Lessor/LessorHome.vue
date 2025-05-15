@@ -562,14 +562,6 @@ const clientsChartOptions = {
                   <p class="text-gray-500">No revenue data available</p>
                 </div>
               </div>
-              <div class="mt-4 text-center">
-                <p class="text-sm text-gray-500">
-                  Average Revenue Per Item:
-                  <span class="font-medium">{{
-                    formatCurrency(averageRevenuePerItem)
-                  }}</span>
-                </p>
-              </div>
             </div>
           </div>
 
