@@ -269,11 +269,15 @@ const submit = async () => {
     formData.append("category_id", data.value.category_id);
     formData.append("description", data.value.description);
 
-    // Only add location data if address has been changed
-    if (address.value && address.value !== data.value.address) {
+    // Always add location data when available
+    if (address.value) {
       formData.append("address", address.value);
       formData.append("latitude", lat.value);
       formData.append("longitude", lng.value);
+    } else if (data.value.address) {
+      formData.append("address", data.value.address);
+      formData.append("latitude", data.value.latitude);
+      formData.append("longitude", data.value.longitude);
     }
 
     imageFiles.value.forEach((file) => {
@@ -295,8 +299,12 @@ const submit = async () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
     }
-    // notf
-    $toast.success("Listing updated successfully!");
+    // Show appropriate success message based on whether we're creating or updating
+    if (isEditMode.value) {
+      $toast.success("Listing updated successfully!");
+    } else {
+      $toast.success("Listing created successfully!");
+    }
 
     setTimeout(() => {
       window.location.reload();
@@ -564,7 +572,7 @@ const openNewListingForm = () => {
                           <li
                             :class="[
                               active
-                                ? 'bg-indigo-600 text-white'
+                                ? 'bg-[#002D4A] text-white'
                                 : 'text-gray-900',
                               'relative cursor-default select-none py-1.5 sm:py-2 pl-2 sm:pl-3 pr-7 sm:pr-9',
                             ]"

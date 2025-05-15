@@ -46,7 +46,12 @@ const handleSearch = (search) => {
 };
 
 const deleteCategory = async (id) => {
-  if (!confirm("Are you sure you want to delete this category? This action cannot be undone.")) return;
+  if (
+    !confirm(
+      "Are you sure you want to delete this category? This action cannot be undone."
+    )
+  )
+    return;
 
   try {
     isDeleting.value = true;
@@ -76,7 +81,7 @@ const submit = async () => {
 
   // Check for empty category title
   if (!data.value.cat_title.trim()) {
-    errors.value.cat_title = ['Category title is required'];
+    errors.value.cat_title = ["Category title is required"];
     loading.value = false;
     return;
   }
@@ -103,7 +108,9 @@ const submit = async () => {
       created_at: "",
     };
     isEditMode.value = false;
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   } catch (error) {
     console.log("Error response:", error.response);
     if (error.response) {

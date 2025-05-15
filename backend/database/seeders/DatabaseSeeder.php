@@ -19,7 +19,5 @@ class DatabaseSeeder extends Seeder
     {
         Admin::factory(5)->create();
         User::factory(10)->create();
-        // To seed more data, uncomment or add more lines as needed.
-
     }
 }
