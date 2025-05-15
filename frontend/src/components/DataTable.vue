@@ -44,7 +44,12 @@ const handleSearch = (search) => {
 };
 
 const deleteUser = async (id) => {
-  if (!confirm("Are you sure you want to delete this user? This action cannot be undone.")) return;
+  if (
+    !confirm(
+      "Are you sure you want to delete this user? This action cannot be undone."
+    )
+  )
+    return;
 
   try {
     isDeleting.value = true;
@@ -63,6 +68,15 @@ const deleteUser = async (id) => {
 };
 
 const emit = defineEmits(["userDeleted"]);
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
 </script>
 
 <template>
@@ -130,7 +144,9 @@ const emit = defineEmits(["userDeleted"]);
             <div class="text-sm text-gray-900">{{ item.Email }}</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">{{ item["User since"] }}</div>
+            <div class="text-sm text-gray-900">
+              {{ formatDate(item["User since"]) }}
+            </div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
             <span

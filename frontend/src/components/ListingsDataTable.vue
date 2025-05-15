@@ -703,7 +703,7 @@ const openNewListingForm = () => {
             <td
               class="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900"
             >
-              {{ item.id }}
+              #{{ item.id }}
             </td>
             <td class="px-4 py-4 whitespace-nowrap">
               <img

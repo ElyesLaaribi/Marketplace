@@ -55,7 +55,12 @@ const handleSearch = (search) => {
 };
 
 const deleteUser = async (id) => {
-  if (!confirm("Are you sure you want to delete this admin? This action cannot be undone.")) return;
+  if (
+    !confirm(
+      "Are you sure you want to delete this admin? This action cannot be undone."
+    )
+  )
+    return;
 
   try {
     isDeleting.value = true;
@@ -100,6 +105,16 @@ const submit = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 };
 </script>
 
@@ -293,7 +308,9 @@ const submit = async () => {
             <div class="text-sm text-gray-900">{{ item.Email }}</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">{{ item["Admin since"] }}</div>
+            <div class="text-sm text-gray-900">
+              {{ formatDate(item["Admin since"]) }}
+            </div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
             <span
