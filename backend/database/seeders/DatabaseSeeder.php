@@ -17,14 +17,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin::factory(10)->create();
-        // Category::factory(10)->create();
-
-        // User::factory(5)->has(
-        //     Listing::factory(10)
-        // )->create();
-
-        Review::factory(10)->create();
+        Admin::factory(5)->create();
+        User::factory(10)->create();
+        // To seed more data, uncomment or add more lines as needed.
 
     }
 }
