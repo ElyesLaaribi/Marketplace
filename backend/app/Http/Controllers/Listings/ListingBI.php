@@ -147,7 +147,7 @@ class ListingBI extends Controller
             $totalAvailableDays = 0;
             
             foreach ($listings as $listing) {
-                // Calculate occupied days (sum of reservation days in last 3 months)
+                // Calculate occupied days (sum of reservation days in last month)
                 $occupiedDays = 0;
                 foreach ($listing->reservations as $reservation) {
                     $startDate = Carbon::parse($reservation->start_date);
