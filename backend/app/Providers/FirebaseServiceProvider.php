@@ -15,7 +15,7 @@ class FirebaseServiceProvider extends ServiceProvider
         // Register Firebase Messaging
         $this->app->singleton('firebase.messaging', function ($app) {
             return (new Factory)
-                ->withServiceAccount(storage_path('app/firebase-credentials.json'))
+                ->withServiceAccount(json_decode(env('FIREBASE_CREDENTIALS_JSON'), true))
                 ->createMessaging();
         });
 
