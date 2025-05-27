@@ -62,8 +62,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/lessor/listings/revenue', [ListingBI::class, 'getEarnings']);
     Route::get('/lessor/listings/revenuePerListing', [ListingBI::class, 'getRevenuePerListing']);
     Route::get('/lessor/listings/clients', [ListingBI::class, 'getTotalClients']);
-    
-    // New BI dashboard endpoints
     Route::get('/lessor/listings/average-revenue', [ListingBI::class, 'getAverageRevenue']);
     Route::get('/lessor/listings/occupancy', [ListingBI::class, 'getOccupancy']);
     Route::get('/lessor/listings/popular-items', [ListingBI::class, 'getPopularItems']);

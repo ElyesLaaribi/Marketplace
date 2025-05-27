@@ -58,8 +58,6 @@ const topClientsChartData = ref({
 
 onMounted(async () => {
   try {
-    // Use development endpoints for testing without authentication
-
     const [
       listingsRes,
       demandRes,
@@ -95,7 +93,7 @@ onMounted(async () => {
         labels: listingsDetail.map((item) => item.listing_name),
         datasets: [
           {
-            data: listingsDetail.map((item) => item.total_revenue),
+            data: listingsDetail.map((item) => item.average_per_reservation),
             backgroundColor: [
               "#4CAF50",
               "#2196F3",
@@ -139,6 +137,14 @@ onMounted(async () => {
         ],
       };
     }
+    const options = {
+      scales: {
+        y: {
+          max: 31,
+          beginAtZero: true,
+        },
+      },
+    };
 
     // Set popular items data
     if (
@@ -361,6 +367,8 @@ const occupancyChartOptions = {
     },
     y: {
       stacked: true,
+      min: 1,
+      max: 31,
     },
   },
 };
@@ -540,7 +548,7 @@ const clientsChartOptions = {
           <div class="bg-white overflow-hidden shadow rounded-lg">
             <div class="p-6">
               <h3 class="text-lg font-medium text-gray-900 mb-2">
-                Revenue by Item
+                Average revenue by Item
               </h3>
               <div class="h-80">
                 <Pie

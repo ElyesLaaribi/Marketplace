@@ -65,38 +65,7 @@ class RetrieveListingsController extends Controller
         ]);
     }
 
-    public function getCategoryProducts(Request $request, $category)
-    {
-        $perPage = $request->input('per_page', 12);
-        $page = $request->input('page', 1);
-        
-        $query = Listing::with(['user', 'category'])
-            ->whereHas('category', function($q) use ($category) {
-                $q->where('cat_title', $category);
-            });
-
-        // Apply price range filter
-        if ($request->has('min_price') && $request->min_price) {
-            $query->where('price', '>=', $request->min_price);
-        }
-        if ($request->has('max_price') && $request->max_price) {
-            $query->where('price', '<=', $request->max_price);
-        }
-
-        // Get total count before pagination
-        $totalCount = $query->count();
-        
-        // Get paginated results
-        $listings = $query->paginate($perPage, ['*'], 'page', $page);
-        
-        return response()->json([
-            'data' => ListingClientResource::collection($listings),
-            'total' => $totalCount,
-            'current_page' => $listings->currentPage(),
-            'per_page' => $listings->perPage(),
-            'last_page' => $listings->lastPage(),
-        ]);
-    }
+    
 
     
     /**

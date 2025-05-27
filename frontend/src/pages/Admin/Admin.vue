@@ -26,23 +26,29 @@ ChartJS.register(
 
 const loading = ref(true);
 
-// Admin dashboard data
+// Define consistent color palette
+const colorPalette = [
+  "#4CAF50",
+  "#2196F3",
+  "#9C27B0",
+  "#F44336",
+  "#FF9800",
+  "#03A9F4",
+  "#E91E63",
+  "#8BC34A",
+  "#FF5722",
+  "#607D8B",
+];
+
+// Dashboard data
 const totalClients = ref(0);
 const totalLessors = ref(0);
 const totalCategories = ref(0);
-const topLessorsData = ref({
-  labels: [],
-  datasets: [],
-});
-const categoriesData = ref({
-  labels: [],
-  datasets: [],
-});
+const topLessorsData = ref({ labels: [], datasets: [] });
+const categoriesData = ref({ labels: [], datasets: [] });
 
 onMounted(async () => {
   try {
-    // Use development endpoints for testing without authentication
-
     const [
       clientsRes,
       lessorsRes,
@@ -61,25 +67,49 @@ onMounted(async () => {
     totalLessors.value = lessorsRes.data.total_lessors || 0;
     totalCategories.value = categoriesCountRes.data.total_categories || 0;
 
-    // Process lessors data for bar chart
-    if (topLessorsRes.data && topLessorsRes.data.chartData) {
-      topLessorsData.value = topLessorsRes.data.chartData;
+    // Handle top lessors data
+    if (topLessorsRes.data && topLessorsRes.data.lessors) {
+      const lessors = topLessorsRes.data.lessors;
+      const labels = lessors.map((l) => l.name);
+      const data = lessors.map((l) => l.listings);
+
+      topLessorsData.value = {
+        labels,
+        datasets: [
+          {
+            label: "Number of Listings",
+            backgroundColor: colorPalette.slice(0, labels.length),
+            data,
+          },
+        ],
+      };
     }
 
-    // Process categories data for pie chart
-    if (categoriesRes.data && categoriesRes.data.chartData) {
-      categoriesData.value = categoriesRes.data.chartData;
+    // Handle categories data
+    if (categoriesRes.data && categoriesRes.data.categories) {
+      const categories = categoriesRes.data.categories;
+      const labels = categories.map((c) => c.title);
+      const data = categories.map((c) => c.count);
+
+      categoriesData.value = {
+        labels,
+        datasets: [
+          {
+            data,
+            backgroundColor: colorPalette.slice(0, labels.length),
+            hoverOffset: 4,
+          },
+        ],
+      };
     }
   } catch (error) {
-    console.error("Error fetching admin dashboard data:", error);
-    // Use fallback data in case of API errors
+    console.error("Error fetching dashboard data:", error);
     setFallbackData();
   } finally {
     loading.value = false;
   }
 });
 
-// Fallback data if API calls fail
 const setFallbackData = () => {
   totalClients.value = 287;
   totalLessors.value = 53;
@@ -90,13 +120,7 @@ const setFallbackData = () => {
     datasets: [
       {
         label: "Number of Listings",
-        backgroundColor: [
-          "#4CAF50",
-          "#2196F3",
-          "#9C27B0",
-          "#F44336",
-          "#FF9800",
-        ],
+        backgroundColor: colorPalette,
         data: [24, 18, 15, 12, 9],
       },
     ],
@@ -112,14 +136,9 @@ const setFallbackData = () => {
     ],
     datasets: [
       {
-        backgroundColor: [
-          "#FF6384",
-          "#36A2EB",
-          "#FFCE56",
-          "#4BC0C0",
-          "#9966FF",
-        ],
         data: [45, 30, 25, 20, 15],
+        backgroundColor: colorPalette,
+        hoverOffset: 4,
       },
     ],
   };
