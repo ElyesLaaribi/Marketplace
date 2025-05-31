@@ -55,6 +55,11 @@ const topClientsChartData = ref({
   labels: [],
   datasets: [],
 });
+// Revenue per item chart data
+const itemRevenueData = ref({
+  labels: [],
+  datasets: [],
+});
 
 onMounted(async () => {
   try {
@@ -107,6 +112,30 @@ onMounted(async () => {
               "#607D8B",
             ],
             hoverOffset: 4,
+          },
+        ],
+      };
+      
+      // Set data for the item revenue chart
+      itemRevenueData.value = {
+        labels: listingsDetail.map((item) => item.listing_name),
+        datasets: [
+          {
+            label: "Total Revenue",
+            data: listingsDetail.map((item) => item.total_revenue),
+            backgroundColor: [
+              "#4CAF50",
+              "#2196F3",
+              "#9C27B0",
+              "#F44336",
+              "#FF9800",
+              "#03A9F4",
+              "#E91E63",
+              "#8BC34A",
+              "#FF5722",
+              "#607D8B",
+            ],
+            borderWidth: 1,
           },
         ],
       };
@@ -401,6 +430,42 @@ const clientsChartOptions = {
     },
   },
 };
+
+// Options for revenue per item chart
+const itemRevenueChartOptions = {
+  indexAxis: "y",
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    title: {
+      display: true,
+      text: "Total Revenue per Item",
+    },
+    tooltip: {
+      callbacks: {
+        label: function (context) {
+          return formatCurrency(context.parsed.y);
+        },
+      },
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+    },
+    x: {
+      beginAtZero: true,
+      ticks: {
+        callback: function (value) {
+          return formatCurrency(value);
+        },
+      },
+    },
+  },
+};
 </script>
 
 <template>
@@ -657,6 +722,35 @@ const clientsChartOptions = {
                   <p class="text-gray-500">No client data available</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Revenue Per Item Chart -->
+      <div class="bg-white overflow-hidden shadow rounded-lg mt-4">
+        <div class="p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">
+            Revenue per Item
+          </h3>
+          <div class="h-80">
+            <Bar
+              v-if="
+                !loading &&
+                itemRevenueData.labels &&
+                itemRevenueData.labels.length > 0
+              "
+              :data="itemRevenueData"
+              :options="itemRevenueChartOptions"
+            />
+            <div
+              v-else-if="loading"
+              class="flex items-center justify-center h-full"
+            >
+              <p class="text-gray-500">Loading chart data...</p>
+            </div>
+            <div v-else class="flex items-center justify-center h-full">
+              <p class="text-gray-500">No revenue data available</p>
             </div>
           </div>
         </div>

@@ -40,6 +40,9 @@ class ReservationController extends Controller
         $listingId = $validated['listing_id'];
         $startDate = $validated['start_date'];
         $endDate = $validated['end_date'];
+        
+        $discount = $request->input('discount', 0);
+        $discountAmount = $request->input('discount_amount', 0);
 
         $listing = Listing::findOrFail($listingId);
         $user = User::findOrFail(auth()->id());
@@ -49,7 +52,9 @@ class ReservationController extends Controller
         $days = $endDateTime->diffInDays($startDateTime);
         
         $days = max(1, $days);
-        $totalPrice = $listing->price * $days;
+        $subtotal = $listing->price * $days;
+        
+        $finalPrice = $subtotal - $discountAmount;
 
         $overlappingReservations = Reservation::where('listing_id', $listingId)
             ->where(function ($query) use ($startDate, $endDate) {
@@ -72,7 +77,10 @@ class ReservationController extends Controller
             'start_date' => $startDate,
             'end_date' => $endDate,
             'status' => 'payed',
-            'price' => $totalPrice + 10, 
+            'price' => $finalPrice + 10, 
+            'discount' => $discount,
+            'discount_amount' => $discountAmount,
+            'original_price' => $subtotal + 10, 
         ]);
     
         return response()->json(['message' => 'Reservation created successfully.', 'reservation' => $reservation], 201);
