@@ -14,6 +14,7 @@ const props = defineProps({
 });
 
 const searchFilter = ref("");
+const roleFilter = ref("");
 const isDeleting = ref(false);
 
 const getRoleBadgeClass = (role) => {
@@ -28,19 +29,43 @@ const getRoleBadgeClass = (role) => {
 };
 
 const filteredItems = computed(() => {
-  if (searchFilter.value != "") {
-    return props.items.filter(
+  let filtered = props.items;
+
+  if (searchFilter.value !== "") {
+    filtered = filtered.filter(
       (item) =>
         String(item.id).toLowerCase().includes(searchFilter.value) ||
         item.Name.includes(searchFilter.value) ||
         item.Role.includes(searchFilter.value)
     );
   }
-  return props.items;
+
+  if (roleFilter.value !== "") {
+    filtered = filtered.filter((item) => {
+      if (!item.Role) return false;
+
+      const itemRole = String(item.Role).toLowerCase();
+      const filterRole = roleFilter.value.toLowerCase();
+
+      return itemRole.includes(filterRole);
+    });
+  }
+
+  return filtered;
 });
 
 const handleSearch = (search) => {
   searchFilter.value = search;
+  roleFilter.value = "";
+};
+
+const filterByRole = (role) => {
+  if (roleFilter.value === role) {
+    roleFilter.value = "";
+  } else {
+    roleFilter.value = role;
+  }
+  searchFilter.value = "";
 };
 
 const deleteUser = async (id) => {
@@ -83,8 +108,39 @@ const formatDate = (dateString) => {
   <div
     class="bg-white relative rounded-lg shadow-sm overflow-hidden border border-gray-300"
   >
-    <div class="flex items-center justify-between">
-      <SearchForm @search="handleSearch" />
+    <div class="flex items-center justify-between p-4">
+      <div class="flex items-center space-x-4">
+        <SearchForm @search="handleSearch" />
+        <button
+          @click="filterByRole('client')"
+          class="px-4 py-2 rounded-md font-medium text-sm transition-colors"
+          :class="
+            roleFilter === 'client'
+              ? 'bg-blue-500 text-white'
+              : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+          "
+        >
+          Client
+        </button>
+        <button
+          @click="filterByRole('lessor')"
+          class="px-4 py-2 rounded-md font-medium text-sm transition-colors"
+          :class="
+            roleFilter === 'lessor'
+              ? 'bg-green-500 text-white'
+              : 'bg-green-100 text-green-600 hover:bg-green-200'
+          "
+        >
+          Lessor
+        </button>
+        <button
+          v-if="roleFilter !== ''"
+          @click="roleFilter = ''"
+          class="px-4 py-2 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors font-medium text-sm"
+        >
+          Clear
+        </button>
+      </div>
     </div>
 
     <table class="min-w-full divide-y divide-gray-200">

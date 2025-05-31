@@ -11,7 +11,11 @@ class AdminController extends Controller
 {
     public function index()
     {
-        return AdminResource::collection(Admin::all());
+        $currentUserId = auth('admin')->id();
+
+        $admins = Admin::where('id', '!=', $currentUserId)->get();
+
+        return AdminResource::collection($admins);
     }
 
     public function show(Admin $admin)

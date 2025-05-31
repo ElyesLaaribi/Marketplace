@@ -14,8 +14,13 @@ class FirebaseServiceProvider extends ServiceProvider
     {
         // Register Firebase Messaging
         $this->app->singleton('firebase.messaging', function ($app) {
+            $serviceAccountPath = storage_path('app/firebase-credentials.json');
+            if (!file_exists($serviceAccountPath)) {
+                throw new \RuntimeException('Firebase service account file not found at: ' . $serviceAccountPath);
+            }
+            
             return (new Factory)
-                ->withServiceAccount(storage_path('app/firebase-credentials.json'))
+                ->withServiceAccount($serviceAccountPath)
                 ->createMessaging();
         });
 

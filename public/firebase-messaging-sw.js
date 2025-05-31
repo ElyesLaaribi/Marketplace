@@ -2,35 +2,55 @@ importScripts('https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js'
 importScripts('https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging-compat.js');
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBvV4sh9NpR4u1WQZFB9B2t5z4d4K4qK4k",
-    authDomain: "rental-app-12345.firebaseapp.com",
-    projectId: "rental-app-12345",
-    storageBucket: "rental-app-12345.appspot.com",
+    apiKey: "AIzaSyDHHbtG6Ka7j_WzWECxT9VFq0eL_c65z5Q",
+    authDomain: "rentease-7d991.firebaseapp.com",
+    projectId: "rentease-7d991",
+    storageBucket: "rentease-7d991.firebasestorage.app",
     messagingSenderId: "977313734840",
-    appId: "1:977313734840:web:1234567890abcdef"
+    appId: "1:977313734840:web:fdc9d74b7a672981eed44d"
 };
 
 // Initialize Firebase once
+console.log('Initializing Firebase in service worker...');
 firebase.initializeApp(firebaseConfig);
+console.log('Firebase initialized in service worker');
+
 const messaging = firebase.messaging();
+console.log('Firebase messaging initialized');
+
 const broadcastChannel = new BroadcastChannel('notifications-channel');
+console.log('Broadcast channel created');
 
 // Initialize IndexedDB
+console.log('Initializing IndexedDB in service worker...');
 let db;
-const request = indexedDB.open('notificationsDB', 1);
+const dbName = 'notificationsDB';
+const dbVersion = 1;
+
+const request = indexedDB.open(dbName, dbVersion);
 
 request.onerror = (event) => {
     console.error('Error opening IndexedDB:', event.target.error);
 };
 
 request.onsuccess = (event) => {
+    console.log('IndexedDB opened successfully');
     db = event.target.result;
+    
+    // Log database info
+    console.log(`Database name: ${db.name}, version: ${db.version}`);
+    console.log(`Object stores: ${Array.from(db.objectStoreNames).join(', ')}`);
 };
 
 request.onupgradeneeded = (event) => {
+    console.log('Upgrading IndexedDB...');
     const db = event.target.result;
+    
     if (!db.objectStoreNames.contains('notifications')) {
+        console.log('Creating notifications object store');
         db.createObjectStore('notifications', { keyPath: 'id' });
+    } else {
+        console.log('Notifications object store already exists');
     }
 };
 
@@ -58,7 +78,12 @@ function storeNotification(notification) {
 
 // Handle background messages
 messaging.onBackgroundMessage((payload) => {
-    console.log('Received background message:', payload);
+    console.log('Received background message in service worker:', payload);
+    
+    if (!payload) {
+        console.error('No payload received in background message');
+        return;
+    }
 
     // Extract notification data
     const notificationData = payload.notification || {};
@@ -101,7 +126,7 @@ messaging.onBackgroundMessage((payload) => {
 
 // Handle notification click
 self.addEventListener('notificationclick', (event) => {
-    console.log('Notification clicked:', event);
+    console.log('Notification clicked in service worker:', event);
     
     event.notification.close();
     

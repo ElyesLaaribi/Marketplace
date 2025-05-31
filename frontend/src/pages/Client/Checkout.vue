@@ -168,10 +168,19 @@ const updateDates = () => {
   closeDateEditor();
 };
 
+const calculateDiscount = (subtotal) => {
+  // Apply 10% discount if subtotal is equal to or exceeds 500 TND
+  if (subtotal >= 500) {
+    return subtotal * 0.1; // 10% discount
+  }
+  return 0;
+};
+
 const updateTotalPrice = () => {
   if (listing.value && listing.value.price) {
-    const basePrice = listing.value.price * days.value;
-    totalPrice.value = basePrice + serviceFee;
+    const subtotal = listing.value.price * days.value;
+    const discount = calculateDiscount(subtotal);
+    totalPrice.value = subtotal + serviceFee - discount;
   }
 };
 
@@ -315,10 +324,17 @@ const submitReservation = async () => {
       }
     }
 
+    // Calculate discount for the reservation
+    const subtotal = listing.value.price * days.value;
+    const hasDiscount = subtotal >= 500;
+    const discountAmount = hasDiscount ? subtotal * 0.1 : 0;
+    
     const response = await api.post("/api/reservations", {
       listing_id: listingId,
       start_date: startDate.value,
       end_date: endDate.value,
+      discount: hasDiscount ? 10 : 0,
+      discount_amount: discountAmount
     });
     $toast.success("Reservation made successfully!");
 
@@ -577,6 +593,13 @@ onMounted(() => {
                   <div>Service fee</div>
                   <div>{{ formatCurrency(serviceFee) }}</div>
                 </div>
+                
+                <template v-if="listing.price * nights >= 500">
+                  <div class="flex justify-between text-green-600 font-medium">
+                    <div>Discount (10%)</div>
+                    <div>-{{ formatCurrency(listing.price * nights * 0.1) }}</div>
+                  </div>
+                </template>
               </div>
             </div>
 

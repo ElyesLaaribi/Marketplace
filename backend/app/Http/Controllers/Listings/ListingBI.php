@@ -23,14 +23,9 @@ class ListingBI extends Controller
     public function countReservations()
     {
         $userId = Auth::id();
-        $reservationsCount = Reservation::with(['user', 'listing.user'])
-            ->where(function($q) use ($userId) {
-                $q->where('user_id', $userId)           
-                  ->orWhereHas('listing', fn($q2) =>
-                      $q2->where('user_id', $userId)
-                  );
-            })
-            ->count();
+        $reservationsCount = Reservation::whereHas('listing', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->count();
 
         return response()->json(['reservations' => $reservationsCount]);
     }
@@ -133,10 +128,13 @@ class ListingBI extends Controller
         $user = Auth::user();
         
         $listings = $user->listings()
-            ->with(['reservations' => function($query) {
-                $query->whereDate('end_date', '>=', Carbon::now()->subMonths(3));
-            }])
-            ->get();
+        ->with(['reservations' => function($query) {
+            $query->whereBetween('end_date', [
+                Carbon::now()->startOfMonth(),
+                Carbon::now()->endOfMonth()
+            ]);
+        }])
+        ->get();
         
         $occupancyData = [];
         $totalOccupancyRate = 0;
@@ -152,11 +150,12 @@ class ListingBI extends Controller
                 foreach ($listing->reservations as $reservation) {
                     $startDate = Carbon::parse($reservation->start_date);
                     $endDate = Carbon::parse($reservation->end_date);
-                    $occupiedDays += $startDate->diffInDays($endDate) + 1; // +1 to include end date
+                    $occupiedDays += $startDate->diffInDays($endDate) + 1; 
                 }
                 
                 // Available days 
-                $availableDays = Carbon::now()->subMonths(1)->diffInDays(Carbon::now());
+                $availableDays = Carbon::now()->startOfMonth()->diffInDays(Carbon::now()->endOfMonth()) + 1;
+
                 
                 // Calculate occupancy rate for this listing
                 $occupancyRate = $availableDays > 0 ? ($occupiedDays / $availableDays) * 100 : 0;
