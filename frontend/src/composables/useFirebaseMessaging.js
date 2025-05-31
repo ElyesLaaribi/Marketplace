@@ -15,28 +15,46 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase app once
+console.log('Initializing Firebase app...');
 const firebaseApp = initializeApp(firebaseConfig);
+console.log('Firebase app initialized');
+
+console.log('Initializing Firebase messaging...');
 const messaging = getMessaging(firebaseApp);
+console.log('Firebase messaging initialized');
 
 // Initialize IndexedDB
+console.log('Initializing IndexedDB in composable...');
 let db;
 let dbReady = false;
-const request = indexedDB.open('notificationsDB', 2);
+const dbName = 'notificationsDB';
+const dbVersion = 2;
+
+const request = indexedDB.open(dbName, dbVersion);
 
 request.onerror = (event) => {
     console.error('Error opening IndexedDB:', event.target.error);
 };
 
 request.onsuccess = (event) => {
+    console.log('IndexedDB opened successfully in composable');
     db = event.target.result;
     dbReady = true;
-    console.log('IndexedDB initialized successfully');
+    
+    // Log database info
+    console.log(`Database name: ${db.name}, version: ${db.version}`);
+    console.log(`Object stores: ${Array.from(db.objectStoreNames).join(', ')}`);
 };
 
 request.onupgradeneeded = (event) => {
+    console.log('Upgrading IndexedDB in composable...');
     const db = event.target.result;
+    
     if (!db.objectStoreNames.contains('notifications')) {
+        console.log('Creating notifications object store in composable');
         db.createObjectStore('notifications', { keyPath: 'id' });
+    } else {
+        console.log('Notifications object store already exists in composable');
     }
 };
 
@@ -65,9 +83,7 @@ function getAllNotifications(userId) {
             resolve(filteredNotifications);
         };
 
-        request.onerror = (event) => {
-            reject(event.target.error);
-        };
+        request.onerror = (event) => reject(event.target.error);
     });
 }
 
@@ -87,9 +103,7 @@ function addNotification(notification) {
             resolve();
         };
 
-        request.onerror = (event) => {
-            reject(event.target.error);
-        };
+        request.onerror = (event) => reject(event.target.error);
     });
 }
 
@@ -122,6 +136,8 @@ function markNotificationAsRead(id) {
 }
 
 export function useFirebaseMessaging() {
+  console.log('useFirebaseMessaging composable initialized');
+  
   const userStore = useUserStore();
   const fcmToken = ref(null);
   const notificationPermission = ref('default');
@@ -131,7 +147,19 @@ export function useFirebaseMessaging() {
   const unreadCount = ref(0);
   let unsubscribe = null;
   const router = useRouter();
+  
+  console.log('Creating broadcast channel...');
   const broadcastChannel = new BroadcastChannel('notifications-channel');
+  console.log('Broadcast channel created in composable');
+  
+  // Log when the broadcast channel receives a message
+  broadcastChannel.onmessage = (event) => {
+    console.log('Received message on broadcast channel:', event.data);
+  };
+  
+  broadcastChannel.onmessageerror = (event) => {
+    console.error('Error receiving message on broadcast channel:', event);
+  };
 
   // Load notifications from IndexedDB
   const loadNotifications = async () => {

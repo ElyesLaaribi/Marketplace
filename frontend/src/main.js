@@ -27,10 +27,33 @@ app.config.errorHandler = (err, vm, info) => {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
+      console.log('Attempting to register service worker...');
       const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
       console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      
+      // Check if the service worker is active
+      if (registration.active) {
+        console.log('Service worker is active');
+      } else if (registration.installing) {
+        console.log('Service worker is installing');
+        registration.installing.addEventListener('statechange', (e) => {
+          console.log('Service worker state changed:', e.target.state);
+        });
+      } else if (registration.waiting) {
+        console.log('Service worker is waiting');
+      }
+      
+      // Listen for updates
+      registration.addEventListener('updatefound', () => {
+        console.log('New service worker found, installing...');
+        const newWorker = registration.installing;
+        newWorker.addEventListener('statechange', () => {
+          console.log('New service worker state:', newWorker.state);
+        });
+      });
+      
     } catch (err) {
-      console.log('ServiceWorker registration failed: ', err);
+      console.error('ServiceWorker registration failed: ', err);
     }
   });
 }
